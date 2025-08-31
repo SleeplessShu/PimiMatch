@@ -35,40 +35,35 @@ class GameFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupObservers()
-
     }
 
 
-    private fun setupObservers(){
+    private fun setupObservers() {
         viewModel.gameState.observe(viewLifecycleOwner) { newState ->
             Log.d("DEBUG", "setupObservers: ${newState.state} ")
-            when (newState.state){
+            when (newState.state) {
 
                 GameState.MATCH_SETTINGS -> {
                     childFragmentManager.beginTransaction()
-                        .replace(R.id.flFragmentContainer, MatchSettingsFragment())
-                        .commit()
+                        .replace(R.id.flFragmentContainer, MatchSettingsFragment()).commit()
                     binding.tvHeader.setText(R.string.state_title_match_settings)
                 }
 
                 GameState.LOADING -> {
                     childFragmentManager.beginTransaction()
-                        .replace(R.id.flFragmentContainer, LoadingFragment())
-                        .commit()
+                        .replace(R.id.flFragmentContainer, LoadingFragment()).commit()
                     binding.tvHeader.setText(R.string.state_title_loading)
                 }
 
                 GameState.GAME -> {
                     childFragmentManager.beginTransaction()
-                        .replace(R.id.flFragmentContainer, WordsMatchingFragment())
-                        .commit()
+                        .replace(R.id.flFragmentContainer, WordsMatchingFragment()).commit()
                     binding.tvHeader.setText(R.string.empty)
                 }
 
                 GameState.END_OF_GAME -> {
                     childFragmentManager.beginTransaction()
-                        .replace(R.id.flFragmentContainer, EndGameFragment())
-                        .commit()
+                        .replace(R.id.flFragmentContainer, EndGameFragment()).commit()
                     binding.tvHeader.setText(R.string.empty)
 
                 }

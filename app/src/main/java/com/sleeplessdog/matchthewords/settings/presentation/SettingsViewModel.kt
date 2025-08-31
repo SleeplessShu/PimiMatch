@@ -34,10 +34,6 @@ class SettingsViewModel(
         sharingInteractor.openSupport()
     }
 
-    fun openTerm() {
-        sharingInteractor.openTerms()
-    }
-
     fun shareApp() {
         sharingInteractor.shareApp()
     }

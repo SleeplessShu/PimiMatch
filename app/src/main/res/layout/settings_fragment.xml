@@ -17,7 +17,7 @@
         android:layout_marginHorizontal="@dimen/padding_medium"
         android:layout_marginVertical="@dimen/padding_medium"
         android:gravity="center"
-        android:text="@string/settings"/>
+        android:text="@string/settings" />
 
     <com.google.android.material.switchmaterial.SwitchMaterial
         android:id="@+id/switcherTheme"
@@ -49,6 +49,32 @@
         android:paddingHorizontal="16dp"
         android:paddingVertical="20dp"
         android:text="@string/support" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/b_database"
+        style="@style/SettingsStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:drawableEnd="@drawable/ic_dice_5"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="20dp"
+        android:text="@string/dictionary_check" />
+
+    <TextView
+        android:id="@+id/tvDatabaseVersion"
+        style="@style/SettingsStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        tools:text="version: dictionary_default" />
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="44dp"
+        android:visibility="gone" />
 
 
 </LinearLayout>

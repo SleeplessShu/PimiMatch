@@ -3,11 +3,18 @@ package com.sleeplessdog.matchthewords
 import android.content.Context
 import android.os.Handler
 import androidx.room.Room
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.storage.FirebaseStorage
+import com.sleeplessdog.matchthewords.di.provideDatabaseName
 import com.sleeplessdog.matchthewords.game.data.database.AppDatabase
 import com.sleeplessdog.matchthewords.game.data.repositories.DatabaseRepositoryImpl
 import com.sleeplessdog.matchthewords.game.data.repositories.ScoreRepositoryImpl
 import com.sleeplessdog.matchthewords.game.domain.repositories.DatabaseRepository
 import com.sleeplessdog.matchthewords.game.domain.repositories.ScoreRepository
+import com.sleeplessdog.matchthewords.server.data.ServerDateRepositoryImpl
+import com.sleeplessdog.matchthewords.server.domain.ServerDateRepository
+import com.sleeplessdog.matchthewords.server.domain.ServerDbInteractor
+import com.sleeplessdog.matchthewords.server.domain.ServerDbInteractorImpl
 import com.sleeplessdog.matchthewords.settings.data.ExternalNavigatorRepositoryImpl
 import com.sleeplessdog.matchthewords.settings.data.SettingsRepositoryImpl
 import com.sleeplessdog.matchthewords.settings.data.SharingRepositoryImpl
@@ -18,6 +25,13 @@ import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
 val dataModule = module {
+    single {
+        FirebaseDatabase.getInstance("https://match-the-words-d26c2-default-rtdb.europe-west1.firebasedatabase.app")
+    }
+
+    single {
+        FirebaseStorage.getInstance()
+    }
 
     single(named("themePreferences")) {
         App.appContext.getSharedPreferences("NightMode", Context.MODE_PRIVATE)
@@ -43,17 +57,36 @@ val dataModule = module {
     single { get<AppDatabase>().wordDao() }
 
     single {
-        Room.databaseBuilder(
-            get(),
-            AppDatabase::class.java,
-            "dictionary.db"
-        ).createFromAsset("databases/dictionary_new.db").build()
+        val dbName = provideDatabaseName(get())
+
+        val builder = Room.databaseBuilder(
+            get(), AppDatabase::class.java, dbName
+        )
+
+        if (dbName == "dictionary.db") {
+            builder.createFromAsset("databases/dictionary_default.db")
+        }
+
+        builder.build()
     }
-    single (named("scoreStore")){
+
+    single(named("scoreStore")) {
         App.appContext.getSharedPreferences("ScoreHistory", Context.MODE_PRIVATE)
     }
-    single <ScoreRepository>{
+    single<ScoreRepository> {
         ScoreRepositoryImpl(get(named("scoreStore")), get())
+    }
+
+    single(named("db_prefs")) {
+        App.appContext.getSharedPreferences("db_prefs", Context.MODE_PRIVATE)
+    }
+
+    single<ServerDateRepository> {
+        ServerDateRepositoryImpl(get(named("db_prefs")))
+    }
+
+    single < ServerDbInteractor> {
+        ServerDbInteractorImpl(get(), get())
     }
 
 }
