@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main_navigation_graph"
-    app:startDestination="@id/gameFragment">
+    app:startDestination="@id/gameSelectFragment">
 
     <fragment
         android:id="@+id/settingsFragment"
@@ -20,6 +20,17 @@
             app:popUpTo="@+id/gameFragment"
             app:popUpToInclusive="true"/>
     </fragment>
+
+    <fragment
+        android:id="@+id/gameSelectFragment"
+        android:name="com.sleeplessdog.matchthewords.gameSelect.presentation.GameSelectFragment"
+        android:label="GameSelectFragment" >
+        <action
+            android:id="@+id/action_gameSelectFragment_to_gameFragment"
+            app:destination="@id/gameFragment"
+            app:popUpToInclusive="true"/>
+    </fragment>
+
     <fragment
         android:id="@+id/scoreFragment"
         android:name="com.sleeplessdog.matchthewords.score.presentation.ScoreFragment"
