@@ -5,6 +5,10 @@
         android:icon="@drawable/icon"
         android:title="@string/games" />
     <item
+        android:id="@+id/wordsFragment"
+        android:icon="@drawable/icon"
+        android:title="@string/words" />
+    <item
         android:id="@+id/scoreFragment"
         android:icon="@drawable/icon"
         android:title="@string/score" />

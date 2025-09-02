@@ -32,6 +32,12 @@
     </fragment>
 
     <fragment
+        android:id="@+id/wordsFragment"
+        android:name="com.sleeplessdog.matchthewords.words.presentation.WordsFragment"
+        android:label="WordsFragment" >
+    </fragment>
+
+    <fragment
         android:id="@+id/scoreFragment"
         android:name="com.sleeplessdog.matchthewords.score.presentation.ScoreFragment"
         android:label="ScoreFragment" >
