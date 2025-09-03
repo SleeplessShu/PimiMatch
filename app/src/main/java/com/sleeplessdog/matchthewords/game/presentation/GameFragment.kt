@@ -5,6 +5,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.sleeplessdog.matchthewords.R
 import com.sleeplessdog.matchthewords.databinding.GameFragmentBinding
@@ -47,27 +48,63 @@ class GameFragment : Fragment() {
                     childFragmentManager.beginTransaction()
                         .replace(R.id.flFragmentContainer, MatchSettingsFragment()).commit()
                     binding.tvHeader.setText(R.string.state_title_match_settings)
+                    binding.statsBlock.isVisible = false
                 }
 
                 GameState.LOADING -> {
                     childFragmentManager.beginTransaction()
                         .replace(R.id.flFragmentContainer, LoadingFragment()).commit()
                     binding.tvHeader.setText(R.string.state_title_loading)
+                    binding.statsBlock.isVisible = false
                 }
 
                 GameState.GAME -> {
                     childFragmentManager.beginTransaction()
                         .replace(R.id.flFragmentContainer, WordsMatchingFragment()).commit()
                     binding.tvHeader.setText(R.string.empty)
+                    binding.statsBlock.isVisible = true
                 }
 
                 GameState.END_OF_GAME -> {
                     childFragmentManager.beginTransaction()
                         .replace(R.id.flFragmentContainer, EndGameFragment()).commit()
                     binding.tvHeader.setText(R.string.empty)
-
+                    binding.statsBlock.isVisible = false
                 }
             }
+        }
+        viewModel.gameState.observe(viewLifecycleOwner) { gameState ->
+            binding.tvScores.setText(gameState.score)
+            setHearts(gameState.lives)
+        }
+    }
+
+    private fun setHearts(heartsQuantity: Int) {
+        when (heartsQuantity) {
+            3 -> {
+                binding.heart1.setImageResource(R.drawable.heart2)
+                binding.heart2.setImageResource(R.drawable.heart2)
+                binding.heart3.setImageResource(R.drawable.heart2)
+            }
+
+            2 -> {
+                binding.heart1.setImageResource(R.drawable.heart2)
+                binding.heart2.setImageResource(R.drawable.heart2)
+                binding.heart3.setImageResource(R.drawable.ic_face)
+            }
+
+            1 -> {
+                binding.heart1.setImageResource(R.drawable.heart2)
+                binding.heart2.setImageResource(R.drawable.ic_face)
+                binding.heart3.setImageResource(R.drawable.ic_face)
+            }
+
+            0 -> {
+                binding.heart1.setImageResource(R.drawable.ic_face)
+                binding.heart2.setImageResource(R.drawable.ic_face)
+                binding.heart3.setImageResource(R.drawable.ic_face)
+            }
+
         }
     }
 }

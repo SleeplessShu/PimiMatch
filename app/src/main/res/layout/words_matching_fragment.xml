@@ -8,58 +8,11 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvWordsList"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="60dp"
+        android:layout_height="match_parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"/>
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/statsBlock"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        app:layout_constraintEnd_toEndOf="@id/rvWordsList"
-        app:layout_constraintStart_toStartOf="@id/rvWordsList"
-        app:layout_constraintTop_toTopOf="parent">
 
-        <TextView
-            android:id="@+id/tvScores"
-            style="@style/Stats"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="000000000"
-            android:textSize="22sp"
-            app:layout_constraintEnd_toEndOf="@id/statsBlock"
-            app:layout_constraintTop_toTopOf="@id/heart1" />
-
-        <ImageView
-            android:id="@+id/heart1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/heart2"
-            app:layout_constraintEnd_toStartOf="@id/heart2"
-            app:layout_constraintStart_toStartOf="@id/statsBlock"
-            app:layout_constraintTop_toTopOf="@id/statsBlock" />
-
-        <ImageView
-            android:id="@+id/heart2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="8dp"
-            android:src="@drawable/heart2"
-            app:layout_constraintStart_toEndOf="@id/heart1"
-            app:layout_constraintTop_toTopOf="@id/heart1" />
-
-        <ImageView
-            android:id="@+id/heart3"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="8dp"
-            android:src="@drawable/heart2"
-            app:layout_constraintStart_toEndOf="@id/heart2"
-            app:layout_constraintTop_toTopOf="@id/heart2" />
-
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

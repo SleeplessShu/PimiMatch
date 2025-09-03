@@ -66,39 +66,9 @@ class WordsMatchingFragment : Fragment(R.layout.words_matching_fragment) {
             adapter.updateCorrectWords(ingameWordState.correctWords)
             adapter.updateUsedWords(ingameWordState.usedWords)
         }
-        parentViewModel.gameState.observe(viewLifecycleOwner) { gameState ->
-            binding.tvScores.setText(gameState.score)
-            setHearts(gameState.lives)
-        }
+
 
     }
 
-    private fun setHearts(heartsQuantity: Int) {
-        when (heartsQuantity) {
-            3 -> {
-                binding.heart1.setImageResource(R.drawable.heart2)
-                binding.heart2.setImageResource(R.drawable.heart2)
-                binding.heart3.setImageResource(R.drawable.heart2)
-            }
 
-            2 -> {
-                binding.heart1.setImageResource(R.drawable.heart2)
-                binding.heart2.setImageResource(R.drawable.heart2)
-                binding.heart3.setImageResource(R.drawable.ic_face)
-            }
-
-            1 -> {
-                binding.heart1.setImageResource(R.drawable.heart2)
-                binding.heart2.setImageResource(R.drawable.ic_face)
-                binding.heart3.setImageResource(R.drawable.ic_face)
-            }
-
-            0 -> {
-                binding.heart1.setImageResource(R.drawable.ic_face)
-                binding.heart2.setImageResource(R.drawable.ic_face)
-                binding.heart3.setImageResource(R.drawable.ic_face)
-            }
-
-        }
-    }
 }
