@@ -6,12 +6,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.LiveData
 import com.sleeplessdog.matchthewords.R
 import com.sleeplessdog.matchthewords.databinding.GameOneOfFourBinding
 import com.sleeplessdog.matchthewords.game.presentation.GameViewModel
-import com.sleeplessdog.matchthewords.game.presentation.OneOfFourViewModel
 import com.sleeplessdog.matchthewords.game.presentation.models.AnswerEvent
 import com.sleeplessdog.matchthewords.game.presentation.models.ButtonState
 import org.koin.androidx.viewmodel.ext.android.sharedViewModel
@@ -20,21 +17,15 @@ import kotlin.getValue
 
 class OneOfFourFragment : Fragment(R.layout.game_one_of_four) {
 
-    private val parentViewModel: GameViewModel by sharedViewModel( owner = { requireParentFragment() })
+    private val parentViewModel: GameViewModel by sharedViewModel(owner = { requireParentFragment() })
     private val oneOfFourViewModel: OneOfFourViewModel by viewModel()
 
     private var _binding: GameOneOfFourBinding? = null
     private val binding get() = _binding!!
-    inline fun <T> LiveData<T>.observeOnce(
-        owner: LifecycleOwner,
-        crossinline block: (T) -> Unit
-    ) {
-        observe(owner) { t ->
-            block(t)
-            removeObservers(owner)
-        }
-    }
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
+    ): View {
         _binding = GameOneOfFourBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -42,34 +33,36 @@ class OneOfFourFragment : Fragment(R.layout.game_one_of_four) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-
-        parentViewModel.wordsPairs.observeOnce(viewLifecycleOwner) { pairs ->
-            oneOfFourViewModel.setPool(pairs)
-            binding.root.isVisible = true
+        // Пул пар приходит от родителя (как и в других играх)
+        parentViewModel.wordsPairs.observe(viewLifecycleOwner) { pairs ->
+            if (!pairs.isNullOrEmpty()) {
+                oneOfFourViewModel.setPool(pairs)
+                binding.root.isVisible = true
+            }
         }
 
+        // Рендер UI вопроса
         oneOfFourViewModel.ui.observe(viewLifecycleOwner) { ui ->
             binding.original.text = ui.originalText
             val buttons = listOf(binding.b1, binding.b2, binding.b3, binding.b4)
             buttons.forEachIndexed { i, b ->
                 b.text = ui.options.getOrNull(i) ?: ""
-                b.isEnabled = ui.states.getOrNull(i) != ButtonState.DISABLED
+                b.isEnabled = !ui.locked && ui.states.getOrNull(i) != ButtonState.DISABLED
                 b.background = requireContext().getDrawable(getBackgroundRes(ui.states.getOrNull(i)))
             }
         }
 
+        // Очки/жизни отдаются в родителя
         oneOfFourViewModel.answerEvents.observe(viewLifecycleOwner) { ev ->
             when (ev) {
                 AnswerEvent.CORRECT -> parentViewModel.reactOnCorrect()
-                AnswerEvent.WRONG -> parentViewModel.reactOnError()
+                AnswerEvent.WRONG   -> parentViewModel.reactOnError()
             }
         }
 
-        // Навигация по завершению — просим родителя завершить игру
+        // Финал — просим родителя закончить игру
         oneOfFourViewModel.completed.observe(viewLifecycleOwner) { done ->
-            if (done == true) {
-                parentViewModel.onGameEnd()
-            }
+            if (done == true) parentViewModel.onGameEnd()
         }
 
         // Клики
@@ -82,7 +75,8 @@ class OneOfFourFragment : Fragment(R.layout.game_one_of_four) {
     private fun getBackgroundRes(state: ButtonState?): Int = when (state) {
         ButtonState.ERROR   -> R.drawable.word_background_error
         ButtonState.CORRECT -> R.drawable.word_background_correct
-        else                                -> R.drawable.word_background_default
+        ButtonState.DISABLED -> R.drawable.word_background_used
+        else -> R.drawable.word_background_default
     }
 
     override fun onDestroyView() {

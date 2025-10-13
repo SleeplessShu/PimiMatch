@@ -53,7 +53,7 @@ class GameFragment : Fragment() {
     private fun setupObservers() {
 
         viewModel.gameState.observe(viewLifecycleOwner) { newState ->
-            Log.d("DEBUG", "setupObservers: ${newState.state} ")
+            Log.d("DEBUG", "NEW WORLD STATE ${newState.state} ")
             when (newState.state) {
 
                 GameState.MATCH_SETTINGS -> {
@@ -88,9 +88,9 @@ class GameFragment : Fragment() {
                 }
             }
         }
-        viewModel.gameState.observe(viewLifecycleOwner) { gameState ->
-            binding.tvScores.setText(gameState.score)
-            setHearts(gameState.lives)
+        viewModel.statsState.observe(viewLifecycleOwner) { stats ->
+            binding.tvScores.setText(stats.score)
+            setHearts(stats.lives)
         }
 
         binding.buttonBack.setOnClickListener {

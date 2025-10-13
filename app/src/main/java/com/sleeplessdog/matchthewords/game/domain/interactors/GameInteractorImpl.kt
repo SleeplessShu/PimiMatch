@@ -21,17 +21,8 @@ class GameInteractorImpl(private val repository: DatabaseInteractor) : GameInter
         category: WordCategory
     ): List<Pair<Word, Word>> {
         val wordsList = repository.getWordsPack(language1, language2, level, difficultLevel, category)
-        Log.d("GameInteractorTesting", "getWordPairs: ${wordsList}")
         return wordsList.map { wordEntity ->
             toWordPair(wordEntity, language1, language2)
-        }
-    }
-
-    override fun shufflePairs(input: List<Pair<Word, Word>>): List<Pair<Word, Word>> {
-        if (input.size <= 1) return input
-        val secondWords = input.map { it.second }.shuffled(Random(System.currentTimeMillis()))
-        return input.mapIndexed { index, pair ->
-            pair.first to secondWords[index]
         }
     }
 

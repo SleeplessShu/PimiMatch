@@ -2,11 +2,13 @@ package com.sleeplessdog.matchthewords.utils
 
 
 import com.sleeplessdog.matchthewords.game.presentation.models.DifficultLevel
+import com.sleeplessdog.matchthewords.game.presentation.models.Word
 import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.Locale
+import kotlin.random.Random
 
 class SupportFunctions() {
     fun <T> switchItem(currentItem: T?, items: Array<T>, isNext: Boolean): T {
@@ -53,6 +55,4 @@ class SupportFunctions() {
             DifficultLevel.SURVIVAL -> 1
         }
     }
-
-
 }

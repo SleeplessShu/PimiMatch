@@ -1,0 +1,128 @@
+package com.sleeplessdog.matchthewords.game.presentation.fragments
+
+import android.os.Handler
+import android.os.Looper
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import com.sleeplessdog.matchthewords.game.presentation.models.AnswerEvent
+import com.sleeplessdog.matchthewords.game.presentation.models.ButtonState
+import com.sleeplessdog.matchthewords.game.presentation.models.GameUiOOF
+import com.sleeplessdog.matchthewords.game.presentation.models.OneOfFourQuestion
+import com.sleeplessdog.matchthewords.game.presentation.models.Word
+import com.sleeplessdog.matchthewords.utils.ShuffleFunctions
+import com.sleeplessdog.matchthewords.utils.TimeReactionConstants
+
+class OneOfFourViewModel(
+    val shuffleFunctions: ShuffleFunctions
+) : ViewModel() {
+
+    private val handler = Handler(Looper.getMainLooper())
+
+    // Пул доступных пар: всё, что использовали в вопросе (база + 3 ложных), выбывает
+    private val available = mutableListOf<Pair<Word, Word>>()
+
+    // UI
+    private val _ui = MutableLiveData(GameUiOOF())
+    val ui: LiveData<GameUiOOF> get() = _ui
+
+    private val _answerEvents = MutableLiveData<AnswerEvent>()
+    val answerEvents: LiveData<AnswerEvent> get() = _answerEvents
+
+    private val _completed = MutableLiveData(false)
+    val completed: LiveData<Boolean> get() = _completed
+
+    // текущее состояние вопроса
+    private var current: OneOfFourQuestion? = null
+
+    // текущее состояние вопроса
+    private var currentCorrectSecondId: Int = -1
+    private var currentOptionSeconds: List<Word> = emptyList()
+    private var lastConsumedFirstIds: Set<Int> = emptySet()
+
+    // защита от отложенных коллбеков после перехода к новому вопросу
+    private var questionSeq: Int = 0
+
+    fun setPool(pairs: List<Pair<Word, Word>>) {
+        available.clear()
+        available.addAll(pairs)
+        _completed.value = false
+        nextQuestion()
+    }
+
+    fun onAnswerClick(buttonIndex: Int) {
+        val state = _ui.value ?: return
+        if (state.locked) return
+        if (buttonIndex !in 0..3) return
+
+        val q = current ?: return
+        val picked = q.optionsSecond.getOrNull(buttonIndex) ?: return
+        val isCorrect = picked.id == q.correctSecondId
+
+        if (isCorrect) {
+            _answerEvents.value = AnswerEvent.CORRECT
+            paintAndLock(buttonIndex)
+            val seq = questionSeq
+            handler.postDelayed({
+                if (questionSeq == seq) {
+                    consumeAndNext(q)
+                }
+            }, TimeReactionConstants.REACTION)
+        } else {
+            _answerEvents.value = AnswerEvent.WRONG
+            // подсветить красным
+            val newStates = (_ui.value?.states ?: List(4) { ButtonState.DEFAULT }).toMutableList()
+            newStates[buttonIndex] = ButtonState.ERROR
+            _ui.value = _ui.value?.copy(states = newStates)
+
+            // через секунду — DISABLED (если вопрос не сменился и не залочен)
+            val seq = questionSeq
+            handler.postDelayed({
+                if (questionSeq != seq) return@postDelayed
+                val cur = _ui.value ?: return@postDelayed
+                val st = cur.states.toMutableList()
+                if (!cur.locked && st.getOrNull(buttonIndex) == ButtonState.ERROR) {
+                    st[buttonIndex] = ButtonState.DISABLED
+                    _ui.value = cur.copy(states = st)
+                }
+            }, TimeReactionConstants.DISABLE)
+        }
+    }
+
+    private fun nextQuestion() {
+        val built = shuffleFunctions.makeOneOfFourQuestion(available)
+        if (built == null) {
+            _completed.value = true
+            current = null
+            return
+        }
+        current = built
+        questionSeq++
+
+        _ui.value = GameUiOOF(
+            originalText = built.originalFirst.text,
+            options = built.optionsSecond.map { it.text },
+            states = List(4) { ButtonState.DEFAULT },
+            locked = false
+        )
+    }
+
+    private fun paintAndLock(correctIndex: Int) {
+        val st = MutableList(4) { ButtonState.DISABLED }
+        st[correctIndex] = ButtonState.CORRECT
+        _ui.value = _ui.value?.copy(states = st, locked = true)
+    }
+
+    private fun consumeAndNext(q: OneOfFourQuestion) {
+        if (q.consumedFirstIds.isNotEmpty()) {
+            available.removeAll { q.consumedFirstIds.contains(it.first.id) }
+        }
+        current = null
+        nextQuestion()
+    }
+
+    override fun onCleared() {
+        handler.removeCallbacksAndMessages(null)
+        super.onCleared()
+    }
+}

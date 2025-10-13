@@ -2,6 +2,7 @@ package com.sleeplessdog.matchthewords.game.presentation
 
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -17,10 +18,13 @@ import com.sleeplessdog.matchthewords.game.presentation.models.GameType
 import com.sleeplessdog.matchthewords.game.presentation.models.IngameWordsState
 import com.sleeplessdog.matchthewords.game.presentation.models.Language
 import com.sleeplessdog.matchthewords.game.presentation.models.MatchState
+import com.sleeplessdog.matchthewords.game.presentation.models.StatsState
 import com.sleeplessdog.matchthewords.game.presentation.models.TfQuestion
 import com.sleeplessdog.matchthewords.game.presentation.models.Word
 import com.sleeplessdog.matchthewords.game.presentation.models.WtWQuestion
+import com.sleeplessdog.matchthewords.utils.GamePrices
 import com.sleeplessdog.matchthewords.utils.SupportFunctions
+import com.sleeplessdog.matchthewords.utils.TimeReactionConstants
 import kotlinx.coroutines.launch
 
 class GameViewModel(
@@ -34,49 +38,43 @@ class GameViewModel(
     private val categories = WordCategory.entries.toTypedArray()
     private val difficult = DifficultLevel.entries.toTypedArray()
 
-    private val _gameState = MutableLiveData<MatchState>(MatchState())
-    val gameState: LiveData<MatchState> get() = _gameState
+    // Верхнее состояние экрана игры
+    private val _gameState = MutableLiveData(MatchState())
+    val gameState: LiveData<MatchState> = _gameState
 
+    private val _statsState = MutableLiveData(StatsState())
+    val statsState: LiveData<StatsState> = _statsState
+
+    // Настройки матча
     private val _gameSettings = MutableLiveData(GameSettings())
-    val gameSettings: LiveData<GameSettings> get() = _gameSettings
+    val gameSettings: LiveData<GameSettings> = _gameSettings
 
-    private val _ingameWordsState = MutableLiveData(IngameWordsState())
-    val ingameWordsState: LiveData<IngameWordsState> get() = _ingameWordsState
-
-    private val _tfQuestion = MutableLiveData<TfQuestion>()
-    val tfQuestion: LiveData<TfQuestion> get() = _tfQuestion
-
-    private val _wtwQuestion = MutableLiveData<WtWQuestion>()
-    val wtwQuestion: LiveData<WtWQuestion> get() = _wtwQuestion
-
-    private val usedPairsIndices = mutableSetOf<Int>()
-    private var score: Int = 0
-    private var lives: Int = 3
-    private var difficultLevel: Int = 18
-
-    private var correctGuessesCounter: Int = 0
-    private val pageSize = 6
-    private var pairsFromDatabase: List<Pair<Word, Word>> = emptyList()
-    private var currentPage = 0
-    private val handler: Handler = Handler(Looper.getMainLooper())
-
+    // Пул пар для конкретного раунда/страницы — его потребляют ВСЕ дочерние VM
     private val _wordsPairs = MutableLiveData<List<Pair<Word, Word>>>()
-    val wordsPairs: LiveData<List<Pair<Word, Word>>> get() = _wordsPairs
+    val wordsPairs: LiveData<List<Pair<Word, Word>>> = _wordsPairs
+
+    // Техническое
+    private val handler = Handler(Looper.getMainLooper())
+
+    // «игровая экономика»
+    private var score = 0
+    private var lives = 3
+    private var difficultLevel = 18
+
+    // кеш загруженных пар
+    private var allPairs: List<Pair<Word, Word>> = emptyList()
 
     init {
         onMatchSettings()
     }
 
-    //GAME SELECT
-
+    // ------------ Game select ------------
     fun setGame(gameType: GameType) {
         _gameState.value = _gameState.value?.copy(gameType = gameType)
     }
 
 
-    //MATCH SETTINGS***************************************************
-
-    // Переключение языка для первой группы
+    // ------------ Match settings ------------
     fun switchLanguage1(isNext: Boolean) {
         val nextLanguage =
             supportFunctions.switchItem(_gameSettings.value?.language1, languages, isNext)
@@ -88,7 +86,6 @@ class GameViewModel(
         }
     }
 
-    // Переключение языка для второй группы
     fun switchLanguage2(isNext: Boolean) {
         val nextLanguage =
             supportFunctions.switchItem(_gameSettings.value?.language2, languages, isNext)
@@ -100,20 +97,17 @@ class GameViewModel(
         }
     }
 
-    //Переключение уровня языка
     fun switchWordsLevel(isNext: Boolean) {
         val nextLevel = supportFunctions.switchItem(_gameSettings.value?.level, levels, isNext)
         updateLevel(nextLevel)
     }
 
-    //Переключение сложности
     fun switchDifficultLevel(isNext: Boolean) {
         val nextDifficult =
             supportFunctions.switchItem(_gameSettings.value?.difficult, difficult, isNext)
         updateDifficult(nextDifficult)
     }
 
-    //Переключение категории слов
     fun switchWordsCategory(isNext: Boolean) {
         val nextCategory =
             supportFunctions.switchItem(_gameSettings.value?.category, categories, isNext)
@@ -140,170 +134,7 @@ class GameViewModel(
         _gameSettings.value = _gameSettings.value?.copy(difficult = newDifficult)
     }
 
-    //GAME****************************************************
-    fun onWordClick(clickedWord: Word) {
-        val selectedWords = _ingameWordsState.value?.selectedWords.orEmpty()
-        when (selectedWords.size) {
-            0 -> addInSelectedList(clickedWord)
-            1 -> {
-                if (isSameWord(clickedWord)) {
-                    clearSelectedList()
-
-                } else if (isSameLanguage(clickedWord)) {
-
-                    replaceInSelectedList(clickedWord)
-
-                } else {
-
-                    addInSelectedList(clickedWord)
-                    checkPair(_ingameWordsState.value!!.selectedWords)
-                }
-            }
-
-            else -> clearSelectedList()
-        }
-    }
-
-    private fun addInSelectedList(clickedWord: Word) {
-        val updatedSelectedWords = _ingameWordsState.value?.selectedWords.orEmpty() + clickedWord
-        _ingameWordsState.value = _ingameWordsState.value?.copy(
-            selectedWords = updatedSelectedWords
-        )
-    }
-
-    private fun isSameLanguage(clickedWord: Word): Boolean {
-        return (_ingameWordsState.value!!.selectedWords[0].language == clickedWord.language && _ingameWordsState.value!!.selectedWords[0].id != clickedWord.id)
-    }
-
-    private fun isSameWord(clickedWord: Word): Boolean {
-        return _ingameWordsState.value!!.selectedWords.isNotEmpty() && clickedWord.id == _ingameWordsState.value!!.selectedWords[0].id && clickedWord.language == _ingameWordsState.value!!.selectedWords[0].language
-    }
-
-    private fun replaceInSelectedList(clickedWord: Word) {
-        val updatedSelectedWords =
-            _ingameWordsState.value?.selectedWords.orEmpty().toMutableList().apply {
-                if (isNotEmpty()) {
-                    this[0] = clickedWord
-                }
-            }
-        _ingameWordsState.value = _ingameWordsState.value?.copy(
-            selectedWords = updatedSelectedWords
-        )
-    }
-
-
-    private fun checkPair(pair: List<Word>) {
-
-        if (isMatchingPair(pair[0], pair[1])) {
-            reactOnCorrect()
-            correctGuessesCounter++
-            updateCorrectWordsList(pair[0], pair[1])
-
-        } else {
-            updateErrorList(pair[0], pair[1])
-            reactOnError()
-        }
-        endGameCheck()
-        clearSelectedList()
-    }
-
-    private fun endGameCheck() {
-        val totalPairs = pairsFromDatabase.size
-        val answeredPairs = currentPage * pageSize + correctGuessesCounter
-
-        if (lives <= 0 || answeredPairs >= totalPairs) {
-            onGameEnd()
-        } else if (correctGuessesCounter == pageSize) {
-            onPageCompleted()
-        }
-    }
-
-
-    fun reactOnError() {
-        removeScoreAndLive()
-        _gameState.postValue(
-            _gameState.value?.copy(
-                lives = lives, score = supportFunctions.getScoreAsString(score)
-            )
-        )
-    }
-
-    fun reactOnCorrect() {
-        addScoreAndLive()
-        _gameState.postValue(
-            _gameState.value?.copy(
-                lives = lives, score = supportFunctions.getScoreAsString(score)
-            )
-        )
-    }
-
-
-    private fun addScoreAndLive() {
-        score += CORRECT_ANSWER_PRICE
-        if (lives < 3 && _gameSettings.value?.difficult != DifficultLevel.SURVIVAL) {
-            lives++
-        }
-    }
-
-
-    private fun clearSelectedList() {
-        _ingameWordsState.value = _ingameWordsState.value?.copy(
-            selectedWords = emptyList()
-        )
-    }
-
-
-    private fun updateCorrectWordsList(first: Word, second: Word) {
-
-        val newState = _ingameWordsState.value?.correctWords.orEmpty().toMutableList().apply {
-            add(first)
-            add(second)
-        }
-        clearSelectedList()
-        _ingameWordsState.value = _ingameWordsState.value?.copy(correctWords = newState)
-        updateUsedWordsList(first, second)
-    }
-
-
-    private fun updateUsedWordsList(first: Word, second: Word) {
-        val currentState = _ingameWordsState.value ?: return
-        handler.postDelayed({
-            val updatedUsedWordsList = currentState.usedWords.toMutableList().apply {
-                add(first)
-                add(second)
-            }
-            _ingameWordsState.value = currentState.copy(
-                correctWords = emptyList(), usedWords = updatedUsedWordsList
-            )
-        }, DELAY_BUTTON_REACTION)
-    }
-
-    private fun isMatchingPair(first: Word, second: Word): Boolean {
-        return (first.id == second.id)
-
-    }
-
-    private fun updateErrorList(first: Word, second: Word) {
-        val newState = _ingameWordsState.value?.copy(
-            selectedWords = emptyList(), errorWords = listOf(first, second)
-        )
-        _ingameWordsState.value = newState
-        clearErrorList()
-    }
-
-    private fun clearErrorList() {
-        handler.postDelayed({
-            _ingameWordsState.value = _ingameWordsState.value?.copy(errorWords = emptyList())
-        }, DELAY_BUTTON_REACTION)
-    }
-
-    private fun removeScoreAndLive() {
-        lives--
-        score -= MISTAKE_PRICE
-
-    }
-
-
+    // ------------ Навигация по экрану ------------
     fun onMatchSettings() {
         _gameState.value = _gameState.value?.copy(state = GameState.MATCH_SETTINGS)
     }
@@ -316,318 +147,121 @@ class GameViewModel(
         onLoading()
         setupScoreLivesDifficult()
         loadWordsFromDatabase {
-            when (_gameState.value?.gameType ?: GameType.MATCH8) {
-                GameType.MATCH8 -> {
-                    loadNextPage()
-                    handler.postDelayed({
-                        _gameState.value = _gameState.value?.copy(state = GameState.GAME)
-                    }, DELAY_LOADING)
-                }
-
-                GameType.TRUEorFALSE -> {
-                    startTrueFalse()
-                    handler.postDelayed({
-                        _gameState.value = _gameState.value?.copy(state = GameState.GAME)
-                    }, DELAY_LOADING)
-                }
-
-                GameType.OneOfFour -> {
-                    startOneOfFour()
-                    handler.postDelayed({
-                        _gameState.value = _gameState.value?.copy(state = GameState.GAME)
-                    }, DELAY_LOADING)
-                }
-
-                GameType.WriteTheWord -> {
-                    startWriteTheWord()
-                    handler.postDelayed({
-                        _gameState.value = _gameState.value?.copy(state = GameState.GAME)
-                    }, DELAY_LOADING)
-                }
-            }
+            _wordsPairs.value = allPairs
+            handler.postDelayed({
+                _gameState.value = _gameState.value?.copy(state = GameState.GAME)
+            }, TimeReactionConstants.LOADING)
         }
     }
 
-    private fun startOneOfFour() {
-        _wordsPairs.value = pairsFromDatabase
-        correctGuessesCounter = 0
-        score = 0
-    }
-
-    private fun startTrueFalse() {
-        correctGuessesCounter = 0
-        score = 0
-        usedPairsIndices.clear()
-        nextQuestion()
-    }
-
-    private fun startWriteTheWord() {
-        _wordsPairs.value = pairsFromDatabase
-        correctGuessesCounter = 0
-        score = 0
-        usedPairsIndices.clear()
-        nextQuestion()
-    }
-
-    private fun nextQuestion() {
-        if (usedPairsIndices.size >= pairsFromDatabase.size) {
-            onGameEnd()
-            return
-        }
-        // выбираем ещё неиспользованную исходную пару
-        val available = pairsFromDatabase.indices.filterNot { it in usedPairsIndices }
-        if (available.isEmpty()) {
-            onGameEnd(); return
-        }
-        val baseIndex = available.random()
-        val (wordA, wordB) = pairsFromDatabase[baseIndex]
-
-        when (gameState.value?.gameType) {
-            GameType.TRUEorFALSE -> {
-                val showCorrect = (0..1).random() == 0
-                val translation = if (showCorrect || pairsFromDatabase.size == 1) {
-                    wordB
-                } else {
-                    val otherIndices = available.filter { it != baseIndex }
-                    val wrongIndex = if (otherIndices.isNotEmpty()) otherIndices.random()
-                    else pairsFromDatabase.indices.first { it != baseIndex }
-                    pairsFromDatabase[wrongIndex].second
-                }
-                _tfQuestion.value = TfQuestion(
-                    word = wordA, translation = translation, isCorrect = showCorrect
-                )
-            }
-
-            GameType.WriteTheWord -> {
-                _wtwQuestion.value = WtWQuestion(word = wordA, translation = wordB)
-            }
-
-            else -> {}
-        }
-
-    }
-
-    fun onWTWCheckClick(userThinksTrue: Boolean) {
-        if (userThinksTrue) {
-            reactOnCorrect()
-            correctGuessesCounter++
-        } else {
-            reactOnError()
-        }
-        val q = _wtwQuestion.value ?: return
-        markWordsPairAsUsed(q.word.id)
-        loadNextQuestion()
-    }
-
-    fun onTrueClicked() = handleAnswer(true)
-    fun onFalseClicked() = handleAnswer(false)
-
-    private fun handleAnswer(userThinksTrue: Boolean) {
-        val q = _tfQuestion.value ?: return
-        if (userThinksTrue == q.isCorrect) {
-            reactOnCorrect()
-            correctGuessesCounter++
-        } else {
-            reactOnError()
-        }
-
-        markWordsPairAsUsed(q.word.id)
-        loadNextQuestion()
-    }
-
-    private fun markWordsPairAsUsed(id: Int){
-        val baseIndex = pairsFromDatabase.indexOfFirst { it.first.id == id }
-        if (baseIndex >= 0) usedPairsIndices += baseIndex
-    }
-
-    private fun loadNextQuestion() {
-        handler.postDelayed({ nextQuestion() }, DELAY_BUTTON_REACTION)
-    }
-
-
-    fun onGameEnd() {
-        onLoading()
-        val todaysScore = scoreInteractor.getTodaysResult()
-        handler.postDelayed({
-            _gameState.value = _gameState.value?.copy(
-                state = GameState.END_OF_GAME,
-                lives = lives,
-                todaysScore = supportFunctions.getScoreAsString(todaysScore)
+    // ------------ Экономика ------------
+    fun reactOnError() {
+        removeScoreAndLive()
+        _statsState.postValue(
+            _statsState.value?.copy(
+                lives = lives, score = supportFunctions.getScoreAsString(score)
             )
-            scoreInteractor.updateTodaysResult(score)
-        }, DELAY_LOADING)
-    }
-
-    fun restartGame() {
-        resetMatchStats()
-        onGame()
-    }
-
-    private fun resetMatchStats() {
-        _ingameWordsState.value = _ingameWordsState.value?.copy(
-            selectedWords = emptyList(), errorWords = emptyList(), usedWords = emptyList()
         )
     }
 
-    private fun setupScoreLivesDifficult() {
-        score = 0
-        correctGuessesCounter = 0
-        currentPage = 0
-        difficultLevel = supportFunctions.getGameDifficult(
-            _gameSettings.value?.difficult ?: DifficultLevel.MEDIUM
+    fun reactOnCorrect() {
+        addScoreAndLive()
+        _statsState.postValue(
+            _statsState.value?.copy(
+                lives = lives, score = supportFunctions.getScoreAsString(score)
+            )
         )
-        lives =
-            supportFunctions.getLivesCount(_gameSettings.value?.difficult ?: DifficultLevel.MEDIUM)
     }
 
 
+    private fun addScoreAndLive() {
+        score += GamePrices.ANSWER_PRICE
+        if (lives < 3 && _gameSettings.value?.difficult != DifficultLevel.SURVIVAL) {
+            lives++
+        }
+    }
+
+    private fun removeScoreAndLive() {
+        lives--
+        score -= GamePrices.MISTAKE_PRICE
+    }
+
+    // ------------ Загрузка пар ------------
     private fun loadWordsFromDatabase(onSuccess: () -> Unit) {
         viewModelScope.launch {
-            val shuffledPairs = gameInteractor.getWordPairs(
+            val pairs = gameInteractor.getWordPairs(
                 _gameSettings.value?.language1 ?: Language.ENGLISH,
                 _gameSettings.value?.language2 ?: Language.SPANISH,
                 _gameSettings.value?.level ?: LanguageLevel.A1,
                 difficultLevel,
                 _gameSettings.value?.category ?: WordCategory.RANDOM
             )
-            if (shuffledPairs.isEmpty()) {
-                onGameEnd()
-                return@launch
-            }
-
-            pairsFromDatabase = shuffledPairs
-            currentPage = 0
-            onSuccess() // Переход к первой странице.
+            if (pairs.isEmpty()) { onGameEnd(); return@launch }
+            allPairs = pairs
+            onSuccess()
         }
     }
 
-
-    fun onPageCompleted() {
-        if (currentPage * pageSize < pairsFromDatabase.size) {
-            loadNextPage()
-        } else {
-            onGameEnd()
-        }
-    }
-
-
-    private fun shufflePairs(input: List<Pair<Word, Word>>): List<Pair<Word, Word>> {
-        return gameInteractor.shufflePairs(input)
-    }
-
-    /*
-        private fun updateWordStats(wordEntity: WordEntity, isCorrect: Boolean) {
-            val updatedWord = wordEntity.copy(
-                correct = if (isCorrect) wordEntity.correct + 1 else wordEntity.correct,
-                mistake = if (!isCorrect) wordEntity.mistake + 1 else wordEntity.mistake,
-                date = getCurrentDate()
+    // ------------ Конец игры/сброс ------------
+    fun onGameEnd() {
+        onLoading()
+        val todaysScore = scoreInteractor.getTodaysResult()
+        handler.postDelayed({
+            _gameState.value = _gameState.value?.copy(
+                state = GameState.END_OF_GAME,
             )
-            viewModelScope.launch {
-                repository.updateWord(updatedWord)
-            }
-        }
-
-     */
-
-    fun loadNextPage() {
-        if (currentPage * pageSize >= pairsFromDatabase.size) {
-            onGameEnd()
-            return
-        }
-
-        val nextPagePairs = getCurrentPagePairs()
-        if (nextPagePairs.isNotEmpty()) {
-            _ingameWordsState.value = _ingameWordsState.value?.copy(
-                selectedWords = emptyList(),
-                errorWords = emptyList(),
-                correctWords = emptyList(),
-                usedWords = emptyList()
+            _statsState.value = _statsState.value?.copy(
+                lives = lives,
+                todaysScore = supportFunctions.getScoreAsString(todaysScore)
             )
-            correctGuessesCounter = 0
-            _wordsPairs.value = shufflePairs(nextPagePairs)
-            currentPage++
-        } else {
-            onGameEnd()
-        }
+            scoreInteractor.updateTodaysResult(score)
+        }, TimeReactionConstants.LOADING)
     }
 
-
-    private fun getCurrentPagePairs(): List<Pair<Word, Word>> {
-        val fromIndex = currentPage * pageSize
-        val toIndex = (fromIndex + pageSize).coerceAtMost(pairsFromDatabase.size)
-        return if (fromIndex < toIndex) {
-            pairsFromDatabase.subList(fromIndex, toIndex)
-        } else {
-            emptyList()
-        }
+    fun restartGame() {
+        resetStats()
+        onGame()
     }
 
-    fun resetStats() {
-        // стопаем все отложенные задачи
-        handler.removeCallbacksAndMessages(null)
-
-        // внутренняя игровая статика
+    private fun setupScoreLivesDifficult() {
         score = 0
-        correctGuessesCounter = 0
-        currentPage = 0
-        usedPairsIndices.clear()
-        pairsFromDatabase = emptyList()
-
-        // восстановим производные от текущих настроек (их не трогаем)
         difficultLevel = supportFunctions.getGameDifficult(
             _gameSettings.value?.difficult ?: DifficultLevel.MEDIUM
         )
         lives = supportFunctions.getLivesCount(
             _gameSettings.value?.difficult ?: DifficultLevel.MEDIUM
         )
+    }
 
-        // очистим UI-состояния раунда
-        _ingameWordsState.value = IngameWordsState(
-            selectedWords = emptyList(),
-            errorWords = emptyList(),
-            correctWords = emptyList(),
-            usedWords = emptyList()
-        )
-        // ВАЖНО: не посылаем null, чтобы не уронить наблюдателя во фрагменте
-        // _tfQuestion.value = null  // <- убрано
+    fun resetStats() {
+        Log.d("DEBUG", "resetStats: !!!")
+        handler.removeCallbacksAndMessages(null)
+        score = 0
+        // возвращаемся в настройки
         _wordsPairs.value = emptyList()
-
-        // верхнее состояние
         _gameState.value = _gameState.value?.copy(
-            state = GameState.MATCH_SETTINGS,
-            lives = lives,
-            score = supportFunctions.getScoreAsString(score)
+            state = GameState.MATCH_SETTINGS
         ) ?: MatchState(
             state = GameState.MATCH_SETTINGS,
+        )
+        _statsState.value = _statsState.value?.copy(
             lives = lives,
             score = supportFunctions.getScoreAsString(score)
         )
     }
 
     fun resetAll() {
-        // сначала чистим стату/рантайм
         resetStats()
-
-        // теперь сбрасываем настройки на дефолт
         _gameSettings.value = GameSettings()
-
-        // и приводим MatchState к дефолту
         val defLives = supportFunctions.getLivesCount(DifficultLevel.MEDIUM)
         difficultLevel = supportFunctions.getGameDifficult(DifficultLevel.MEDIUM)
         lives = defLives
         _gameState.value = MatchState(
-            state = GameState.MATCH_SETTINGS,
+            state = GameState.MATCH_SETTINGS
+        )
+        _statsState.value = _statsState.value?.copy(
             lives = defLives,
             score = supportFunctions.getScoreAsString(0)
         )
-    }
-
-
-    private companion object {
-        const val DELAY_BUTTON_REACTION: Long = 500
-        const val DELAY_LOADING: Long = 2000
-        const val MISTAKE_PRICE: Int = 600
-        const val CORRECT_ANSWER_PRICE: Int = 200
-
     }
 }

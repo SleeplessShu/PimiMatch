@@ -17,8 +17,6 @@ interface GameInteractor {
         category: WordCategory
     ): List<Pair<Word, Word>>
 
-    fun shufflePairs(input: List<Pair<Word, Word>>): List<Pair<Word, Word>>
-
     fun toWordPair(
         wordEntity: WordEntity,
         original: Language,

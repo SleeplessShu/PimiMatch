@@ -5,20 +5,20 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
-import com.sleeplessdog.matchthewords.App
 import com.sleeplessdog.matchthewords.R
 import com.sleeplessdog.matchthewords.databinding.WriteTheWordFragmentBinding
 import com.sleeplessdog.matchthewords.game.presentation.GameViewModel
-import com.sleeplessdog.matchthewords.game.presentation.WriteTheWordViewModel
 import com.sleeplessdog.matchthewords.game.presentation.holders.LettersAdapter
+import com.sleeplessdog.matchthewords.game.presentation.models.AnswerEvent
 import org.koin.androidx.viewmodel.ext.android.sharedViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class WriteTheWordFragment : Fragment(R.layout.write_the_word_fragment) {
-    private val parentViewModel: GameViewModel by sharedViewModel(
+    private val parentVM: GameViewModel by sharedViewModel(
         owner = { requireParentFragment() })
-    private val vm: WriteTheWordViewModel by viewModel()
+    private val childVM: WriteTheWordViewModel by viewModel()
     private var _binding: WriteTheWordFragmentBinding? = null
     private val binding: WriteTheWordFragmentBinding get() = _binding!!
     private lateinit var adapter: LettersAdapter
@@ -33,8 +33,7 @@ class WriteTheWordFragment : Fragment(R.layout.write_the_word_fragment) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 
         adapter = LettersAdapter(
-            onClick = { pos -> vm.onLetterClick(pos) },
-            context = App.appContext,
+            onClick = { pos -> childVM.onLetterClick(pos) }
         )
         binding.rvLetters.adapter = adapter
 
@@ -46,12 +45,6 @@ class WriteTheWordFragment : Fragment(R.layout.write_the_word_fragment) {
         binding.rvLetters.layoutManager = flex
 
         setupObservers()
-
-        binding.btnBackspace.setOnClickListener { vm.onBackspace() }
-        binding.btnClear.setOnClickListener { vm.onClear() }
-        binding.btnCheck.setOnClickListener { vm.onCheck() }
-
-        vm.createPair(prompt = "retire", translation = "уходить в отставку")
     }
 
     override fun onDestroyView() {
@@ -60,21 +53,39 @@ class WriteTheWordFragment : Fragment(R.layout.write_the_word_fragment) {
     }
 
     private fun setupObservers() {
-        parentViewModel.wtwQuestion.observe(viewLifecycleOwner) { pair ->
-            if (pair == null) return@observe
-            vm.createPair(prompt = pair.word.text, pair.translation.text)
+        parentVM.wordsPairs.observe(viewLifecycleOwner) { pairs ->
+            if (!pairs.isNullOrEmpty()) {
+                childVM.setPool(pairs)
+                binding.root.isVisible = true
+            }
         }
 
-        vm.ui.observe(viewLifecycleOwner) { ui ->
+        childVM.ui.observe(viewLifecycleOwner) { ui ->
             binding.tvPrompt.text = ui.prompt
             binding.tvInput.text = ui.input
+            adapter.locked = ui.locked
             adapter.submitList(ui.letters)
-            // можно подсветку/блокировку по ui.locked
+            binding.btnBackspace.isEnabled = !ui.locked && ui.input.isNotEmpty()
+            binding.btnClear.isEnabled = !ui.locked && ui.input.isNotEmpty()
+            binding.btnCheck.isEnabled = !ui.locked && ui.input.isNotEmpty()
         }
 
-        vm.events.observe(viewLifecycleOwner) { ev ->
-            parentViewModel.onWTWCheckClick(ev)
+
+        childVM.events.observe(viewLifecycleOwner) { ev ->
+            when (ev) {
+                AnswerEvent.CORRECT -> parentVM.reactOnCorrect()
+                AnswerEvent.WRONG   -> parentVM.reactOnError()
+            }
         }
+
+
+        childVM.completed.observe(viewLifecycleOwner) { done ->
+            if (done == true) parentVM.onGameEnd()
+        }
+
+        binding.btnBackspace.setOnClickListener { childVM.onBackspace() }
+        binding.btnClear.setOnClickListener { childVM.onClear() }
+        binding.btnCheck.setOnClickListener { childVM.onCheck() }
     }
 }
 
