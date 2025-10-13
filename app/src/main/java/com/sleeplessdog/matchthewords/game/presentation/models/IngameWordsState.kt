@@ -5,4 +5,5 @@ data class IngameWordsState(
     val correctWords: List<Word> = emptyList(),
     val errorWords: List<Word> = emptyList(),
     val usedWords: List<Word> = emptyList(),
+    val locked: Boolean = false
 )

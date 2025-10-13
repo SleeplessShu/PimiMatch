@@ -47,7 +47,7 @@ class EndGameFragment : Fragment(R.layout.end_game_fragment) {
     }
 
     private fun setupObservers() {
-        parentViewModel.gameState.observe(viewLifecycleOwner) { state ->
+        parentViewModel.statsState.observe(viewLifecycleOwner) { state ->
             if (state.lives == 0) {
                 binding.tvResult.setText(R.string.end_game_phrase_loose)
             } else {
