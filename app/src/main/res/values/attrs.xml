@@ -5,4 +5,21 @@
     <attr name="colorTextInputFont" format="reference|color" />
     <attr name="colorTextInputBackground" format="reference|color" />
     <attr name="colorButtonPlayerBackground" format="reference|color" />
+
+    <declare-styleable name="SegmentedProgressBar">
+        <attr name="spb_mode" format="enum">
+            <enum name="count" value="0"/>
+            <enum name="fixed_size" value="1"/>
+        </attr>
+        <attr name="spb_segments" format="integer"/>
+        <attr name="spb_segmentWidth" format="dimension"/>
+        <attr name="spb_gap" format="dimension"/>
+        <attr name="spb_height" format="dimension"/>
+        <attr name="spb_cornerRadius" format="dimension"/>
+        <attr name="spb_bgColor" format="color"/>
+        <attr name="spb_fgColor" format="color"/>
+        <attr name="spb_progress" format="float"/>
+        <attr name="spb_minSegments" format="integer"/>
+        <attr name="spb_maxSegments" format="integer"/>
+    </declare-styleable>
 </resources>

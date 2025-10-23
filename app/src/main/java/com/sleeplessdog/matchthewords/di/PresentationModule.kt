@@ -2,11 +2,13 @@ package com.sleeplessdog.matchthewords.di
 
 import android.os.Handler
 import android.os.Looper
+import com.sleeplessdog.matchthewords.game.domain.api.ScoreInteractor
 import com.sleeplessdog.matchthewords.game.presentation.GameViewModel
 import com.sleeplessdog.matchthewords.game.presentation.ingameFragments.OneOfFourViewModel
 import com.sleeplessdog.matchthewords.game.presentation.ingameFragments.TrueOrFalseViewModel
 import com.sleeplessdog.matchthewords.game.presentation.ingameFragments.WordsMatchingViewModel
 import com.sleeplessdog.matchthewords.game.presentation.ingameFragments.WriteTheWordViewModel
+import com.sleeplessdog.matchthewords.game.presentation.parentControllers.ProgressController
 import com.sleeplessdog.matchthewords.score.presentation.ScoreViewModel
 import com.sleeplessdog.matchthewords.settings.presentation.DatabaseViewModel
 import com.sleeplessdog.matchthewords.settings.presentation.SettingsViewModel
@@ -25,7 +27,7 @@ val presentationModule = module {
     }
 
     viewModel {
-        GameViewModel(get(), get(), get())
+        GameViewModel(get(), get(), get(), get())
     }
 
     viewModel {
@@ -55,4 +57,6 @@ val presentationModule = module {
     single { SupportFunctions() }
 
     single { ShuffleFunctions() }
+
+    single { ProgressController( get() ) }
 }

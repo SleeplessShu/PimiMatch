@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?attr/colorPrimary">
@@ -8,8 +9,8 @@
     <ImageButton
         android:id="@+id/buttonBack"
         android:layout_width="wrap_content"
-        android:layout_height="0dp"
-        android:background="@drawable/arrow_left"
+        android:layout_height="wrap_content"
+        android:background="@drawable/nav_cancel"
         android:layout_marginStart="20dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@id/tvHeader"
@@ -31,40 +32,50 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/statsBlock"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="20dp"
-        android:layout_marginTop="70dp"
+        android:layout_marginVertical="@dimen/padding_medium"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
         <TextView
+            android:layout_marginVertical="@dimen/padding_medium"
             android:id="@+id/tvScores"
             style="@style/Stats"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="000000000"
+            tools:text="0000000"
             android:textSize="22sp"
             app:layout_constraintEnd_toEndOf="@id/statsBlock"
-            app:layout_constraintTop_toTopOf="@id/heart1" />
+            app:layout_constraintTop_toBottomOf="@id/heart1"/>
+
+        <TextView
+            android:id="@+id/scores"
+            style="@style/Stats"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Счёт"
+            android:textSize="22sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/tvScores"/>
 
         <ImageView
             android:id="@+id/heart1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/heart2"
-            app:layout_constraintEnd_toStartOf="@id/heart2"
-            app:layout_constraintStart_toStartOf="@id/statsBlock"
-            app:layout_constraintTop_toTopOf="@id/statsBlock" />
+            android:src="@drawable/interface_health_full"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <ImageView
             android:id="@+id/heart2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="8dp"
-            android:src="@drawable/heart2"
-            app:layout_constraintStart_toEndOf="@id/heart1"
+            android:src="@drawable/interface_health_full"
+            app:layout_constraintEnd_toStartOf="@id/heart1"
             app:layout_constraintTop_toTopOf="@id/heart1" />
 
         <ImageView
@@ -72,9 +83,24 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="8dp"
-            android:src="@drawable/heart2"
-            app:layout_constraintStart_toEndOf="@id/heart2"
+            android:src="@drawable/interface_health_full"
+            app:layout_constraintEnd_toStartOf="@id/heart2"
             app:layout_constraintTop_toTopOf="@id/heart2" />
+
+        <com.sleeplessdog.matchthewords.game.presentation.SegmentedProgressBar
+            android:id="@+id/progress_bar"
+            android:layout_marginTop="@dimen/padding_sm"
+            android:layout_width="match_parent"
+            android:layout_height="14dp"
+            app:spb_mode="count"
+            app:spb_segments="12"
+            app:spb_gap="8dp"
+            app:spb_height="10dp"
+            app:spb_cornerRadius="5dp"
+            app:spb_bgColor="#333738"
+            app:spb_fgColor="#E8DFCB"
+            app:layout_constraintTop_toBottomOf="@id/tvScores"/>
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <FrameLayout
@@ -85,5 +111,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="@+id/tvHeader"
         app:layout_constraintStart_toStartOf="@+id/tvHeader"
-        app:layout_constraintTop_toBottomOf="@+id/buttonBack" />
+        app:layout_constraintTop_toBottomOf="@+id/statsBlock" />
+
+
 </androidx.constraintlayout.widget.ConstraintLayout>
