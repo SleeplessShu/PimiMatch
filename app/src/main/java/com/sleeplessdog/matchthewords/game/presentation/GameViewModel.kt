@@ -21,6 +21,7 @@ import com.sleeplessdog.matchthewords.game.presentation.models.MatchState
 import com.sleeplessdog.matchthewords.game.presentation.models.SessionStats
 import com.sleeplessdog.matchthewords.game.presentation.models.StatsState
 import com.sleeplessdog.matchthewords.game.presentation.models.Word
+import com.sleeplessdog.matchthewords.game.presentation.parentControllers.ProgressController
 import com.sleeplessdog.matchthewords.utils.GamePrices
 import com.sleeplessdog.matchthewords.utils.SupportFunctions
 import com.sleeplessdog.matchthewords.utils.TimeReactionConstants
@@ -29,6 +30,7 @@ import kotlinx.coroutines.launch
 class GameViewModel(
     private val gameInteractor: GameInteractor,
     private val supportFunctions: SupportFunctions,
+    private val progressController: ProgressController,
     private val scoreInteractor: ScoreInteractor,
 ) : ViewModel() {
 
@@ -61,6 +63,8 @@ class GameViewModel(
     private var difficultLevel = 18
     private val sessionCorrectIds = linkedSetOf<Int>()
     private val sessionWrongIds   = linkedSetOf<Int>()
+    private var progressSegments: Int = 1
+    private var currentStep: Int = 0
 
     // кеш загруженных пар
     private var allPairs: List<Pair<Word, Word>> = emptyList()
@@ -146,7 +150,7 @@ class GameViewModel(
 
     fun onGame() {
         onLoading()
-        setupScoreLivesDifficult()
+        setupGameStats()
         loadWordsFromDatabase {
             _wordsPairs.value = allPairs
             handler.postDelayed({
@@ -156,21 +160,33 @@ class GameViewModel(
     }
 
     // ------------ Экономика ------------
-    fun reactOnError() {
-        removeScoreAndLive()
-        _statsState.postValue(
-            _statsState.value?.copy(
-                lives = lives, score = supportFunctions.getScoreAsString(score)
-            )
-        )
-    }
-
     fun reactOnCorrect() {
         addScoreAndLive()
-        _statsState.postValue(
-            _statsState.value?.copy(
-                lives = lives, score = supportFunctions.getScoreAsString(score)
-            )
+        currentStep = (currentStep + 1).coerceAtMost(progressSegments)
+        emitStats()
+    }
+
+    fun reactOnError() {
+        removeScoreAndLive()
+        if (progressController.advancesOnWrong(_gameState.value?.gameType ?: GameType.MATCH8)) {
+            currentStep = (currentStep + 1).coerceAtMost(progressSegments)
+        }
+        emitStats()
+    }
+
+    private fun emitStats() {
+        val p = progressController.progressOf(currentStep, progressSegments)
+        _statsState.value = _statsState.value?.copy(
+            lives = lives,
+            score = score.toString(),
+            progressSegments = progressSegments,
+            progress = p
+        ) ?: StatsState(
+            lives = lives,
+            score = score.toString(),
+            todaysScore = "0",
+            progressSegments = progressSegments,
+            progress = p
         )
     }
 
@@ -232,7 +248,7 @@ class GameViewModel(
             )
             _statsState.value = _statsState.value?.copy(
                 lives = lives,
-                todaysScore = supportFunctions.getScoreAsString(todaysScore)
+                todaysScore = todaysScore.toString()
             )
             gameInteractor.putRoundStats(stats)
             scoreInteractor.updateTodaysResult(score)
@@ -244,7 +260,7 @@ class GameViewModel(
         onGame()
     }
 
-    private fun setupScoreLivesDifficult() {
+    private fun setupGameStats() {
         score = 0
         difficultLevel = supportFunctions.getGameDifficult(
             _gameSettings.value?.difficult ?: DifficultLevel.MEDIUM
@@ -252,37 +268,38 @@ class GameViewModel(
         lives = supportFunctions.getLivesCount(
             _gameSettings.value?.difficult ?: DifficultLevel.MEDIUM
         )
+        progressSegments = progressController.segmentsFor(
+            _gameSettings.value?.difficult ?: DifficultLevel.MEDIUM,
+            _gameState.value?.gameType ?: GameType.MATCH8
+        )
+        currentStep = 0
     }
 
     fun resetStats() {
-        Log.d("DEBUG", "resetStats: !!!")
         handler.removeCallbacksAndMessages(null)
         score = 0
-        // возвращаемся в настройки
+
         _wordsPairs.value = emptyList()
-        _gameState.value = _gameState.value?.copy(
-            state = GameState.MATCH_SETTINGS
-        ) ?: MatchState(
-            state = GameState.MATCH_SETTINGS,
-        )
+        _gameState.value = _gameState.value?.copy(state = GameState.MATCH_SETTINGS)
+            ?: MatchState(state = GameState.MATCH_SETTINGS)
+
+        // обнуляем прогресс
+        currentStep = 0
         _statsState.value = _statsState.value?.copy(
             lives = lives,
-            score = supportFunctions.getScoreAsString(score)
+            score = score.toString()
         )
     }
 
     fun resetAll() {
         resetStats()
         _gameSettings.value = GameSettings()
-        val defLives = supportFunctions.getLivesCount(DifficultLevel.MEDIUM)
         difficultLevel = supportFunctions.getGameDifficult(DifficultLevel.MEDIUM)
-        lives = defLives
-        _gameState.value = MatchState(
-            state = GameState.MATCH_SETTINGS
-        )
-        _statsState.value = _statsState.value?.copy(
-            lives = defLives,
-            score = supportFunctions.getScoreAsString(0)
-        )
+        lives = supportFunctions.getLivesCount(DifficultLevel.MEDIUM)
+        _gameState.value = MatchState(state = GameState.MATCH_SETTINGS)
+        progressSegments = progressController.segmentsFor(DifficultLevel.MEDIUM, GameType.MATCH8)
+        currentStep = 0
+        _statsState.value = _statsState.value?.copy(lives = lives, score = "0")
     }
 }
+

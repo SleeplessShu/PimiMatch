@@ -20,9 +20,11 @@ import com.sleeplessdog.matchthewords.game.presentation.ingameFragments.WordsMat
 import com.sleeplessdog.matchthewords.game.presentation.ingameFragments.WriteTheWordFragment
 import com.sleeplessdog.matchthewords.game.presentation.models.GameState
 import com.sleeplessdog.matchthewords.game.presentation.models.GameType
+import com.sleeplessdog.matchthewords.game.presentation.parentControllers.HeartsController
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class GameFragment : Fragment() {
+    private lateinit var heartsController: HeartsController
 
     private val args: GameFragmentArgs by navArgs()
     private val viewModel: GameViewModel by viewModel()
@@ -45,6 +47,9 @@ class GameFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         val currentType = args.gameType
         viewModel.setGame(currentType)
+        heartsController = HeartsController(
+            listOf(binding.heart1, binding.heart2, binding.heart3)
+        )
         setupObservers()
     }
 
@@ -52,7 +57,6 @@ class GameFragment : Fragment() {
     private fun setupObservers() {
 
         viewModel.gameState.observe(viewLifecycleOwner) { newState ->
-            Log.d("DEBUG", "NEW WORLD STATE ${newState.state} ")
             when (newState.state) {
 
                 GameState.MATCH_SETTINGS -> {
@@ -89,6 +93,9 @@ class GameFragment : Fragment() {
         }
         viewModel.statsState.observe(viewLifecycleOwner) { stats ->
             binding.tvScores.setText(stats.score)
+            binding.progressBar.setSegments(stats.progressSegments)
+            Log.d("DEBUG", "stats.progress ${stats.progress}")
+            binding.progressBar.setProgress(stats.progress)
             setHearts(stats.lives)
         }
 
@@ -139,31 +146,6 @@ class GameFragment : Fragment() {
     }
 
     private fun setHearts(heartsQuantity: Int) {
-        when (heartsQuantity) {
-            3 -> {
-                binding.heart1.setImageResource(R.drawable.heart2)
-                binding.heart2.setImageResource(R.drawable.heart2)
-                binding.heart3.setImageResource(R.drawable.heart2)
-            }
-
-            2 -> {
-                binding.heart1.setImageResource(R.drawable.heart2)
-                binding.heart2.setImageResource(R.drawable.heart2)
-                binding.heart3.setImageResource(R.drawable.ic_face)
-            }
-
-            1 -> {
-                binding.heart1.setImageResource(R.drawable.heart2)
-                binding.heart2.setImageResource(R.drawable.ic_face)
-                binding.heart3.setImageResource(R.drawable.ic_face)
-            }
-
-            0 -> {
-                binding.heart1.setImageResource(R.drawable.ic_face)
-                binding.heart2.setImageResource(R.drawable.ic_face)
-                binding.heart3.setImageResource(R.drawable.ic_face)
-            }
-
-        }
+        heartsController.render(heartsQuantity)
     }
 }
