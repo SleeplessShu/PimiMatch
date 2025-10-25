@@ -61,7 +61,7 @@ class GameViewModel(
     private var lives = 3
     private var difficultLevel = 18
     private val sessionCorrectIds = linkedSetOf<Int>()
-    private val sessionWrongIds   = linkedSetOf<Int>()
+    private val sessionWrongIds = linkedSetOf<Int>()
     private var progressSegments: Int = 1
     private var currentStep: Int = 0
 
@@ -180,6 +180,7 @@ class GameViewModel(
             currentStep += 1
         }
     }
+
     private fun emitStats() {
         val type = _gameState.value?.gameType ?: GameType.MATCH8
         val p = progressController.progressOf(currentStep, progressSegments, type)
@@ -200,13 +201,16 @@ class GameViewModel(
 
     private fun addScoreAndLive() {
         score += GamePrices.ANSWER_PRICE
-        if (lives < 3 ) {
+        if (lives < 3) {
             lives++
         }
     }
 
     private fun removeScoreAndLive() {
         lives--
+        if (lives <= 0) {
+            onGameEnd()
+        }
         score -= GamePrices.MISTAKE_PRICE
     }
 
@@ -216,10 +220,12 @@ class GameViewModel(
                 sessionCorrectIds.addAll(ev.wordsIds)
                 reactOnCorrect()
             }
+
             is GameEvent.Wrong -> {
-               sessionWrongIds.addAll(ev.wordsIds)
+                sessionWrongIds.addAll(ev.wordsIds)
                 reactOnError()
             }
+
             GameEvent.Completed -> onGameEnd()
         }
     }
@@ -239,7 +245,9 @@ class GameViewModel(
                 wordsNeeded,
                 _gameSettings.value?.category ?: WordCategory.RANDOM
             )
-            if (pairs.isEmpty()) { onGameEnd(); return@launch }
+            if (pairs.isEmpty()) {
+                onGameEnd(); return@launch
+            }
             allPairs = pairs
             onSuccess()
         }
@@ -250,8 +258,7 @@ class GameViewModel(
         onLoading()
 
         val stats = SessionStats(
-            correctIds = sessionCorrectIds.toList(),
-            mistakeIds = sessionWrongIds.toList()
+            correctIds = sessionCorrectIds.toList(), mistakeIds = sessionWrongIds.toList()
         )
         val todaysScore = scoreInteractor.getTodaysResult()
         handler.postDelayed({
@@ -259,8 +266,7 @@ class GameViewModel(
                 state = GameState.END_OF_GAME,
             )
             _statsState.value = _statsState.value?.copy(
-                lives = lives,
-                todaysScore = todaysScore.toString()
+                lives = lives, todaysScore = todaysScore.toString()
             )
             wordsController.putRoundStats(stats)
             scoreInteractor.updateTodaysResult(score)
@@ -297,8 +303,9 @@ class GameViewModel(
         score = 0
 
         _wordsPairs.value = emptyList()
-        _gameState.value = _gameState.value?.copy(state = GameState.MATCH_SETTINGS)
-            ?: MatchState(state = GameState.MATCH_SETTINGS)
+        _gameState.value = _gameState.value?.copy(state = GameState.MATCH_SETTINGS) ?: MatchState(
+            state = GameState.MATCH_SETTINGS
+        )
 
         currentStep = 0
         emitStats()

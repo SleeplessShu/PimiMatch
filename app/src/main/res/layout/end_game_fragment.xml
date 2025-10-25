@@ -5,64 +5,84 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-
-
-    <TextView
-        android:id="@+id/tvAnnouncement"
-        style="@style/End_game_score"
+    <ImageView
+        android:id="@+id/light"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:paddingTop="34dp"
-        android:text="YOUR SCORE IS"
+        android:src="@drawable/game_end_pimi_victory_light"
+        app:layout_constraintBottom_toBottomOf="@id/pimi"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/tv_Score"
-        style="@style/End_game_score"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvAnnouncement"
-        tools:text="0023232300" />
+        app:layout_constraintTop_toTopOf="@id/tvAnnouncement" />
 
     <TextView
         android:id="@+id/tvResult"
-        style="@style/Header_v1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:paddingTop="88dp"
-        android:text="YOU WIN"
+        android:layout_marginTop="50dp"
+        android:fontFamily="@font/murs_gothic_wide_dark"
+        android:letterSpacing="0.02"
+        android:textColor="@color/green_primary"
+        android:textFontWeight="800"
+        android:textSize="62sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tv_Score" />
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="Victory!" />
+
+    <TextView
+        android:id="@+id/tvAnnouncement"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:fontFamily="@font/murs_gothic_wide_dark"
+        android:letterSpacing="0.00"
+        android:textColor="@color/green_primary"
+        android:textFontWeight="800"
+        android:textSize="24sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvResult"
+        tools:text="Счёт 40 очков" />
 
     <ImageView
-        android:id="@+id/face"
-        android:layout_height="wrap_content"
+        android:id="@+id/pimi"
         android:layout_width="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/tvResult"
-        android:src="@drawable/nice_face"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="52dp"
+        android:src="@drawable/game_end_pimi_victory"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"/>
-
-    <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/bNewGame"
-        style="@style/End_game_buttons"
-        android:text="@string/button_text_start_game"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:background="@drawable/button_medium_clear"/>
-
-    <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/bRestart"
-        style="@style/End_game_buttons"
-        android:text="@string/button_text_restart_round"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        android:background="@drawable/button_medium_clear"/>
+        app:layout_constraintTop_toBottomOf="@id/tvAnnouncement" />
+
+
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/bNewGame"
+        style="@style/EndGameButtonStyle"
+        android:layout_marginTop="94dp"
+        android:text="@string/button_text_start_game"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/pimi" />
+
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/bRestart"
+        style="@style/EndGameButtonStyle"
+        android:layout_marginTop="8dp"
+        android:text="@string/button_text_restart_round"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/bNewGame" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/bToMenu"
+        style="@style/EndGameButtonStyle"
+        android:layout_marginTop="8dp"
+        android:text="@string/button_to_menu"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/bRestart" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
