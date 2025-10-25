@@ -11,12 +11,15 @@
 
     <string name="empty">     </string>
 
-    <string name="end_game_phrase_win">VICTORY</string>
-    <string name="end_game_phrase_loose">FAIL</string>
+    <!-- endgame fragment -->
+    <string name="end_game_phrase_win">Victory!</string>
+    <string name="end_game_phrase_loose">Fail!</string>
+    <string name="score_text">Счёт %d очков</string>
 
     <string name="button_text_start_game">New Game</string>
     <string name="button_text_new_game">NEW_GAME</string>
     <string name="button_text_restart_round">Restart</string>
+    <string name="button_to_menu">Return to menu</string>
 
 
     <!--
