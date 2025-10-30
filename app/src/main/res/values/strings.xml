@@ -65,7 +65,7 @@
 
 
     <!--basic things-->
-    <string name="app_name">Spanish words</string>
+    <string name="app_name">Pimi</string>
 
     <!--games select fragment-->
     <string name="select_game">Выбрать игру</string>
