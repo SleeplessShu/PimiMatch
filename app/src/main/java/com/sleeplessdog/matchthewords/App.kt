@@ -22,6 +22,7 @@ import java.util.Locale
 class App : Application() {
     override fun onCreate() {
         super.onCreate()
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
         appContext = applicationContext
         deleteAllDatabases(appContext)
 
