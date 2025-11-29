@@ -6,7 +6,6 @@ import com.sleeplessdog.matchthewords.game.data.repositories.AppPrefs
 import com.sleeplessdog.matchthewords.game.data.repositories.AppPrefsImpl
 import com.sleeplessdog.matchthewords.game.presentation.GameViewModel
 import com.sleeplessdog.matchthewords.game.presentation.fragments.SettingsViewModel
-import com.sleeplessdog.matchthewords.game.presentation.holders.CategoriesBottomSheet
 import com.sleeplessdog.matchthewords.game.presentation.ingameFragments.OneOfFourViewModel
 import com.sleeplessdog.matchthewords.game.presentation.ingameFragments.TrueOrFalseViewModel
 import com.sleeplessdog.matchthewords.game.presentation.ingameFragments.WordsMatchingViewModel
@@ -75,8 +74,6 @@ val presentationModule = module {
             appPrefs = get()
         )
     }
-
-    single { CategoriesBottomSheet()}
 
     single<AppPrefs> { AppPrefsImpl(get()) }
 

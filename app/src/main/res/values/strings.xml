@@ -76,8 +76,8 @@
 
     <!--группы слов боттомшит-->>
     <string name="categories_all_title">Категории слов</string>
-    <string name="categories_user_section">Мои категории</string>
-    <string name="categories_default_section">Стандартные</string>
+    <string name="categories_user_section">Мои категории:</string>
+    <string name="categories_default_section">Стандартные:</string>
     <string name="cancel">Отмена</string>
     <string name="save">Сохранить</string>
 

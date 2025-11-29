@@ -1,25 +1,24 @@
 package com.sleeplessdog.matchthewords.game.presentation.fragments
 
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.flexbox.FlexboxLayout
+import com.google.android.material.card.MaterialCardView
 import com.google.android.material.chip.Chip
 import com.sleeplessdog.matchthewords.R
+import com.sleeplessdog.matchthewords.databinding.ItemDifficultyCardBinding
 import com.sleeplessdog.matchthewords.databinding.SettingsFragmentBinding
-import com.sleeplessdog.matchthewords.databinding.ViewDifficultyCardEasyBinding
-import com.sleeplessdog.matchthewords.databinding.ViewDifficultyCardExpertBinding
-import com.sleeplessdog.matchthewords.databinding.ViewDifficultyCardHardBinding
-import com.sleeplessdog.matchthewords.databinding.ViewDifficultyCardMediumBinding
 import com.sleeplessdog.matchthewords.game.domain.models.LanguageLevel
-import com.sleeplessdog.matchthewords.game.presentation.holders.CategoriesBottomSheet
+
 import com.sleeplessdog.matchthewords.game.presentation.models.CategoryUi
 import com.sleeplessdog.matchthewords.game.presentation.models.DifficultLevel
 import com.sleeplessdog.matchthewords.gameSelect.controller.LanguageAdapter
 import com.sleeplessdog.matchthewords.gameSelect.controller.toFlagSmallRes
 import com.sleeplessdog.matchthewords.utils.SupportFunctions
+
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 enum class LanguageAdapterState {
@@ -41,12 +40,14 @@ class SettingsFragment : Fragment(R.layout.settings_fragment) {
     private lateinit var chipC1: Chip
     private lateinit var chipC2: Chip
 
-    private lateinit var cardEasy: ViewDifficultyCardEasyBinding
-    private lateinit var cardMedium: ViewDifficultyCardMediumBinding
-    private lateinit var cardHard: ViewDifficultyCardHardBinding
-    private lateinit var cardExpert: ViewDifficultyCardExpertBinding
+    private lateinit var cardEasy: ItemDifficultyCardBinding
+    private lateinit var cardMedium: ItemDifficultyCardBinding
+    private lateinit var cardHard: ItemDifficultyCardBinding
+    private lateinit var cardExpert: ItemDifficultyCardBinding
 
     private lateinit var langAdapter: LanguageAdapter
+
+    private var preselected: Set<String> = emptySet()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         _binding = SettingsFragmentBinding.bind(view)
@@ -70,12 +71,43 @@ class SettingsFragment : Fragment(R.layout.settings_fragment) {
         cardMedium = binding.cardMedium
         cardHard = binding.cardHard
         cardExpert = binding.cardExpert
+
+        with(binding.cardEasy) {
+            ivIcon.setImageResource(R.drawable.lightning_1)
+            tvTitle.setText(R.string.difficulty_easy)
+            tvSubtitle.setText(R.string.difficulty_easy_words)
+            root.setOnClickListener {  vm.onDifficultyPicked(DifficultLevel.EASY) }
+        }
+
+        with(binding.cardMedium) {
+            ivIcon.setImageResource(R.drawable.lightning_2)
+            tvTitle.setText(R.string.difficulty_medium)
+            tvSubtitle.setText(R.string.difficulty_medium_words)
+            root.setOnClickListener {  vm.onDifficultyPicked(DifficultLevel.MEDIUM) }
+        }
+
+        with(binding.cardHard) {
+            ivIcon.setImageResource(R.drawable.lightning_3)
+            tvTitle.setText(R.string.difficulty_hard)
+            tvSubtitle.setText(R.string.difficulty_hard_words)
+            root.setOnClickListener {  vm.onDifficultyPicked(DifficultLevel.HARD) }
+        }
+
+        with(binding.cardExpert) {
+            ivIcon.setImageResource(R.drawable.lightning_4)
+            tvTitle.setText(R.string.difficulty_expert)
+            tvSubtitle.setText(R.string.difficulty_expert_words)
+            root.setOnClickListener {  vm.onDifficultyPicked(DifficultLevel.EXPERT) }
+        }
+
     }
 
     private fun setupObservers() {
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {
             vm.state.collect { state ->
                 renderFeatured(state.featured)
+                renderGroup(binding.cgUserCategories, state.user)
+                renderGroup(binding.cgDefaultCategories, state.defaults)
             }
         }
 
@@ -95,25 +127,11 @@ class SettingsFragment : Fragment(R.layout.settings_fragment) {
         chipC1.setOnClickListener { vm.toggleLevel(LanguageLevel.C1) }
         chipC2.setOnClickListener { vm.toggleLevel(LanguageLevel.C2) }
 
-        cardEasy.root.setOnClickListener {
-            vm.onDifficultyPicked(DifficultLevel.EASY)
-        }
-        cardMedium.root.setOnClickListener {
-            vm.onDifficultyPicked(DifficultLevel.MEDIUM)
-        }
-        cardHard.root.setOnClickListener {
-            vm.onDifficultyPicked(DifficultLevel.HARD)
-        }
-        cardExpert.root.setOnClickListener {
-            vm.onDifficultyPicked(DifficultLevel.EXPERT)
-        }
-
         binding.ivFlagStudy.setOnClickListener {
             showLanguages(LanguageAdapterState.STUDY)
         }
 
         binding.ivFlagUi.setOnClickListener {
-            Log.d("DEBUG", "flagclick: ")
             showLanguages(LanguageAdapterState.UI)
         }
 
@@ -124,6 +142,8 @@ class SettingsFragment : Fragment(R.layout.settings_fragment) {
             hideAllLanguageLists()
         }
 
+        binding.topicsBackground.setOnClickListener { hideTopicsMenu() }
+
         vm.difficulty.observe(viewLifecycleOwner) { level ->
 
             cardEasy.root.isChecked = (level == DifficultLevel.EASY)
@@ -133,20 +153,17 @@ class SettingsFragment : Fragment(R.layout.settings_fragment) {
         }
 
         binding.btnShowAllCategories.setOnClickListener {
-            val preselected =
+            preselected =
                 vm.state.value.user.plus(vm.state.value.defaults).filter { it.isSelected }
                     .map { it.key }.toSet()
-
-            CategoriesBottomSheet.newInstance(preselected)
-                .show(parentFragmentManager, "categoriesSheet")
+            showTopicsMenu()
         }
 
-        parentFragmentManager.setFragmentResultListener(
-            CategoriesBottomSheet.RESULT_KEY, viewLifecycleOwner
-        ) { _, bundle ->
-            val selected =
-                bundle.getStringArrayList(CategoriesBottomSheet.ARG_SELECTED)?.toSet() ?: emptySet()
-            vm.onSave(selected)
+        binding.btnCancel.setOnClickListener { hideTopicsMenu() }
+        binding.btnSave.setOnClickListener {
+            val selectedKeys = readSelectedKeys()
+            vm.onSave(selectedKeys)
+            hideTopicsMenu()
         }
 
         vm.studyLanguage.observe(viewLifecycleOwner) { study ->
@@ -274,7 +291,109 @@ class SettingsFragment : Fragment(R.layout.settings_fragment) {
         }
         hideBg()
     }
+    private fun renderGroup(group: FlexboxLayout, items: List<CategoryUi>) {
+        group.removeAllViews()
+        items.forEach { item ->
+            group.addView(SupportFunctions.createCategoryChip(group, item).apply {
+                isChecked = item.key in preselected || item.isSelected
+            })
+        }
+    }
 
+    private fun readSelectedKeys(): Set<String> {
+        fun collect(group: FlexboxLayout): List<String> =
+            (0 until group.childCount).mapNotNull { i ->
+                val child = group.getChildAt(i)
+                val chip = child as? Chip ?: return@mapNotNull null
+                val key = chip.tag as? String ?: chip.text.toString() // лучше хранить key в tag
+                if (chip.isChecked) key else null
+            }
+
+        // складываем теги; при создании чипа поставь tag = item.key
+        return (collect(binding.cgUserCategories) + collect(binding.cgDefaultCategories)).toSet()
+    }
+
+    private fun showTopicsMenu() {
+        val root = binding.rootTopics
+        if (root.visibility == View.VISIBLE) return
+
+        // показываем корень
+        root.alpha = 0f
+        root.visibility = View.VISIBLE
+        root.animate()
+            .alpha(1f)
+            .setDuration(150)
+            .start()
+
+        // фон — мягкий фейд-ин
+        binding.topicsBackground.apply {
+            alpha = 0f
+            animate()
+                .alpha(1f)
+                .setDuration(200)
+                .start()
+        }
+
+        // контент (хедер + список + кнопки) — легкий слайд вверх + фейд-ин
+        val contentViews = listOf(
+            binding.header,
+            binding.categoriesScroll,
+            binding.bottomButtons
+        )
+
+        contentViews.forEach { view ->
+            view.alpha = 0f
+            view.translationY = 40f
+            view.animate()
+                .alpha(1f)
+                .translationY(0f)
+                .setDuration(200)
+                .start()
+        }
+    }
+
+    private fun hideTopicsMenu() {
+        val root = binding.rootTopics
+        if (root.visibility != View.VISIBLE) return
+
+        // фон — фейд-аут
+        binding.topicsBackground.animate()
+            .alpha(0f)
+            .setDuration(200)
+            .start()
+
+        val contentViews = listOf(
+            binding.header,
+            binding.categoriesScroll,
+            binding.bottomButtons
+        )
+
+        var finished = 0
+        val total = contentViews.size
+
+        // контент — фейд-аут + слайд вниз
+        contentViews.forEach { view ->
+            view.animate()
+                .alpha(0f)
+                .translationY(40f)
+                .setDuration(200)
+                .withEndAction {
+                    finished++
+                    if (finished == total) {
+                        // полностью скрываем оверлей после анимации
+                        root.visibility = View.GONE
+
+                        // сбрасываем стейты, чтобы при следующем показе всё было ок
+                        contentViews.forEach { v ->
+                            v.alpha = 1f
+                            v.translationY = 0f
+                        }
+                        binding.topicsBackground.alpha = 1f
+                    }
+                }
+                .start()
+        }
+    }
 
     override fun onDestroyView() {
         _binding = null
