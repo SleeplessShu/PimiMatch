@@ -1,34 +1,16 @@
 package com.sleeplessdog.matchthewords.game.domain.models
 
-enum class WordCategory(val key: String) {
-    ANIMALS("animals"),
-    FOOD("food"),
-    FAMILY("family"),
-    CLOTHES("clothes"),
-    PLACES("places"),
-    TIME("time"),
-    TRANSPORT("transport"),
-    WORK("work"),
-    HOUSE("house"),
-    EDUCATION("education"),
-    NATURE("nature"),
-    EMOTIONS("emotions"),
-    COLORS("colors"),
-    NUMBERS("numbers"),
-    ACTIONS("actions"),
-    OBJECTS("objects"),
-    ABSTRACT("abstract"),
-    ENTERTAINMENT("entertainment"),
-    COMMUNICATION("communication"),
-    TRAVEL("travel"),
-    HEALTH("health"),
-    GENERAL_ADJECTIVES("general_adjectives"),
-    GENERAL_ADVERBS("general_adverbs"),
-    GENERAL_PRONOUNS("general_pronouns"),
-    MISCELLANEOUS("miscellaneous"),
-    BODY("body"),
-    PROGRAMMING("programming"),
-    DESIGN("design"),
-    RANDOM("random"),
-    USERS_DICTIONARY("users_dictionary");
-}
+import com.sleeplessdog.matchthewords.game.data.WordCategoryEntity
+
+data class WordCategory(
+    val key: String,
+    val titleKey: String,
+    val iconKey: String,
+    val isSelected: Boolean,
+    val isUser: Boolean,
+    val orderInBlock: Int
+)
+
+fun WordCategoryEntity.toDomain() = WordCategory(
+    key, titleKey, iconKey, isSelected, isUser, orderInBlock
+)

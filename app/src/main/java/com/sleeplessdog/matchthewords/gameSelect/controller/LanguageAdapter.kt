@@ -1,6 +1,5 @@
 package com.sleeplessdog.matchthewords.gameSelect.controller
 
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,7 +9,6 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
 import com.sleeplessdog.matchthewords.R
 import com.sleeplessdog.matchthewords.game.presentation.models.Language
-import kotlin.collections.filter
 
 class LanguageAdapter(
     private val onClick: (Language) -> Unit
@@ -45,7 +43,7 @@ class LanguageAdapter(
 
     inner class LangVH(view: View) : RecyclerView.ViewHolder(view) {
         private val root = view.findViewById<ConstraintLayout>(R.id.root)
-        private val flag = view.findViewById<ImageView>(R.id.ivFlag)
+        private val flag = view.findViewById<ImageView>(R.id.ivFlagUi)
         private val title = view.findViewById<TextView>(R.id.tvTitle)
 
         fun bind(lang: Language) {

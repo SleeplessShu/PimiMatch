@@ -1,80 +1,279 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/colorPrimary"
-    android:orientation="vertical"
-    tools:context="com.sleeplessdog.matchthewords.settings.presentation.SettingsFragment">
+    android:fillViewport="true">
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/leftBorder"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_begin="20dp" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/rightBorder"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_end="20dp" />
 
 
     <TextView
-        android:id="@+id/tvHeader"
-        style="@style/Header_ver2"
-        android:layout_width="match_parent"
+        android:id="@+id/tv_words_category"
+        style="@style/Text.H3.HeadlineSmall"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="@dimen/padding_medium"
-        android:layout_marginVertical="@dimen/padding_medium"
+        android:layout_marginTop="20dp"
         android:gravity="center"
-        android:text="@string/settings" />
+        android:text="@string/std_groups"
+        android:textColor="@color/white"
+        app:layout_constraintEnd_toEndOf="@id/rightBorder"
+        app:layout_constraintStart_toStartOf="@id/leftBorder"
+        app:layout_constraintTop_toBottomOf="@id/settingsHeader" />
 
-    <com.google.android.material.switchmaterial.SwitchMaterial
-        android:id="@+id/switcherTheme"
-        style="@style/ThemeSwitch"
-        android:layout_width="match_parent"
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/words_groups_chips"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:paddingHorizontal="16dp"
-        android:paddingVertical="20dp"
-        android:text="@string/switchDarkTheme"
-        android:thumbTintMode="screen" />
+        android:layout_marginTop="@dimen/space_m"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="@id/rightBorder"
+        app:layout_constraintStart_toStartOf="@id/leftBorder"
+        app:layout_constraintTop_toBottomOf="@id/tv_words_category">
 
-    <com.google.android.material.textview.MaterialTextView
-        android:id="@+id/b_share_app"
-        style="@style/SettingsStyle"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:drawableEnd="@drawable/ic_send"
-        android:paddingHorizontal="16dp"
-        android:paddingVertical="20dp"
-        android:text="@string/shareApp" />
-
-    <com.google.android.material.textview.MaterialTextView
-        android:id="@+id/b_mail_to_support"
-        style="@style/SettingsStyle"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:drawableEnd="@drawable/ic_email"
-        android:paddingHorizontal="16dp"
-        android:paddingVertical="20dp"
-        android:text="@string/support" />
-
-    <com.google.android.material.textview.MaterialTextView
-        android:id="@+id/b_database"
-        style="@style/SettingsStyle"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:drawableEnd="@drawable/ic_dice_5"
-        android:paddingHorizontal="16dp"
-        android:paddingVertical="20dp"
-        android:text="@string/dictionary_check" />
+        <com.google.android.flexbox.FlexboxLayout
+            android:id="@+id/cgFeaturedCategories"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            app:alignItems="center"
+            app:chipSpacingHorizontal="8dp"
+            app:chipSpacingVertical="8dp"
+            app:flexWrap="wrap"
+            app:justifyContent="center"
+            app:singleLine="false"
+            app:singleSelection="false" />
+    </LinearLayout>
 
     <TextView
-        android:id="@+id/tvDatabaseVersion"
-        style="@style/SettingsStyle"
+        android:id="@+id/btnShowAllCategories"
+        style="@style/Text.T4.TextSmall"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="14dp"
+        android:gravity="center"
+        android:text="@string/show_all"
+        android:textColor="@color/green_secondary"
+        app:layout_constraintEnd_toEndOf="@id/rightBorder"
+        app:layout_constraintStart_toStartOf="@id/leftBorder"
+        app:layout_constraintTop_toBottomOf="@id/words_groups_chips" />
+
+    <!-- Уровень языка -->
+    <TextView
+        android:id="@+id/tvLanguageLevel"
+        style="@style/Text.H3.HeadlineSmall"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:gravity="center"
+        android:text="@string/lang_level"
+        android:textColor="@color/white"
+        app:layout_constraintEnd_toEndOf="@id/rightBorder"
+        app:layout_constraintStart_toStartOf="@id/leftBorder"
+        app:layout_constraintTop_toBottomOf="@id/btnShowAllCategories" />
+
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/levelGroup"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        tools:text="version: dictionary_default" />
+        android:gravity="center"
+        android:spacing="4dp"
+        app:layout_constraintEnd_toEndOf="@id/rightBorder"
+        app:layout_constraintStart_toStartOf="@id/leftBorder"
+        app:layout_constraintTop_toBottomOf="@id/tvLanguageLevel"
+        app:selectionRequired="true"
+        app:singleSelection="false">
 
-    <ProgressBar
-        android:id="@+id/progressBar"
+        <com.google.android.material.chip.Chip
+            android:id="@+id/btnA1"
+            style="@style/LevelButton"
+            android:text="@string/level_a1" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/btnA2"
+            style="@style/LevelButton"
+            android:checkable="true"
+            android:text="@string/level_a2" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/btnB1"
+            style="@style/LevelButton"
+            android:text="@string/level_b1" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/btnB2"
+            style="@style/LevelButton"
+            android:text="@string/level_b2" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/btnC1"
+            style="@style/LevelButton"
+            android:text="@string/level_c1" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/btnC2"
+            style="@style/LevelButton"
+            android:text="@string/level_c2" />
+
+    </com.google.android.material.chip.ChipGroup>
+
+    <!-- Сложность игры -->
+    <TextView
+        android:id="@+id/game_difficult"
+        style="@style/Text.H3.HeadlineSmall"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginTop="44dp"
-        android:visibility="gone" />
+        android:layout_marginTop="20dp"
+        android:text="@string/game_difficult"
+        android:textColor="@color/white"
+        app:layout_constraintEnd_toEndOf="@id/rightBorder"
+        app:layout_constraintStart_toStartOf="@id/leftBorder"
+        app:layout_constraintTop_toBottomOf="@id/levelGroup" />
 
 
-</LinearLayout>
+    <include
+        android:id="@+id/cardEasy"
+        layout="@layout/view_difficulty_card_easy"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content" />
+
+    <include
+        android:id="@+id/cardMedium"
+        layout="@layout/view_difficulty_card_medium"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content" />
+
+    <include
+        android:id="@+id/cardHard"
+        layout="@layout/view_difficulty_card_hard"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content" />
+
+    <include
+        android:id="@+id/cardExpert"
+        layout="@layout/view_difficulty_card_expert"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content" />
+
+    <androidx.constraintlayout.helper.widget.Flow
+        android:id="@+id/diffFlow"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:constraint_referenced_ids="cardEasy,cardMedium,cardHard,cardExpert"
+        app:flow_horizontalAlign="center"
+        app:flow_horizontalGap="8dp"
+        app:flow_horizontalStyle="spread_inside"
+        app:flow_maxElementsWrap="2"
+        app:flow_verticalAlign="center"
+        app:flow_verticalGap="8dp"
+        app:flow_wrapMode="aligned"
+        app:layout_constraintEnd_toEndOf="@id/rightBorder"
+        app:layout_constraintStart_toStartOf="@id/leftBorder"
+        app:layout_constraintTop_toBottomOf="@id/game_difficult" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/languageSelectRoot"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="@id/rightBorder"
+        app:layout_constraintStart_toStartOf="@id/leftBorder"
+        app:layout_constraintTop_toBottomOf="@id/settingsHeader"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <ImageView
+            android:id="@+id/languagesBackground"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:src="@color/opaque"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:id="@+id/languagesBackgroundSolid"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:src="@color/black"
+            app:layout_constraintBottom_toBottomOf="@id/rv_LanguageList"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/tv_LanguageList"
+            style="@style/Text.H3.HeadlineSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:layout_marginBottom="12dp"
+            android:gravity="center"
+            android:text="@string/std_language"
+            android:textColor="@color/white"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_LanguageList"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_lang_panel"
+            android:clipToPadding="false"
+            android:overScrollMode="never"
+            android:paddingTop="24dp"
+            android:paddingBottom="12dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_LanguageList" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <TextView
+        android:id="@+id/settingsHeader"
+        style="@style/Text.H3.HeadlineSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginVertical="12dp"
+        android:text="@string/settings_menu"
+        android:textColor="@color/white"
+        app:layout_constraintEnd_toEndOf="@id/rightBorder"
+        app:layout_constraintStart_toStartOf="@id/leftBorder"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/ivFlagUi"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/empty"
+        android:src="@drawable/language_flag_spanish_s"
+        app:layout_constraintBottom_toBottomOf="@id/settingsHeader"
+        app:layout_constraintStart_toStartOf="@id/leftBorder"
+        app:layout_constraintTop_toTopOf="@id/settingsHeader" />
+
+    <ImageView
+        android:id="@+id/ivFlagStudy"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:contentDescription="@string/empty"
+        android:src="@drawable/language_flag_spanish_s"
+        app:layout_constraintBottom_toBottomOf="@id/settingsHeader"
+        app:layout_constraintEnd_toEndOf="@id/rightBorder"
+        app:layout_constraintTop_toTopOf="@id/settingsHeader" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

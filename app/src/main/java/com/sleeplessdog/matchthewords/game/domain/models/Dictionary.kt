@@ -5,7 +5,7 @@ import com.sleeplessdog.matchthewords.game.presentation.models.Language
 data class Dictionary(
     val id:Int,
     val level: LanguageLevel,
-    val category: WordCategory,
+    val category: WordsCategoriesList,
     val languageOrigin: Language,
     val languageTranslate: Language
 )

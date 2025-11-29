@@ -5,10 +5,10 @@ import com.sleeplessdog.matchthewords.game.presentation.models.DifficultLevel
 import com.sleeplessdog.matchthewords.game.presentation.models.GameType
 import com.sleeplessdog.matchthewords.utils.SupportFunctions
 
-class ProgressController(private val support: SupportFunctions) {
+class ProgressController() {
 
     fun stepsFor(difficult: DifficultLevel, type: GameType): Int {
-        val wordsInMatch = support.getGameDifficult(difficult)
+        val wordsInMatch = SupportFunctions.getGameDifficult(difficult)
         return when (type) {
             GameType.MATCH8 -> (wordsInMatch / MATCH8_STEP_SIZE).coerceAtLeast(1)
             GameType.TRUEorFALSE -> wordsInMatch

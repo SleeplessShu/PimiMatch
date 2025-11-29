@@ -1,33 +1,43 @@
 package com.sleeplessdog.matchthewords.game.data.repositories
 
+import android.util.Log
 import com.sleeplessdog.matchthewords.game.data.WordEntity
 import com.sleeplessdog.matchthewords.game.data.database.WordDao
 import com.sleeplessdog.matchthewords.game.domain.models.LanguageLevel
-import com.sleeplessdog.matchthewords.game.domain.models.WordCategory
+import com.sleeplessdog.matchthewords.game.domain.models.WordsCategoriesList
 
 class WordsDatabase(private val wordDao: WordDao){
 
     suspend fun getWordsPack(
-        level: LanguageLevel,
+        levels: Set<LanguageLevel>,
         wordsNeeded: Int,
-        category: WordCategory
+        categories: Set<WordsCategoriesList>
     ): List<WordEntity> {
+        Log.d("DEBUG", "getWordsPack: ${levels}  $categories")
+        val isAnyLevel = levels.isEmpty()
+        val isAnyCategory = categories.isEmpty()
 
-        val isAnyCategory = category == WordCategory.RANDOM
-        val isAnyLevel = level == LanguageLevel.RANDOM
+        val levelNames = levels.map { it.name }
+        val categoryNames = categories.map { it.key }
 
         val fromDb: List<WordEntity> = when {
-            isAnyCategory && isAnyLevel -> wordDao.getAny(wordsNeeded)
+            isAnyCategory && isAnyLevel ->
+                wordDao.getAny(wordsNeeded)
 
-            isAnyCategory -> wordDao.getAllCategoriesByLevel(level.name)
+            isAnyCategory ->
+                wordDao.getAllCategoriesByLevels(levelNames)
 
-            isAnyLevel -> wordDao.getByCategoryAllLevels(category.name)
+            isAnyLevel ->
+                wordDao.getByCategoriesAllLevels(categoryNames)
 
-            else -> wordDao.getByCategoryAndLevel(category.name, level.name)
+            else ->
+                wordDao.getByCategoriesAndLevels(categoryNames, levelNames)
         }
-
         return adaptForConditions(fromDb, wordsNeeded)
+
     }
+
+
 
     private suspend fun getRandom(wordsNeeded: Int): List<WordEntity> =
         wordDao.getRandom(wordsNeeded)

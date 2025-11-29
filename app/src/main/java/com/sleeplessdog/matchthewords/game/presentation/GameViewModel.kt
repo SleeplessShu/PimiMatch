@@ -2,14 +2,17 @@ package com.sleeplessdog.matchthewords.game.presentation
 
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sleeplessdog.matchthewords.game.data.repositories.AppPrefs
 import com.sleeplessdog.matchthewords.game.domain.api.ScoreInteractor
 import com.sleeplessdog.matchthewords.game.domain.interactors.WordsController
 import com.sleeplessdog.matchthewords.game.domain.models.LanguageLevel
-import com.sleeplessdog.matchthewords.game.domain.models.WordCategory
+import com.sleeplessdog.matchthewords.game.domain.models.WordsCategoriesList
+import com.sleeplessdog.matchthewords.game.domain.usecase.GetSelectedCategoriesUC
 import com.sleeplessdog.matchthewords.game.presentation.interfaces.GameEvent
 import com.sleeplessdog.matchthewords.game.presentation.models.DifficultLevel
 import com.sleeplessdog.matchthewords.game.presentation.models.GameSettings
@@ -28,14 +31,15 @@ import kotlinx.coroutines.launch
 
 class GameViewModel(
     private val wordsController: WordsController,
-    private val supportFunctions: SupportFunctions,
     private val progressController: ProgressController,
     private val scoreInteractor: ScoreInteractor,
+    private val appPrefs: AppPrefs,
+    private val getSelectedCategoriesUC: GetSelectedCategoriesUC
 ) : ViewModel() {
 
     private val languages = Language.entries.toTypedArray()
     private val levels = LanguageLevel.entries.toTypedArray()
-    private val categories = WordCategory.entries.toTypedArray()
+    private val categories = WordsCategoriesList.entries.toTypedArray()
     private val difficult = DifficultLevel.entries.toTypedArray()
 
     // Верхнее состояние экрана игры
@@ -69,7 +73,7 @@ class GameViewModel(
     private var allPairs: List<Pair<Word, Word>> = emptyList()
 
     init {
-        onMatchSettings()
+        onGame()
     }
 
     // ------------ Game select ------------
@@ -81,9 +85,9 @@ class GameViewModel(
     // ------------ Match settings ------------
     fun switchLanguage1(isNext: Boolean) {
         val nextLanguage =
-            supportFunctions.switchItem(_gameSettings.value?.language1, languages, isNext)
+            SupportFunctions.switchItem(_gameSettings.value?.language1, languages, isNext)
         if (nextLanguage == _gameSettings.value?.language2) {
-            val adjustedLanguage = supportFunctions.switchItem(nextLanguage, languages, isNext)
+            val adjustedLanguage = SupportFunctions.switchItem(nextLanguage, languages, isNext)
             updateLanguage1(adjustedLanguage)
         } else {
             updateLanguage1(nextLanguage)
@@ -92,9 +96,9 @@ class GameViewModel(
 
     fun switchLanguage2(isNext: Boolean) {
         val nextLanguage =
-            supportFunctions.switchItem(_gameSettings.value?.language2, languages, isNext)
+            SupportFunctions.switchItem(_gameSettings.value?.language2, languages, isNext)
         if (nextLanguage == _gameSettings.value?.language1) {
-            val adjustedLanguage = supportFunctions.switchItem(nextLanguage, languages, isNext)
+            val adjustedLanguage = SupportFunctions.switchItem(nextLanguage, languages, isNext)
             updateLanguage2(adjustedLanguage)
         } else {
             updateLanguage2(nextLanguage)
@@ -102,20 +106,20 @@ class GameViewModel(
     }
 
     fun switchWordsLevel(isNext: Boolean) {
-        val nextLevel = supportFunctions.switchItem(_gameSettings.value?.level, levels, isNext)
-        updateLevel(nextLevel)
+//        val nextLevel = SupportFunctions.switchItem(_gameSettings.value?.level, levels, isNext)
+//        updateLevel(nextLevel)
     }
 
     fun switchDifficultLevel(isNext: Boolean) {
         val nextDifficult =
-            supportFunctions.switchItem(_gameSettings.value?.difficult, difficult, isNext)
+            SupportFunctions.switchItem(_gameSettings.value?.difficult, difficult, isNext)
         updateDifficult(nextDifficult)
     }
 
     fun switchWordsCategory(isNext: Boolean) {
-        val nextCategory =
-            supportFunctions.switchItem(_gameSettings.value?.category, categories, isNext)
-        updateCategory(nextCategory)
+//        val nextCategory =
+//            SupportFunctions.switchItem(_gameSettings.value?.category, categories, isNext)
+//        updateCategory(nextCategory)
     }
 
     fun updateLanguage1(newLanguage: Language) {
@@ -127,11 +131,11 @@ class GameViewModel(
     }
 
     fun updateLevel(newLevel: LanguageLevel) {
-        _gameSettings.value = _gameSettings.value?.copy(level = newLevel)
+//        _gameSettings.value = _gameSettings.value?.copy(level = newLevel)
     }
 
-    fun updateCategory(newCategory: WordCategory) {
-        _gameSettings.value = _gameSettings.value?.copy(category = newCategory)
+    fun updateCategory(newCategory: WordsCategoriesList) {
+//        _gameSettings.value = _gameSettings.value?.copy(category = newCategory)
     }
 
     fun updateDifficult(newDifficult: DifficultLevel) {
@@ -139,19 +143,62 @@ class GameViewModel(
     }
 
     // ------------ Навигация по экрану ------------
-    fun onMatchSettings() {
-        _gameState.value = _gameState.value?.copy(state = GameState.MATCH_SETTINGS)
+
+
+    private suspend fun prepareData() {
+        onLoading()
+
+        // 1. Загружаем выбранные категории
+        val selectedCategories = getSelectedCategoriesUC()
+
+        val enums: Set<WordsCategoriesList> = selectedCategories
+            .mapNotNull { cat ->
+                WordsCategoriesList.values().find { it.key == cat.key }
+            }
+            .toSet()
+
+        // 2. Читаем префы
+        val interfaceLang = appPrefs.getUiLanguage()
+        val studyLang = appPrefs.getStudyLanguage()
+        val difficultLevel = appPrefs.getDifficulty()
+        val wordsLevel = appPrefs.getLevels()
+
+        // 3. Обновляем настройки одним махом
+        _gameSettings.value = GameSettings(
+            language1 = interfaceLang,
+            language2 = studyLang,
+            difficult = difficultLevel,
+            level = wordsLevel,
+            category = enums
+        )
+
+        val settingsTest = _gameSettings.value
+        Log.d(
+            "DEBUG",
+            "prepareData: категории ${settingsTest?.category}, уровень слов ${settingsTest?.level}"
+        )
     }
+
+
 
     fun onLoading() {
         _gameState.value = _gameState.value?.copy(state = GameState.LOADING)
     }
 
     fun onGame() {
-        onLoading()
-        setupGameStats()
-        loadWordsFromDatabase {
+        viewModelScope.launch {
+            // шаг 1: подготовить настройки (здесь же подтянутся категории из БД)
+            prepareData()
+
+            // шаг 2: настроить "экономику" и прогресс
+            setupGameStats()
+
+            // шаг 3: загрузить слова
+            val ok = loadWordsFromDatabase()
+            if (!ok) return@launch
+
             _wordsPairs.value = allPairs
+
             handler.postDelayed({
                 _gameState.value = _gameState.value?.copy(state = GameState.GAME)
             }, TimeReactionConstants.LOADING)
@@ -231,26 +278,31 @@ class GameViewModel(
     }
 
     // ------------ Загрузка пар ------------
-    private fun loadWordsFromDatabase(onSuccess: () -> Unit) {
+    private suspend fun loadWordsFromDatabase(): Boolean {
         val wordsNeeded = when (_gameState.value!!.gameType) {
             GameType.WriteTheWord -> difficultLevel / 6
-            GameType.OneOfFour -> difficultLevel * 4
-            else -> difficultLevel
+            GameType.OneOfFour    -> difficultLevel * 4
+            else                  -> difficultLevel
         }
-        viewModelScope.launch {
-            val pairs = wordsController.getWordPairs(
-                _gameSettings.value?.language1 ?: Language.ENGLISH,
-                _gameSettings.value?.language2 ?: Language.SPANISH,
-                _gameSettings.value?.level ?: LanguageLevel.A1,
-                wordsNeeded,
-                _gameSettings.value?.category ?: WordCategory.RANDOM
-            )
-            if (pairs.isEmpty()) {
-                onGameEnd(); return@launch
-            }
-            allPairs = pairs
-            onSuccess()
+
+        val settings = _gameSettings.value ?: GameSettings()
+        Log.d("DEBUG", "loadWordsFromDatabase: ${settings.category} ${settings.level}")
+
+        val pairs = wordsController.getWordPairs(
+            settings.language1,
+            settings.language2,
+            settings.level,
+            wordsNeeded,
+            settings.category
+        )
+
+        if (pairs.isEmpty()) {
+            onGameEnd()
+            return false
         }
+
+        allPairs = pairs
+        return true
     }
 
     // ------------ Конец игры/сброс ------------
@@ -281,11 +333,11 @@ class GameViewModel(
     private fun setupGameStats() {
         score = 0
 
-        difficultLevel = supportFunctions.getGameDifficult(
+        difficultLevel = SupportFunctions.getGameDifficult(
             _gameSettings.value?.difficult ?: DifficultLevel.MEDIUM
         )
 
-        lives = supportFunctions.getLivesCount(
+        lives = SupportFunctions.getLivesCount(
             _gameSettings.value?.difficult ?: DifficultLevel.MEDIUM
         )
 
@@ -303,8 +355,8 @@ class GameViewModel(
         score = 0
 
         _wordsPairs.value = emptyList()
-        _gameState.value = _gameState.value?.copy(state = GameState.MATCH_SETTINGS) ?: MatchState(
-            state = GameState.MATCH_SETTINGS
+        _gameState.value = _gameState.value?.copy(state = GameState.GAME) ?: MatchState(
+            state = GameState.LOADING
         )
 
         currentStep = 0
@@ -314,9 +366,9 @@ class GameViewModel(
     fun resetAll() {
         resetStats()
         _gameSettings.value = GameSettings()
-        difficultLevel = supportFunctions.getGameDifficult(DifficultLevel.MEDIUM)
-        lives = supportFunctions.getLivesCount(DifficultLevel.MEDIUM)
-        _gameState.value = MatchState(state = GameState.MATCH_SETTINGS)
+        difficultLevel = SupportFunctions.getGameDifficult(DifficultLevel.MEDIUM)
+        lives = SupportFunctions.getLivesCount(DifficultLevel.MEDIUM)
+        _gameState.value = MatchState(state = GameState.GAME)
 
         progressSegments = progressController.stepsFor(DifficultLevel.MEDIUM, GameType.MATCH8)
         currentStep = 0

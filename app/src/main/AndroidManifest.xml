@@ -21,7 +21,7 @@
             android:screenOrientation="portrait"
             android:label="Crash log"
             android:exported="false"
-            android:theme="@style/Theme.AppCompat.DayNight.NoActionBar" />
+            android:theme="@style/Theme.Material3.Dark.NoActionBar" />
 
         <!-- Твоя основная activity -->
         <activity

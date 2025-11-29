@@ -4,21 +4,27 @@ import android.util.Log
 import com.sleeplessdog.matchthewords.game.data.WordEntity
 import com.sleeplessdog.matchthewords.game.data.repositories.WordsDatabase
 import com.sleeplessdog.matchthewords.game.domain.models.LanguageLevel
-import com.sleeplessdog.matchthewords.game.domain.models.WordCategory
+import com.sleeplessdog.matchthewords.game.domain.models.WordsCategoriesList
 import com.sleeplessdog.matchthewords.game.presentation.models.Language
 import com.sleeplessdog.matchthewords.game.presentation.models.SessionStats
 import com.sleeplessdog.matchthewords.game.presentation.models.Word
 
 class WordsController(private val repository: WordsDatabase) {
 
-     suspend fun getWordPairs(
+    suspend fun getWordPairs(
         language1: Language,
         language2: Language,
-        level: LanguageLevel,
+        levels: Set<LanguageLevel>,
         wordsNeeded: Int,
-        category: WordCategory
+        categories: Set<WordsCategoriesList>
     ): List<Pair<Word, Word>> {
-        val wordsList = repository.getWordsPack(level, wordsNeeded, category)
+        Log.d("DEBUG", "controller: $categories, $levels,  $wordsNeeded")
+        val wordsList = repository.getWordsPack(
+            levels = levels,
+            wordsNeeded = wordsNeeded,
+            categories = categories
+        )
+
         return wordsList.map { wordEntity ->
             toWordPair(wordEntity, language1, language2)
         }

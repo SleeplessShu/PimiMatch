@@ -1,7 +1,18 @@
 package com.sleeplessdog.matchthewords.utils
 
 
+import android.content.Context
+import android.content.res.Configuration
+import android.util.Log
+import android.view.ContextThemeWrapper
+import android.view.LayoutInflater
+import android.view.ViewGroup
+import androidx.appcompat.content.res.AppCompatResources
+import com.google.android.material.chip.Chip
+import com.sleeplessdog.matchthewords.R
+import com.sleeplessdog.matchthewords.game.presentation.models.CategoryUi
 import com.sleeplessdog.matchthewords.game.presentation.models.DifficultLevel
+import com.sleeplessdog.matchthewords.game.presentation.models.Language
 import com.sleeplessdog.matchthewords.game.presentation.models.Word
 import java.text.SimpleDateFormat
 import java.time.LocalDate
@@ -10,7 +21,7 @@ import java.util.Date
 import java.util.Locale
 import kotlin.random.Random
 
-class SupportFunctions() {
+object SupportFunctions {
     fun <T> switchItem(currentItem: T?, items: Array<T>, isNext: Boolean): T {
         val currentIndex = items.indexOf(currentItem).takeIf { it != -1 } ?: 0
         return if (isNext) {
@@ -52,5 +63,51 @@ class SupportFunctions() {
             DifficultLevel.HARD -> 2
             DifficultLevel.EXPERT -> 1
         }
+    }
+
+    fun Context.stringByName(name: String, uiLanguage: Language): String {
+        val localized = withLanguage(uiLanguage)
+        val resId = localized.resources.getIdentifier(name, "string", packageName)
+        return if (resId != 0) localized.getString(resId) else name
+    }
+
+
+    fun Context.drawableIdByName(name: String): Int {
+        val id = resources.getIdentifier(name, "drawable", packageName)
+        Log.e("DRAWABLE_RES", "Drawable not found for name = $name")
+        return if (id != 0) id else R.drawable.ic_category_miscellaneous
+    }
+
+    fun createCategoryChip(parent: ViewGroup, item: CategoryUi): Chip {
+        val ctx = parent.context
+        val chip = LayoutInflater.from(ctx)
+            .inflate(R.layout.view_category_chip, parent, false) as Chip
+
+        chip.text = item.title
+        chip.isCheckable = true
+        chip.tag = item.key
+
+        if (item.iconRes != 0) {
+            chip.chipIcon = AppCompatResources.getDrawable(ctx, item.iconRes)
+            chip.isChipIconVisible = true
+        } else {
+            chip.isChipIconVisible = false
+        }
+
+        return chip
+    }
+
+    fun Context.withLanguage(lang: Language): Context {
+        val locale = when (lang) {
+            Language.RUSSIAN -> Locale("ru")
+            Language.SPANISH -> Locale("es")
+            Language.ENGLISH -> Locale("en")
+            Language.FRENCH -> Locale("fr")
+            Language.GERMAN -> Locale("ge")
+        }
+
+        val config = Configuration(resources.configuration)
+        config.setLocale(locale)
+        return createConfigurationContext(config)
     }
 }

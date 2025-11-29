@@ -1,6 +1,5 @@
 package com.sleeplessdog.matchthewords.score.presentation
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -10,8 +9,7 @@ import com.sleeplessdog.matchthewords.utils.SupportFunctions
 
 
 class ScoreViewModel(
-    private val scoreInteractor: ScoreInteractor,
-    private val supportFunctions: SupportFunctions,
+    private val scoreInteractor: ScoreInteractor
 ) : ViewModel() {
     private val _scoreResults = MutableLiveData<List<GameResult>>()
     val scoreResults: LiveData<List<GameResult>> get() = _scoreResults
@@ -26,7 +24,7 @@ class ScoreViewModel(
             val updatedScoreList = databaseResponse.map { (date, score) ->
                 GameResult(
                     date = date,
-                    score = supportFunctions.getScoreAsString(score)
+                    score = SupportFunctions.getScoreAsString(score)
                 )
             }
             _scoreResults.postValue(updatedScoreList)

@@ -140,7 +140,6 @@
     <style name="Header_01">
 
 
-
         <!-- Текст -->
         <item name="android:gravity">center</item>
         <item name="android:fontFamily">@font/murs_gothic_wide_dark</item>
@@ -176,4 +175,161 @@
         <item name="android:textColor">?attr/colorOnSecondary</item>
         <item name="android:fontFamily">@font/murs_gothic_wide_dark</item>
     </style>
+
+
+    <!-- FONTS -->
+    <style name="Text.H1.DisplayLarge" parent="TextAppearance.Material3.DisplayLarge">
+        <item name="android:fontFamily">@font/murs_gothic_wide_dark</item>
+        <item name="android:textSize">62sp</item>
+        <item name="android:lineHeight">62sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <!-- H-2 Headline Large — 26/30 -->
+    <style name="Text.H2.HeadlineLarge" parent="TextAppearance.Material3.HeadlineLarge">
+        <item name="android:fontFamily">@font/murs_gothic_wide_dark</item>
+        <item name="android:textSize">26sp</item>
+        <item name="android:lineHeight">30sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <!-- H-3 Headline Small — 20/24 -->
+    <style name="Text.H3.HeadlineSmall" parent="TextAppearance.Material3.HeadlineSmall">
+        <item name="android:fontFamily">@font/murs_gothic_wide_dark</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:lineHeight">24sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <!-- ===== Titles / Body / Labels (Open Sans Bold) ===== -->
+
+    <!-- T-1 Title Large — 24/30 -->
+    <style name="Text.T1.TitleLarge" parent="TextAppearance.Material3.TitleLarge">
+        <item name="android:fontFamily">@font/open_sans_bold</item>
+        <item name="android:textSize">24sp</item>
+        <item name="android:lineHeight">30sp</item>
+    </style>
+
+    <!-- T-2 Title Small — 20/24 -->
+    <style name="Text.T2.TitleSmall" parent="TextAppearance.Material3.TitleMedium">
+        <item name="android:fontFamily">@font/open_sans_bold</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:lineHeight">24sp</item>
+    </style>
+
+    <!-- T-3 Text Large — 16/20 -->
+    <style name="Text.T3.TextLarge" parent="TextAppearance.Material3.BodyLarge">
+        <item name="android:fontFamily">@font/open_sans_bold</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:lineHeight">20sp</item>
+    </style>
+
+    <!-- T-4 Text Small — 14/20 -->
+    <style name="Text.T4.TextSmall" parent="TextAppearance.Material3.BodyMedium">
+        <item name="android:fontFamily">@font/open_sans_bold</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:lineHeight">20sp</item>
+        <item name="android:letterSpacing">0.00</item>
+    </style>
+
+    <!-- L-1 Label — 12/14 -->
+    <style name="Text.L1.Label" parent="TextAppearance.Material3.LabelLarge">
+        <item name="android:fontFamily">@font/open_sans_bold</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:lineHeight">14sp</item>
+    </style>
+
+    <!-- L-2 Label — 10/12 -->
+    <style name="Text.L2.Label" parent="TextAppearance.Material3.LabelSmall">
+        <item name="android:fontFamily">@font/open_sans_bold</item>
+        <item name="android:textSize">10sp</item>
+        <item name="android:lineHeight">12sp</item>
+    </style>
+
+    <style name="Card.Difficulty" parent="Widget.Material3.CardView.Elevated">
+        <item name="cardBackgroundColor">@color/selector_options_button_bg</item>
+        <item name="textFillColor">@color/selector_options_button_text</item>
+        <item name="iconTint">@color/selector_options_button_ic</item>
+        <item name="checkedIcon">@null</item>
+        <item name="cardElevation">0dp</item>
+        <item name="shapeAppearance">@style/Shape.R16</item>
+        <item name="rippleColor">@color/white</item>
+    </style>
+
+    <style name="Chip.Dark" parent="Widget.Material3.Chip.Assist">
+        <item name="chipBackgroundColor">@color/dark_gray</item>
+        <item name="chipStrokeColor">@android:color/transparent</item>
+        <item name="chipIconTint">@color/white</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="shapeAppearance">@style/Shape.RoundedFull</item>
+        <item name="rippleColor">@color/white</item>
+        <item name="iconStartPadding">8dp</item>
+        <item name="textStartPadding">4dp</item>
+        <item name="textEndPadding">8dp</item>
+    </style>
+
+    <style name="Shape.R16" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">16dp</item>
+    </style>
+
+    <style name="Shape.RoundedFull" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+
+    <style name="LevelButton" parent="Widget.MaterialComponents.Chip.Choice">
+        <!-- размеры -->
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">40dp</item>
+        <item name="chipMinHeight">40dp</item>
+
+        <!-- скругление -->
+        <item name="chipCornerRadius">32dp</item>
+
+        <!-- фон: селектор с checked -->
+        <item name="chipBackgroundColor">@color/selector_options_button_bg</item>
+
+        <!-- без обводки -->
+        <item name="chipStrokeWidth">0dp</item>
+        <item name="chipStrokeColor">@android:color/transparent</item>
+
+        <!-- текст -->
+        <item name="android:textAppearance">@style/Text.T3.TextLarge</item>
+        <item name="android:textColor">@color/selector_options_button_text</item>
+
+        <!-- иконки не нужны -->
+        <item name="checkedIconVisible">false</item>
+        <item name="chipIconVisible">false</item>
+
+        <!-- отступы внутри -->
+        <item name="android:paddingStart">12dp</item>
+        <item name="android:paddingEnd">12dp</item>
+
+        <!-- ripple -->
+        <item name="rippleColor">@color/white</item>
+    </style>
+
+
+    <style name="LevelButton.CheckedStyle" parent="">
+        <item name="backgroundTint">@color/green_secondary</item>
+    </style>
+
+    <style name="Chip.Category" parent="Widget.Material3.Chip.Filter">
+        <item name="chipBackgroundColor">@color/selector_options_button_bg</item>
+        <item name="chipIconTint">@color/selector_options_button_text</item>
+        <item name="android:textColor">@color/selector_options_button_text</item>
+        <item name="rippleColor">@color/white</item>
+        <item name="shapeAppearance">@style/Shape.RoundedFull</item>
+        <item name="chipStrokeColor">@android:color/transparent</item>
+        <item name="iconStartPadding">12dp</item>
+        <item name="textStartPadding">4dp</item>
+        <item name="textEndPadding">12dp</item>
+        <item name="android:checkable">true</item>
+        <item name="checkedIconVisible">false</item>
+        <item name="chipMinHeight">44dp</item>
+    </style>
+
+
 </resources>

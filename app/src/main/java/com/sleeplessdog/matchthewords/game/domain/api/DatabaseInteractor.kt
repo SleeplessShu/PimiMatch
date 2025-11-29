@@ -2,7 +2,7 @@ package com.sleeplessdog.matchthewords.game.domain.api
 
 import com.sleeplessdog.matchthewords.game.data.WordEntity
 import com.sleeplessdog.matchthewords.game.domain.models.LanguageLevel
-import com.sleeplessdog.matchthewords.game.domain.models.WordCategory
+import com.sleeplessdog.matchthewords.game.domain.models.WordsCategoriesList
 import com.sleeplessdog.matchthewords.game.presentation.models.Language
 
 
@@ -12,7 +12,7 @@ interface DatabaseInteractor {
         language2: Language,
         level: LanguageLevel,
         difficultLevel: Int,
-        category: WordCategory
+        category: WordsCategoriesList
     ): List<WordEntity>
 
     suspend fun updateWord(wordEntity: WordEntity)
