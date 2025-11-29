@@ -91,7 +91,6 @@ class TrueOrFalseFragment : Fragment(R.layout.game_true_or_false) {
             when (e.actionMasked) {
                 MotionEvent.ACTION_DOWN -> b.applyState(TOFButtonState.PRESSED)
                 MotionEvent.ACTION_CANCEL, MotionEvent.ACTION_UP -> {
-                    // если не зафиксировали ответ — вернём DEFAULT
                     if (!isLocked) b.applyState(TOFButtonState.DEFAULT)
                 }
             }

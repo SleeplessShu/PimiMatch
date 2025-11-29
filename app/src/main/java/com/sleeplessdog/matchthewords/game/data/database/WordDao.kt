@@ -9,32 +9,39 @@ import com.sleeplessdog.matchthewords.game.data.WordEntity
 @Dao
 interface WordDao {
 
-    // 1) Конкретная категория И конкретный уровень (без лимита), в случайном порядке
+    // 1) Конкретные категории И конкретные уровни (множественные значения), случайный порядок
     @Query("""
         SELECT * FROM words
-        WHERE category = :category COLLATE NOCASE
-          AND level    = :level    COLLATE NOCASE
+        WHERE category IN (:categories) COLLATE NOCASE
+          AND level    IN (:levels)    COLLATE NOCASE
         ORDER BY RANDOM()
     """)
-    suspend fun getByCategoryAndLevel(category: String, level: String): List<WordEntity>
+    suspend fun getByCategoriesAndLevels(
+        categories: List<String>,
+        levels: List<String>
+    ): List<WordEntity>
 
-    // 2) Конкретная категория И ЛЮБОЙ уровень (все уровни), в случайном порядке
+    // 2) Конкретные категории И ЛЮБОЙ уровень (все уровни), случайный порядок
     @Query("""
         SELECT * FROM words
-        WHERE category = :category COLLATE NOCASE
+        WHERE category IN (:categories) COLLATE NOCASE
         ORDER BY RANDOM()
     """)
-    suspend fun getByCategoryAllLevels(category: String): List<WordEntity>
+    suspend fun getByCategoriesAllLevels(
+        categories: List<String>
+    ): List<WordEntity>
 
-    // 3) ЛЮБАЯ категория И конкретный уровень (все категории), в случайном порядке
+    // 3) ЛЮБАЯ категория И конкретные уровни (все категории), случайный порядок
     @Query("""
         SELECT * FROM words
-        WHERE level = :level COLLATE NOCASE
+        WHERE level IN (:levels) COLLATE NOCASE
         ORDER BY RANDOM()
     """)
-    suspend fun getAllCategoriesByLevel(level: String): List<WordEntity>
+    suspend fun getAllCategoriesByLevels(
+        levels: List<String>
+    ): List<WordEntity>
 
-    // 4) ЛЮБАЯ категория И ЛЮБОЙ уровень — конкретное количество, в случайном порядке
+    // 4) ЛЮБАЯ категория И ЛЮБОЙ уровень — конкретное количество, случайный порядок
     @Query("""
         SELECT * FROM words
         ORDER BY RANDOM()
@@ -42,7 +49,6 @@ interface WordDao {
     """)
     suspend fun getAny(limit: Int): List<WordEntity>
 
-    // Дополнительно: рандом из любых (если где-то уже используется)
     @Query("SELECT * FROM words ORDER BY RANDOM() LIMIT :wordsNeeded")
     suspend fun getRandom(wordsNeeded: Int): List<WordEntity>
 

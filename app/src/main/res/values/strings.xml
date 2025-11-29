@@ -1,59 +1,28 @@
 <resources>
     <!-- TITLES -->
+    <!-- TITLES -->
     <string name="title_application_name">PimiMatch</string>
+    <string name="app_name">Pimi</string>
 
-    <string name="state_title_game">Game</string>
-    <string name="state_title_settings">Options</string>
-    <string name="state_title_loading">Loading...</string>
-    <string name="state_title_result">Score</string>
-    <string name="state_title_match_settings">Match settings</string>
+    <string name="state_title_game">Игра</string>
+    <string name="state_title_settings">Настройки</string>
+    <string name="state_title_loading">Загрузка...</string>
+    <string name="state_title_result">Очки</string>
+    <string name="state_title_match_settings">Настройки матча</string>
 
 
     <string name="empty">     </string>
 
     <!-- endgame fragment -->
-    <string name="end_game_phrase_win">Victory!</string>
-    <string name="end_game_phrase_loose">Fail!</string>
+    <string name="end_game_phrase_win">Победа!</string>
+    <string name="end_game_phrase_loose">Провал!</string>
     <string name="score_text">Счёт %d очков</string>
 
     <string name="button_text_start_game">New Game</string>
     <string name="button_text_new_game">NEW_GAME</string>
-    <string name="button_text_restart_round">Restart</string>
-    <string name="button_to_menu">Return to menu</string>
+    <string name="button_text_restart_round">Перезапуск</string>
+    <string name="button_to_menu">Назад в меню</string>
 
-    <!--LINKS-->
-    <string name="linkToAgreement">https://yandex.ru/legal/practicum_offer/</string>
-    <string name="linkToAndroidCourse">https://practicum.yandex.ru/android-developer/</string>
-    <string name="supportEmail">di.burmistrov@yandex.ru</string>
-    <!--HINTS-->
-    <string name="hint_Search">Поиск</string>
-
-    <!--Messeges-->
-
-    <string name="something_went_wrong">something_went_wrong</string>
-    <string name="nothing_found">Ничего не нашлось</string>
-    <string name="network_error1">Проблемы со связью\n\nЗагрузка не удалась. Проверьте подключение к интернету</string>
-    <string name="network_error2">Загрузка не удалась. Проверьте подключение к интернету</string>
-    <string name="network_error3">Возникла неизвестная проблема. Повторите попытку позднее</string>
-
-
-    <!--Player-->
-    <string name="sDuration">Длительность</string>
-    <string name="sAlbum">Альбом</string>
-    <string name="sYear">Год</string>
-    <string name="sGenre">Жанр</string>
-    <string name="sCountry">Страна</string>
-
-    <!--Mediateka-->
-    <string name="noPlaylists">Вы не создали\nни одного плейлиста</string>
-    <string name="newPlaylists">Новый плейлист</string>
-    <string name="emptyMediateka">Ваша медиатека пуста</string>
-    <string name="FavTracks">Избранные треки</string>
-    <string name="FavPlaylists">Плейлисты</string>
-
-
-    <!--basic things-->
-    <string name="app_name">Pimi</string>
 
     <!--games select fragment-->
     <string name="select_game">Выбрать игру</string>
@@ -63,10 +32,10 @@
     <string name="WTW">Write\nThe Word</string>
 
     <!--bottom menu-->
-    <string name="games">Games</string>
-    <string name="score">Score</string>
-    <string name="settings">Settings</string>
-    <string name="words">Words</string>
+    <string name="games">Игры</string>
+    <string name="score">Прогресс</string>
+    <string name="settings">Настройки</string>
+    <string name="words">Словарь</string>
 
     <!--TOF-->
     <string name="tof_yes">Да</string>
@@ -76,12 +45,72 @@
 
 
     <!--settings menu-->
+    <string name="settings_menu">Настройки</string>
     <string name="switchDarkTheme">Dark theme</string>
     <string name="shareApp">Share App</string>
     <string name="support">Mail to support</string>
     <string name="dictionary_check">Check for dictionary updates</string>
+    <string name="int_language">Язык интерфейса</string>
+    <string name="std_language">Изучаемый язык</string>
+    <string name="std_groups">Изучаемые группы</string>
+    <string name="show_all">Показать все</string>
+    <string name="lang_level">Уровень языка</string>
+    <string name="level_a1">A1</string>
+    <string name="level_a2">A2</string>
+    <string name="level_b1">B1</string>
+    <string name="level_b2">B2</string>
+    <string name="level_c1">C1</string>
+    <string name="level_c2">C2</string>
+    <string name="game_difficult">Сложность игры</string>
+    <!-- названия уровней сложности игры -->
+    <string name="difficulty_easy">Лёгкий</string>
+    <string name="difficulty_medium">Средний</string>
+    <string name="difficulty_hard">Сложный</string>
+    <string name="difficulty_expert">Эксперт</string>
 
+    <!-- количество слов -->
+    <string name="difficulty_easy_words">6 слов</string>
+    <string name="difficulty_medium_words">12 слов</string>
+    <string name="difficulty_hard_words">24 слова</string>
+    <string name="difficulty_expert_words">32 слова</string>
 
+    <!--группы слов боттомшит-->>
+    <string name="categories_all_title">Категории слов</string>
+    <string name="categories_user_section">Мои категории</string>
+    <string name="categories_default_section">Стандартные</string>
+    <string name="cancel">Отмена</string>
+    <string name="save">Сохранить</string>
 
     <string name="game_name">Games name</string>
+
+
+    <string name="cat_animals">Животные</string>
+    <string name="cat_food">Еда</string>
+    <string name="cat_family">Семья</string>
+    <string name="cat_clothes">Одежда</string>
+    <string name="cat_places">Места</string>
+    <string name="cat_time">Время</string>
+    <string name="cat_transport">Транспорт</string>
+    <string name="cat_work">Работа</string>
+    <string name="cat_house">Дом</string>
+    <string name="cat_education">Образование</string>
+    <string name="cat_nature">Природа</string>
+    <string name="cat_emotions">Эмоции</string>
+    <string name="cat_colors">Цвета</string>
+    <string name="cat_numbers">Числа</string>
+    <string name="cat_actions">Действия</string>
+    <string name="cat_objects">Предметы</string>
+    <string name="cat_abstract">Абстрактные понятия</string>
+    <string name="cat_entertainment">Развлечения</string>
+    <string name="cat_communication">Коммуникация</string>
+    <string name="cat_travel">Путешествия</string>
+    <string name="cat_health">Здоровье</string>
+    <string name="cat_adjectives">Прилагательные</string>
+    <string name="cat_adverbs">Наречия</string>
+    <string name="cat_pronouns">Местоимения</string>
+    <string name="cat_miscellaneous">Разное</string>
+    <string name="cat_body">Части тела</string>
+    <string name="cat_programming">Программирование</string>
+    <string name="cat_design">Дизайн</string>
+    <string name="cat_random">Случайно</string>
 </resources>

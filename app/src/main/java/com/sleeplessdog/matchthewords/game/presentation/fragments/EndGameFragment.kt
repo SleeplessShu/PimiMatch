@@ -42,7 +42,7 @@ class EndGameFragment : Fragment(R.layout.end_game_fragment) {
 
 
         binding.bNewGame.setOnClickListener {
-            parentViewModel.onMatchSettings()
+            parentViewModel.onGame()
         }
         binding.bRestart.setOnClickListener {
             parentViewModel.restartGame()

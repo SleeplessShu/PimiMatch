@@ -6,5 +6,5 @@ enum class LanguageLevel {
     B1,
     B2,
     C1,
-    RANDOM
+    C2,
 }

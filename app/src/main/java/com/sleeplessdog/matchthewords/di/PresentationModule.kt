@@ -4,8 +4,9 @@ import android.os.Handler
 import android.os.Looper
 import com.sleeplessdog.matchthewords.game.data.repositories.AppPrefs
 import com.sleeplessdog.matchthewords.game.data.repositories.AppPrefsImpl
-import com.sleeplessdog.matchthewords.game.domain.api.ScoreInteractor
 import com.sleeplessdog.matchthewords.game.presentation.GameViewModel
+import com.sleeplessdog.matchthewords.game.presentation.fragments.SettingsViewModel
+import com.sleeplessdog.matchthewords.game.presentation.holders.CategoriesBottomSheet
 import com.sleeplessdog.matchthewords.game.presentation.ingameFragments.OneOfFourViewModel
 import com.sleeplessdog.matchthewords.game.presentation.ingameFragments.TrueOrFalseViewModel
 import com.sleeplessdog.matchthewords.game.presentation.ingameFragments.WordsMatchingViewModel
@@ -14,9 +15,8 @@ import com.sleeplessdog.matchthewords.game.presentation.parentControllers.Progre
 import com.sleeplessdog.matchthewords.gameSelect.presentation.GameSelectViewModel
 import com.sleeplessdog.matchthewords.score.presentation.ScoreViewModel
 import com.sleeplessdog.matchthewords.settings.presentation.DatabaseViewModel
-import com.sleeplessdog.matchthewords.settings.presentation.SettingsViewModel
 import com.sleeplessdog.matchthewords.utils.ShuffleFunctions
-import com.sleeplessdog.matchthewords.utils.SupportFunctions
+import org.koin.android.ext.koin.androidApplication
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 
@@ -25,20 +25,23 @@ val presentationModule = module {
     factory<Handler> {
         Handler(Looper.getMainLooper())
     }
+
     viewModel {
-        SettingsViewModel(get(), get())
+        GameSelectViewModel(get())
     }
 
     viewModel {
-        GameSelectViewModel( get() )
+        GameViewModel(
+            wordsController = get(),
+            progressController = get(),
+            scoreInteractor = get(),
+            appPrefs = get(),
+            getSelectedCategoriesUC = get()
+        )
     }
 
     viewModel {
-        GameViewModel( get(), get(), get(), get() )
-    }
-
-    viewModel {
-        ScoreViewModel(get(), get())
+        ScoreViewModel(get())
     }
 
     viewModel() {
@@ -61,11 +64,23 @@ val presentationModule = module {
         WordsMatchingViewModel(get())
     }
 
-    single<AppPrefs> { AppPrefsImpl(get()) }
+    viewModel {
+        SettingsViewModel(
+            observeFeaturedUC = get(),
+            observeAllGroupedUC = get(),
+            toggleUC = get(),
+            saveSelectionUC = get(),
+            createUserUC = get(),
+            app = androidApplication(),
+            appPrefs = get()
+        )
+    }
 
-    single { SupportFunctions() }
+    single { CategoriesBottomSheet()}
+
+    single<AppPrefs> { AppPrefsImpl(get()) }
 
     single { ShuffleFunctions() }
 
-    single { ProgressController( get() ) }
+    single { ProgressController() }
 }

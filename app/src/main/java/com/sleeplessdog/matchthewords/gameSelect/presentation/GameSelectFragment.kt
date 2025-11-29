@@ -45,11 +45,8 @@ class GameSelectFragment : Fragment() {
 
     private fun setupLanguageList() {
         langAdapter = LanguageAdapter { picked ->
-            // говорим VM
             viewModel.onLanguagePicked(picked)
-            // подсветка
             langAdapter.setSelected(picked)
-            // закрыть с задержкой
             binding.rvLanguages.postDelayed({
                 toggleLanguages(false)
             }, 150)

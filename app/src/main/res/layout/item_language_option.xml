@@ -14,7 +14,7 @@
     >
 
     <ImageView
-        android:id="@+id/ivFlag"
+        android:id="@+id/ivFlagUi"
         android:src="@drawable/language_flag_spanish_s"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -36,9 +36,9 @@
         android:letterSpacing="0.00"
         android:textColor="@color/white"
         android:fontFamily="@font/open_sans_bold"
-        app:layout_constraintStart_toEndOf="@id/ivFlag"
-        app:layout_constraintTop_toTopOf="@id/ivFlag"
-        app:layout_constraintBottom_toBottomOf="@id/ivFlag"
+        app:layout_constraintStart_toEndOf="@id/ivFlagUi"
+        app:layout_constraintTop_toTopOf="@id/ivFlagUi"
+        app:layout_constraintBottom_toBottomOf="@id/ivFlagUi"
        />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

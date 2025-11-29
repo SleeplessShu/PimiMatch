@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/settingsFragment"
-        android:name="com.sleeplessdog.matchthewords.settings.presentation.SettingsFragment"
+        android:name="com.sleeplessdog.matchthewords.game.presentation.fragments.SettingsFragment"
         android:label="settings_fragment"
         tools:layout="@layout/settings_fragment" />
 

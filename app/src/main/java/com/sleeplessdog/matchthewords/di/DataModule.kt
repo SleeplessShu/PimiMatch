@@ -7,10 +7,20 @@ import androidx.room.Room
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.storage.FirebaseStorage
 import com.sleeplessdog.matchthewords.game.data.database.AppDatabase
+import com.sleeplessdog.matchthewords.game.data.database.WordCategoryDao
 import com.sleeplessdog.matchthewords.game.data.database.resolveAssetDatabase
 import com.sleeplessdog.matchthewords.game.data.repositories.WordsDatabase
 import com.sleeplessdog.matchthewords.game.data.repositories.ScoreRepositoryImpl
+import com.sleeplessdog.matchthewords.game.data.repositories.WordCategoriesRepositoryImpl
 import com.sleeplessdog.matchthewords.game.domain.repositories.ScoreRepository
+import com.sleeplessdog.matchthewords.game.domain.repositories.WordCategoriesRepository
+import com.sleeplessdog.matchthewords.game.domain.usecase.CreateUserCategoryUC
+import com.sleeplessdog.matchthewords.game.domain.usecase.DeleteUserCategoryUC
+import com.sleeplessdog.matchthewords.game.domain.usecase.GetSelectedCategoriesUC
+import com.sleeplessdog.matchthewords.game.domain.usecase.ObserveAllCategoriesGroupedUC
+import com.sleeplessdog.matchthewords.game.domain.usecase.ObserveFeaturedCategoriesUC
+import com.sleeplessdog.matchthewords.game.domain.usecase.SaveSelectionUC
+import com.sleeplessdog.matchthewords.game.domain.usecase.ToggleCategoryUC
 import com.sleeplessdog.matchthewords.server.data.ServerDateRepositoryImpl
 import com.sleeplessdog.matchthewords.server.domain.ServerDateRepository
 import com.sleeplessdog.matchthewords.server.domain.ServerDbInteractor
@@ -21,6 +31,7 @@ import com.sleeplessdog.matchthewords.settings.data.SharingRepositoryImpl
 import com.sleeplessdog.matchthewords.settings.domain.repositories.ExternalNavigatorRepository
 import com.sleeplessdog.matchthewords.settings.domain.repositories.SettingsRepository
 import com.sleeplessdog.matchthewords.settings.domain.repositories.SharingRepository
+import com.sleeplessdog.matchthewords.utils.AppDb
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
@@ -82,7 +93,7 @@ val dataModule = module {
         App.appContext.getSharedPreferences("ScoreHistory", Context.MODE_PRIVATE)
     }
     single<ScoreRepository> {
-        ScoreRepositoryImpl(get(named("scoreStore")), get())
+        ScoreRepositoryImpl(get(named("scoreStore")))
     }
 
     single<ServerDateRepository> {
@@ -92,5 +103,20 @@ val dataModule = module {
     single < ServerDbInteractor> {
         ServerDbInteractorImpl(get(), get())
     }
+
+    single { AppDb.build(get()) }
+    single<WordCategoryDao> {
+        get<AppDb>().wordCategoryDao()
+    }
+
+        single<WordCategoriesRepository> { WordCategoriesRepositoryImpl(get()) }
+
+        factory { ObserveFeaturedCategoriesUC(get()) }
+        factory { ObserveAllCategoriesGroupedUC(get()) }
+        factory { ToggleCategoryUC(get()) }
+        factory { SaveSelectionUC(get()) }
+        factory { CreateUserCategoryUC(get()) }
+        factory { DeleteUserCategoryUC(get()) }
+        factory { GetSelectedCategoriesUC(get()) }
 
 }

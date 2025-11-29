@@ -7,14 +7,13 @@ import com.sleeplessdog.matchthewords.game.domain.repositories.ScoreRepository
 import com.sleeplessdog.matchthewords.utils.SupportFunctions
 
 class ScoreRepositoryImpl(
-    private var sharedPreferences: SharedPreferences,
-    private val supportFunctions: SupportFunctions,
+    private var sharedPreferences: SharedPreferences
 ) : ScoreRepository {
 
     private val _allDaysResults = MutableLiveData<Map<String, Int>>()
 
     init {
-        _allDaysResults.value = supportFunctions.sortMapByDateDescending(sharedPreferences.all
+        _allDaysResults.value = SupportFunctions.sortMapByDateDescending(sharedPreferences.all
             .filterValues { it is Int }
             .mapValues { it.value as Int }
         )
@@ -22,7 +21,7 @@ class ScoreRepositoryImpl(
     }
 
     override fun updateTodaysResult(matchResult: Int) {
-        val currentDate = supportFunctions.getCurrentDate()
+        val currentDate = SupportFunctions.getCurrentDate()
         val currentResult = getTodaysResult()
         val newResult = currentResult + matchResult
 
@@ -32,11 +31,11 @@ class ScoreRepositoryImpl(
         val updatedMap = sharedPreferences.all
             .filterValues { it is Int }
             .mapValues { it.value as Int }
-        _allDaysResults.postValue(supportFunctions.sortMapByDateDescending(updatedMap))
+        _allDaysResults.postValue(SupportFunctions.sortMapByDateDescending(updatedMap))
     }
 
     override fun getTodaysResult(): Int {
-        val currentDate = supportFunctions.getCurrentDate()
+        val currentDate = SupportFunctions.getCurrentDate()
         return sharedPreferences.getInt(currentDate, 0)
     }
 
