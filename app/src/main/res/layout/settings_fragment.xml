@@ -2,8 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:fillViewport="true">
+    android:layout_height="match_parent">
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/leftBorder"
@@ -51,10 +50,11 @@
             android:layout_height="wrap_content"
             android:gravity="center_horizontal"
             app:alignItems="center"
-            app:chipSpacingHorizontal="8dp"
-            app:chipSpacingVertical="8dp"
+            app:dividerDrawableHorizontal="@drawable/divider_8dp"
+            app:dividerDrawableVertical="@drawable/divider_8dp"
             app:flexWrap="wrap"
             app:justifyContent="center"
+            app:showDivider="middle"
             app:singleLine="false"
             app:singleSelection="false" />
     </LinearLayout>
@@ -86,50 +86,57 @@
         app:layout_constraintStart_toStartOf="@id/leftBorder"
         app:layout_constraintTop_toBottomOf="@id/btnShowAllCategories" />
 
-    <com.google.android.material.chip.ChipGroup
-        android:id="@+id/levelGroup"
-        android:layout_width="wrap_content"
+    <androidx.constraintlayout.helper.widget.Flow
+        android:id="@+id/levelFlow"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:gravity="center"
-        android:spacing="4dp"
+        android:layout_marginTop="12dp"
+        app:constraint_referenced_ids="btnA1,btnA2,btnB1,btnB2,btnC1,btnC2"
+        app:flow_horizontalAlign="center"
+        app:flow_horizontalGap="8dp"
+        app:flow_horizontalStyle="packed"
+        app:flow_maxElementsWrap="4"
+        app:flow_verticalAlign="center"
+        app:flow_verticalGap="6dp"
+        app:flow_wrapMode="chain"
         app:layout_constraintEnd_toEndOf="@id/rightBorder"
         app:layout_constraintStart_toStartOf="@id/leftBorder"
-        app:layout_constraintTop_toBottomOf="@id/tvLanguageLevel"
-        app:selectionRequired="true"
-        app:singleSelection="false">
+        app:layout_constraintTop_toBottomOf="@id/tvLanguageLevel" />
 
-        <com.google.android.material.chip.Chip
-            android:id="@+id/btnA1"
-            style="@style/LevelButton"
-            android:text="@string/level_a1" />
+    <com.google.android.material.chip.Chip
+        android:id="@+id/btnA1"
+        style="@style/Settings.Level.Button"
+        android:text="@string/level_a1" />
 
-        <com.google.android.material.chip.Chip
-            android:id="@+id/btnA2"
-            style="@style/LevelButton"
-            android:checkable="true"
-            android:text="@string/level_a2" />
+    <com.google.android.material.chip.Chip
+        android:id="@+id/btnA2"
+        style="@style/Settings.Level.Button"
+        android:checkable="true"
+        android:text="@string/level_a2" />
 
-        <com.google.android.material.chip.Chip
-            android:id="@+id/btnB1"
-            style="@style/LevelButton"
-            android:text="@string/level_b1" />
+    <com.google.android.material.chip.Chip
+        android:id="@+id/btnB1"
+        style="@style/Settings.Level.Button"
+        android:text="@string/level_b1" />
 
-        <com.google.android.material.chip.Chip
-            android:id="@+id/btnB2"
-            style="@style/LevelButton"
-            android:text="@string/level_b2" />
+    <com.google.android.material.chip.Chip
+        android:id="@+id/btnB2"
+        style="@style/Settings.Level.Button"
+        android:checkable="true"
+        android:text="@string/level_b2" />
 
-        <com.google.android.material.chip.Chip
-            android:id="@+id/btnC1"
-            style="@style/LevelButton"
-            android:text="@string/level_c1" />
+    <com.google.android.material.chip.Chip
+        android:id="@+id/btnC1"
+        style="@style/Settings.Level.Button"
+        android:checkable="true"
+        android:text="@string/level_c1" />
 
-        <com.google.android.material.chip.Chip
-            android:id="@+id/btnC2"
-            style="@style/LevelButton"
-            android:text="@string/level_c2" />
+    <com.google.android.material.chip.Chip
+        android:id="@+id/btnC2"
+        style="@style/Settings.Level.Button"
+        android:checkable="true"
+        android:text="@string/level_c2" />
 
-    </com.google.android.material.chip.ChipGroup>
 
     <!-- Сложность игры -->
     <TextView
@@ -142,41 +149,18 @@
         android:textColor="@color/white"
         app:layout_constraintEnd_toEndOf="@id/rightBorder"
         app:layout_constraintStart_toStartOf="@id/leftBorder"
-        app:layout_constraintTop_toBottomOf="@id/levelGroup" />
+        app:layout_constraintTop_toBottomOf="@id/levelFlow" />
 
-
-    <include
-        android:id="@+id/cardEasy"
-        layout="@layout/view_difficulty_card_easy"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content" />
-
-    <include
-        android:id="@+id/cardMedium"
-        layout="@layout/view_difficulty_card_medium"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content" />
-
-    <include
-        android:id="@+id/cardHard"
-        layout="@layout/view_difficulty_card_hard"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content" />
-
-    <include
-        android:id="@+id/cardExpert"
-        layout="@layout/view_difficulty_card_expert"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content" />
 
     <androidx.constraintlayout.helper.widget.Flow
         android:id="@+id/diffFlow"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
         app:constraint_referenced_ids="cardEasy,cardMedium,cardHard,cardExpert"
         app:flow_horizontalAlign="center"
         app:flow_horizontalGap="8dp"
-        app:flow_horizontalStyle="spread_inside"
+        app:flow_horizontalStyle="packed"
         app:flow_maxElementsWrap="2"
         app:flow_verticalAlign="center"
         app:flow_verticalGap="8dp"
@@ -185,15 +169,32 @@
         app:layout_constraintStart_toStartOf="@id/leftBorder"
         app:layout_constraintTop_toBottomOf="@id/game_difficult" />
 
+    <include
+        android:id="@+id/cardEasy"
+        layout="@layout/item_difficulty_card" />
+
+    <include
+        android:id="@+id/cardMedium"
+        layout="@layout/item_difficulty_card" />
+
+    <include
+        android:id="@+id/cardHard"
+        layout="@layout/item_difficulty_card" />
+
+    <include
+        android:id="@+id/cardExpert"
+        layout="@layout/item_difficulty_card" />
+
+
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/languageSelectRoot"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="@id/rightBorder"
         app:layout_constraintStart_toStartOf="@id/leftBorder"
-        app:layout_constraintTop_toBottomOf="@id/settingsHeader"
-        app:layout_constraintBottom_toBottomOf="parent">
+        app:layout_constraintTop_toBottomOf="@id/settingsHeader">
 
         <ImageView
             android:id="@+id/languagesBackground"
@@ -245,7 +246,7 @@
 
     <TextView
         android:id="@+id/settingsHeader"
-        style="@style/Text.H3.HeadlineSmall"
+        style="@style/Text.H2.HeadlineLarge"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginVertical="12dp"
@@ -275,5 +276,129 @@
         app:layout_constraintBottom_toBottomOf="@id/settingsHeader"
         app:layout_constraintEnd_toEndOf="@id/rightBorder"
         app:layout_constraintTop_toTopOf="@id/settingsHeader" />
+
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/rootTopics"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone">
+
+        <ImageView
+            android:id="@+id/topicsBackground"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:src="@color/black"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+        <!-- Заголовок -->
+
+        <TextView
+            android:id="@+id/header"
+            style="@style/Text.H2.HeadlineLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/categories_all_title"
+            android:textColor="@color/white"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Прокручиваемая часть -->
+        <ScrollView
+            android:id="@+id/categoriesScroll"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:paddingTop="@dimen/space_l"
+            android:paddingBottom="@dimen/space_l"
+            app:layout_constraintBottom_toTopOf="@id/bottomButtons"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/header">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:orientation="vertical"
+                android:padding="@dimen/p_screen">
+
+                <TextView
+                    style="@style/Text.L1.Label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_m"
+                    android:text="@string/categories_user_section"
+                    android:textColor="@color/white" />
+
+                <com.google.android.flexbox.FlexboxLayout
+                    android:id="@+id/cgUserCategories"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_s"
+                    android:gravity="center_horizontal"
+                    app:alignItems="center"
+                    app:chipSpacingHorizontal="@dimen/space_m"
+                    app:chipSpacingVertical="@dimen/space_m"
+                    app:flexWrap="wrap"
+                    app:justifyContent="center" />
+
+                <TextView
+                    style="@style/Text.L1.Label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_l"
+                    android:text="@string/categories_default_section"
+                    android:textColor="@color/white" />
+
+                <com.google.android.flexbox.FlexboxLayout
+                    android:id="@+id/cgDefaultCategories"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_s"
+                    android:gravity="center_horizontal"
+                    app:alignItems="center"
+                    app:chipSpacingHorizontal="@dimen/space_m"
+                    app:chipSpacingVertical="@dimen/space_m"
+                    app:flexWrap="wrap"
+                    app:justifyContent="center" />
+
+            </LinearLayout>
+        </ScrollView>
+
+        <!-- Кнопки снизу, всегда видимые -->
+        <LinearLayout
+            android:id="@+id/bottomButtons"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="20dp"
+            android:layout_marginBottom="20dp"
+            android:gravity="end"
+            android:orientation="horizontal"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnCancel"
+                style="@style/button_settings"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/cancel" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSave"
+                style="@style/button_settings"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/space_m"
+                android:text="@string/save" />
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
