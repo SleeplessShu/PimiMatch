@@ -1,5 +1,6 @@
 package com.sleeplessdog.matchthewords.gameSelect.presentation
 
+import android.R.attr.mode
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -9,6 +10,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.sleeplessdog.matchthewords.R
 import com.sleeplessdog.matchthewords.databinding.GameSelectV2FragmentBinding
+import com.sleeplessdog.matchthewords.game.presentation.fragments.LanguageAdapterState
 import com.sleeplessdog.matchthewords.game.presentation.models.GameType
 import com.sleeplessdog.matchthewords.gameSelect.controller.LanguageAdapter
 import com.sleeplessdog.matchthewords.gameSelect.controller.toFlagLargeRes
@@ -45,7 +47,7 @@ class GameSelectFragment : Fragment() {
             viewModel.onLanguagePicked(picked)
             langAdapter.setSelected(picked)
             binding.rvLanguages.postDelayed({
-                toggleLanguages(false)
+                hideAllLanguageLists()
             }, 150)
         }
 
@@ -134,52 +136,114 @@ class GameSelectFragment : Fragment() {
 
     private fun setupLanguageButton() {
         binding.languageSelect.setOnClickListener {
-            toggleLanguages(!isLangShown)
+            showLanguages()
         }
         binding.languagesBackground.setOnClickListener {
-            toggleLanguages(false)
+            hideAllLanguageLists()
         }
     }
 
-    private fun toggleLanguages(show: Boolean) {
+    private fun showLanguages() {
+        val root = binding.languageSelectRoot
+        if (root.visibility == View.VISIBLE && root.alpha == 1f) {
+            hideAllLanguageLists()
+        } else {
+            root.visibility = View.VISIBLE
+            root.alpha = 0f
+            root.scaleY = 0f
+            root.pivotY = 0f
+            root.animate().alpha(1f).scaleY(1f).setDuration(200).start()
+        }
+
+
+                binding.tvLanguageList.setText(R.string.std_language)
+                val list = viewModel.availableLanguages.value ?: emptyList()
+                val selected = viewModel.studyLanguage.value
+                langAdapter.submit(list, selected)
+                selected?.let { langAdapter.setSelected(it) }
+
+
+        showBgIfNeeded()
+    }
+
+    private fun hideAllLanguageLists() {
+        val root = binding.languageSelectRoot
+
+        if (root.visibility == View.VISIBLE) {
+            root.animate().alpha(0f).scaleY(0f).setDuration(200)
+                .withEndAction { root.visibility = View.GONE }.start()
+        }
+        hideBg()
+    }
+
+    private fun showBgIfNeeded() {
         val bg = binding.languagesBackground
-        val rv = binding.rvLanguages
-
-        if (show) {
-            if (isLangShown) return
-            isLangShown = true
-
+        if (bg.visibility != View.VISIBLE) {
             bg.visibility = View.VISIBLE
             bg.alpha = 0f
             bg.animate().alpha(1f).setDuration(200).start()
+        }
 
-            rv.visibility = View.VISIBLE
-            rv.alpha = 0f
-            rv.scaleY = 0f
-            rv.pivotY = 0f
-            rv.animate()
-                .alpha(1f)
-                .scaleY(1f)
-                .setDuration(200)
+        val bgSolid = binding.languagesBackgroundSolid
+        if (bgSolid.visibility != View.VISIBLE) {
+            bgSolid.visibility = View.VISIBLE
+            bgSolid.alpha = 0f
+            bgSolid.animate().alpha(1f).setDuration(200).start()
+        }
+    }
+
+    private fun hideBg() {
+        val bg = binding.languagesBackground
+        if (bg.visibility == View.VISIBLE) {
+            bg.animate().alpha(0f).setDuration(200).withEndAction { bg.visibility = View.GONE }
                 .start()
-        } else {
-            if (!isLangShown) return
-            isLangShown = false
-
-            rv.animate()
-                .alpha(0f)
-                .scaleY(0f)
-                .setDuration(200)
-                .withEndAction { rv.visibility = View.GONE }
-                .start()
-
-            bg.animate()
-                .alpha(0f)
-                .setDuration(200)
-                .withEndAction { bg.visibility = View.GONE }
+        }
+        val bgSolid = binding.languagesBackgroundSolid
+        if (bgSolid.visibility == View.VISIBLE) {
+            bgSolid.animate().alpha(0f).setDuration(200).withEndAction { bgSolid.visibility = View.GONE }
                 .start()
         }
     }
+
+//    private fun toggleLanguages(show: Boolean) {
+//        val bg = binding.languagesBackground
+//        val rv = binding.rvLanguages
+//
+//        if (show) {
+//            if (isLangShown) return
+//            isLangShown = true
+//
+//            bg.visibility = View.VISIBLE
+//            bg.alpha = 0f
+//            bg.animate().alpha(1f).setDuration(200).start()
+//
+//            rv.visibility = View.VISIBLE
+//            rv.alpha = 0f
+//            rv.scaleY = 0f
+//            rv.pivotY = 0f
+//            rv.animate()
+//                .alpha(1f)
+//                .scaleY(1f)
+//                .setDuration(200)
+//                .start()
+//        } else {
+//            if (!isLangShown) return
+//            isLangShown = false
+//
+//            rv.animate()
+//                .alpha(0f)
+//                .scaleY(0f)
+//                .setDuration(200)
+//                .withEndAction { rv.visibility = View.GONE }
+//                .start()
+//
+//            bg.animate()
+//                .alpha(0f)
+//                .setDuration(200)
+//                .withEndAction { bg.visibility = View.GONE }
+//                .start()
+//        }
+//    }
 
     override fun onDestroyView() {
         super.onDestroyView()
