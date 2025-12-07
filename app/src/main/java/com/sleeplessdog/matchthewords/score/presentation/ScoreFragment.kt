@@ -31,7 +31,6 @@ class ScoreFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         setupUI()
         setupObservers()
-
     }
 
     private fun setupUI(){

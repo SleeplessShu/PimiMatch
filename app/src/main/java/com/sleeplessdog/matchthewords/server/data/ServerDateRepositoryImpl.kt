@@ -2,6 +2,7 @@ package com.sleeplessdog.matchthewords.server.data
 
 import android.content.SharedPreferences
 import com.sleeplessdog.matchthewords.server.domain.ServerDateRepository
+import com.sleeplessdog.matchthewords.utils.ConstantsPaths.KEY_DB_DATE
 
 class ServerDateRepositoryImpl(
     private val sharedPreferences: SharedPreferences
@@ -14,9 +15,4 @@ class ServerDateRepositoryImpl(
     override fun saveLocalDbDate(date: String) {
         sharedPreferences.edit().putString(KEY_DB_DATE, date).apply()
     }
-
-    private companion object {
-        const val KEY_DB_DATE = "local_db_date"
-    }
 }
-

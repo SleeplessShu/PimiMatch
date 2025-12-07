@@ -8,13 +8,13 @@ import android.graphics.RectF
 import android.util.AttributeSet
 import android.view.View
 import com.sleeplessdog.matchthewords.R
-import java.lang.Math.max
+import com.sleeplessdog.matchthewords.utils.ConstantsApp
+import com.sleeplessdog.matchthewords.utils.ConstantsApp.CORNER_DEFAULT
 import kotlin.math.floor
+import kotlin.math.max
 
 class SegmentedProgressBar @JvmOverloads constructor(
-    context: Context,
-    attrs: AttributeSet? = null,
-    defStyle: Int = 0
+    context: Context, attrs: AttributeSet? = null, defStyle: Int = 0
 ) : View(context, attrs, defStyle) {
 
     constructor(context: Context, segments: Int) : this(context) {
@@ -25,16 +25,16 @@ class SegmentedProgressBar @JvmOverloads constructor(
     enum class Mode { COUNT, FIXED_SIZE }
 
     private var mode = Mode.COUNT
-    private var segments = 10
-    private var minSegments = 1
-    private var maxSegments = 100
-    private var segmentWidth = dp(12f)
-    private var gap = dp(6f)
-    private var barHeight = dp(10f)
-    private var corner = barHeight / 2f
-    private var bgColor = 0xFF2F3234.toInt()
-    private var fgColor = 0xFFE8DFCB.toInt()
-    private var progress = 0f // 0..1
+    private var segments = ConstantsApp.DEFAULT_SEGMENTS
+    private var minSegments = ConstantsApp.MIN_SEGMENTS
+    private var maxSegments = ConstantsApp.MAX_SEGMENTS
+    private var segmentWidth = dp(ConstantsApp.DEFAULT_SEGMENT_DP)
+    private var gap = dp(ConstantsApp.DEFAULT_GAP_DP)
+    private var barHeight = dp(ConstantsApp.DEFAULT_BAR_HEIGHT_DP)
+    private var corner = barHeight / CORNER_DEFAULT
+    private var bgColor = ConstantsApp.BG_COLOR_DEFAULT
+    private var fgColor = ConstantsApp.FG_COLOR_DEFAULT
+    private var progress = ConstantsApp.DEFAULT_PROGRESS
 
     private val bgPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL }
     private val fgPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL }
@@ -42,17 +42,28 @@ class SegmentedProgressBar @JvmOverloads constructor(
 
     init {
         context.obtainStyledAttributes(attrs, R.styleable.SegmentedProgressBar).apply {
-            mode         = if (getInt(R.styleable.SegmentedProgressBar_spb_mode, 0) == 0) Mode.COUNT else Mode.FIXED_SIZE
-            segments     = getInt(R.styleable.SegmentedProgressBar_spb_segments, segments).coerceAtLeast(1)
-            segmentWidth = getDimension(R.styleable.SegmentedProgressBar_spb_segmentWidth, segmentWidth)
-            minSegments  = getInt(R.styleable.SegmentedProgressBar_spb_minSegments, minSegments).coerceAtLeast(1)
-            maxSegments  = getInt(R.styleable.SegmentedProgressBar_spb_maxSegments, maxSegments).coerceAtLeast(minSegments)
-            gap          = getDimension(R.styleable.SegmentedProgressBar_spb_gap, gap)
-            barHeight    = getDimension(R.styleable.SegmentedProgressBar_spb_height, barHeight)
-            corner       = getDimension(R.styleable.SegmentedProgressBar_spb_cornerRadius, corner)
-            bgColor      = getColor(R.styleable.SegmentedProgressBar_spb_bgColor, bgColor)
-            fgColor      = getColor(R.styleable.SegmentedProgressBar_spb_fgColor, fgColor)
-            progress     = getFloat(R.styleable.SegmentedProgressBar_spb_progress, progress)
+            mode = if (getInt(
+                    R.styleable.SegmentedProgressBar_spb_mode, 0
+                ) == 0
+            ) Mode.COUNT else Mode.FIXED_SIZE
+            segments =
+                getInt(R.styleable.SegmentedProgressBar_spb_segments, segments).coerceAtLeast(1)
+            segmentWidth =
+                getDimension(R.styleable.SegmentedProgressBar_spb_segmentWidth, segmentWidth)
+            minSegments =
+                getInt(R.styleable.SegmentedProgressBar_spb_minSegments, minSegments).coerceAtLeast(
+                    1
+                )
+            maxSegments =
+                getInt(R.styleable.SegmentedProgressBar_spb_maxSegments, maxSegments).coerceAtLeast(
+                    minSegments
+                )
+            gap = getDimension(R.styleable.SegmentedProgressBar_spb_gap, gap)
+            barHeight = getDimension(R.styleable.SegmentedProgressBar_spb_height, barHeight)
+            corner = getDimension(R.styleable.SegmentedProgressBar_spb_cornerRadius, corner)
+            bgColor = getColor(R.styleable.SegmentedProgressBar_spb_bgColor, bgColor)
+            fgColor = getColor(R.styleable.SegmentedProgressBar_spb_fgColor, fgColor)
+            progress = getFloat(R.styleable.SegmentedProgressBar_spb_progress, progress)
             recycle()
         }
         bgPaint.color = bgColor
@@ -71,7 +82,7 @@ class SegmentedProgressBar @JvmOverloads constructor(
 
     private fun recomputeSegmentsForFixedSize() {
         val avail = (width - paddingLeft - paddingRight).toFloat()
-        if (avail <= 0f) return
+        if (avail <= ConstantsApp.ZERO_SCALE) return
         val pack = segmentWidth + gap
         val count = floor((avail + gap) / pack).toInt() // "+ gap" чтобы хвост без лишнего пробела
         segments = count.coerceIn(minSegments, maxSegments)
@@ -104,7 +115,10 @@ class SegmentedProgressBar @JvmOverloads constructor(
         }
 
         // прогресс
-        val progInSegs = progress.coerceIn(0f, 1f) * segments
+        val progInSegs = progress.coerceIn(
+            ConstantsApp.ZERO_SCALE, ConstantsApp.FULL_ALPHA
+        ) * segments
+
         val full = floor(progInSegs).toInt()
         val part = progInSegs - full
 
@@ -123,9 +137,18 @@ class SegmentedProgressBar @JvmOverloads constructor(
     }
 
     // --- API ---
-    fun setProgress(value: Float, animate: Boolean = false, duration: Long = 300) {
-        val target = value.coerceIn(0f, 1f)
-        if (!animate) { progress = target; invalidate(); return }
+    fun setProgress(
+        value: Float,
+        animate: Boolean = false,
+        duration: Long = ConstantsApp.DEFAULT_ANIMATION_DURATION_MS
+    ) {
+        val target = value.coerceIn(
+            ConstantsApp.ZERO_SCALE, ConstantsApp.FULL_ALPHA
+        )
+
+        if (!animate) {
+            progress = target; invalidate(); return
+        }
         val start = progress
         ValueAnimator.ofFloat(start, target).apply {
             this.duration = duration
@@ -135,7 +158,7 @@ class SegmentedProgressBar @JvmOverloads constructor(
 
     fun setSegments(count: Int) {
         mode = Mode.COUNT
-        segments = count.coerceAtLeast(1)
+        segments = count.coerceAtLeast(ConstantsApp.MIN_SEGMENTS)
         invalidate()
     }
 

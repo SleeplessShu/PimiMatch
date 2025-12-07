@@ -9,9 +9,9 @@ import com.google.firebase.storage.FirebaseStorage
 import com.sleeplessdog.matchthewords.game.data.database.AppDatabase
 import com.sleeplessdog.matchthewords.game.data.database.WordCategoryDao
 import com.sleeplessdog.matchthewords.game.data.database.resolveAssetDatabase
-import com.sleeplessdog.matchthewords.game.data.repositories.WordsDatabase
 import com.sleeplessdog.matchthewords.game.data.repositories.ScoreRepositoryImpl
 import com.sleeplessdog.matchthewords.game.data.repositories.WordCategoriesRepositoryImpl
+import com.sleeplessdog.matchthewords.game.data.repositories.WordsDatabase
 import com.sleeplessdog.matchthewords.game.domain.repositories.ScoreRepository
 import com.sleeplessdog.matchthewords.game.domain.repositories.WordCategoriesRepository
 import com.sleeplessdog.matchthewords.game.domain.usecase.CreateUserCategoryUC
@@ -26,26 +26,32 @@ import com.sleeplessdog.matchthewords.server.domain.ServerDateRepository
 import com.sleeplessdog.matchthewords.server.domain.ServerDbInteractor
 import com.sleeplessdog.matchthewords.server.domain.ServerDbInteractorImpl
 import com.sleeplessdog.matchthewords.utils.AppDb
+import com.sleeplessdog.matchthewords.utils.ConstantsPaths.DICTIONARY_NAME
+import com.sleeplessdog.matchthewords.utils.ConstantsPaths.FIREBASE_PATH
+import com.sleeplessdog.matchthewords.utils.ConstantsPaths.KEY_DB_DATE
+import com.sleeplessdog.matchthewords.utils.ConstantsPaths.KEY_DB_PREFS
+import com.sleeplessdog.matchthewords.utils.ConstantsPaths.KEY_DB_SCORE
+import com.sleeplessdog.matchthewords.utils.ConstantsPaths.KEY_DB_SCORE_HISTORY
+import com.sleeplessdog.matchthewords.utils.ConstantsPaths.NIGHT_MODE
+import com.sleeplessdog.matchthewords.utils.ConstantsPaths.THEME_PREFERENCES
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
-
-
 
 val dataModule = module {
 
     single {
-        FirebaseDatabase.getInstance("https://match-the-words-d26c2-default-rtdb.europe-west1.firebasedatabase.app")
+        FirebaseDatabase.getInstance(FIREBASE_PATH)
     }
 
     single {
         FirebaseStorage.getInstance()
     }
 
-    single(named("themePreferences")) {
-        App.appContext.getSharedPreferences("NightMode", Context.MODE_PRIVATE)
+    single(named(THEME_PREFERENCES)) {
+        App.appContext.getSharedPreferences(NIGHT_MODE, Context.MODE_PRIVATE)
     }
 
-    single< WordsDatabase> {
+    single<WordsDatabase> {
         WordsDatabase(get())
     }
     factory<Handler> {
@@ -56,37 +62,35 @@ val dataModule = module {
     }
     single { get<AppDatabase>().wordDao() }
 
-    single(named("db_prefs")) {
-        App.appContext.getSharedPreferences("db_prefs", Context.MODE_PRIVATE)
+    single(named(KEY_DB_PREFS)) {
+        App.appContext.getSharedPreferences(KEY_DB_PREFS, Context.MODE_PRIVATE)
     }
 
     single {
-        val dbName = "dictionary.db"
+        val dbName = DICTIONARY_NAME
         val ctx: Context = get()
 
         val sel = resolveAssetDatabase(ctx) // получаем и путь, и дату
 
-        val prefs: SharedPreferences = get(qualifier = named("db_prefs"))
-        prefs.edit().putString("local_db_date", sel.date).apply()
+        val prefs: SharedPreferences = get(qualifier = named(KEY_DB_PREFS))
+        prefs.edit().putString(KEY_DB_DATE, sel.date).apply()
 
-        Room.databaseBuilder(ctx, AppDatabase::class.java, dbName)
-            .createFromAsset(sel.assetPath)
+        Room.databaseBuilder(ctx, AppDatabase::class.java, dbName).createFromAsset(sel.assetPath)
             .build()
     }
 
-
-    single(named("scoreStore")) {
-        App.appContext.getSharedPreferences("ScoreHistory", Context.MODE_PRIVATE)
+    single(named(KEY_DB_SCORE)) {
+        App.appContext.getSharedPreferences(KEY_DB_SCORE_HISTORY, Context.MODE_PRIVATE)
     }
     single<ScoreRepository> {
-        ScoreRepositoryImpl(get(named("scoreStore")))
+        ScoreRepositoryImpl(get(named(KEY_DB_SCORE)))
     }
 
     single<ServerDateRepository> {
-        ServerDateRepositoryImpl(get(named("db_prefs")))
+        ServerDateRepositoryImpl(get(named(KEY_DB_PREFS)))
     }
 
-    single < ServerDbInteractor> {
+    single<ServerDbInteractor> {
         ServerDbInteractorImpl(get(), get())
     }
 
@@ -95,14 +99,12 @@ val dataModule = module {
         get<AppDb>().wordCategoryDao()
     }
 
-        single<WordCategoriesRepository> { WordCategoriesRepositoryImpl(get()) }
-
-        factory { ObserveFeaturedCategoriesUC(get()) }
-        factory { ObserveAllCategoriesGroupedUC(get()) }
-        factory { ToggleCategoryUC(get()) }
-        factory { SaveSelectionUC(get()) }
-        factory { CreateUserCategoryUC(get()) }
-        factory { DeleteUserCategoryUC(get()) }
-        factory { GetSelectedCategoriesUC(get()) }
-
+    single<WordCategoriesRepository> { WordCategoriesRepositoryImpl(get()) }
+    factory { ObserveFeaturedCategoriesUC(get()) }
+    factory { ObserveAllCategoriesGroupedUC(get()) }
+    factory { ToggleCategoryUC(get()) }
+    factory { SaveSelectionUC(get()) }
+    factory { CreateUserCategoryUC(get()) }
+    factory { DeleteUserCategoryUC(get()) }
+    factory { GetSelectedCategoriesUC(get()) }
 }

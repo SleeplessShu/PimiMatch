@@ -7,7 +7,6 @@ import com.sleeplessdog.matchthewords.game.domain.api.ScoreInteractor
 import com.sleeplessdog.matchthewords.score.models.GameResult
 import com.sleeplessdog.matchthewords.utils.SupportFunctions
 
-
 class ScoreViewModel(
     private val scoreInteractor: ScoreInteractor
 ) : ViewModel() {
@@ -22,8 +21,7 @@ class ScoreViewModel(
         scoreInteractor.getAllDaysResults().observeForever { databaseResponse ->
             val updatedScoreList = databaseResponse.map { (date, score) ->
                 GameResult(
-                    date = date,
-                    score = SupportFunctions.getScoreAsString(score)
+                    date = date, score = SupportFunctions.getScoreAsString(score)
                 )
             }
             _scoreResults.postValue(updatedScoreList)

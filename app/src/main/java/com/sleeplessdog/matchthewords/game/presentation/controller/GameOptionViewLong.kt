@@ -13,7 +13,8 @@ class GameOptionViewLong @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyle: Int = 0
 ) : ConstraintLayout(context, attrs, defStyle) {
 
-    private val binding = GameSelectCardLongBinding.inflate(LayoutInflater.from(context), this, true)
+    private val binding =
+        GameSelectCardLongBinding.inflate(LayoutInflater.from(context), this, true)
 
     private var iconNormal: Int = R.drawable.ic_launcher_foreground
     private var iconSelected: Int = R.drawable.ic_launcher_foreground
@@ -21,6 +22,7 @@ class GameOptionViewLong @JvmOverloads constructor(
     init {
         setSelectedState(false)
     }
+
     override fun setOnClickListener(l: OnClickListener?) {
         binding.rootCard.setOnClickListener(l)
     }

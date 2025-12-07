@@ -1,7 +1,5 @@
 package com.sleeplessdog.matchthewords.game.presentation
 
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -22,9 +20,16 @@ import com.sleeplessdog.matchthewords.game.presentation.models.SessionStats
 import com.sleeplessdog.matchthewords.game.presentation.models.StatsState
 import com.sleeplessdog.matchthewords.game.presentation.models.Word
 import com.sleeplessdog.matchthewords.game.presentation.parentControllers.ProgressController
+import com.sleeplessdog.matchthewords.utils.ConstantsApp.DEFAULT_DIFFICULT_LEVEL
+import com.sleeplessdog.matchthewords.utils.ConstantsApp.MAX_LIVES
+import com.sleeplessdog.matchthewords.utils.ConstantsApp.START_LIVES
+import com.sleeplessdog.matchthewords.utils.ConstantsApp.ZERO_STRING
 import com.sleeplessdog.matchthewords.utils.ConstantsGamePrices
-import com.sleeplessdog.matchthewords.utils.SupportFunctions
+import com.sleeplessdog.matchthewords.utils.ConstantsGamePrices.ONE_OF_FOUR_MULTIPLIER
+import com.sleeplessdog.matchthewords.utils.ConstantsGamePrices.WRITE_WORD_DIVIDER_LIST
 import com.sleeplessdog.matchthewords.utils.ConstantsTimeReaction
+import com.sleeplessdog.matchthewords.utils.SupportFunctions
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class GameViewModel(
@@ -53,13 +58,10 @@ class GameViewModel(
     private val _showExitDialogEvent = MutableLiveData<Unit>()
     val showExitDialogEvent: LiveData<Unit> = _showExitDialogEvent
 
-    // Техническое
-    private val handler = Handler(Looper.getMainLooper())
-
     // «игровая экономика»
     private var score = 0
-    private var lives = 3
-    private var difficultLevel = 18
+    private var lives = START_LIVES
+    private var difficultLevel = DEFAULT_DIFFICULT_LEVEL
     private val sessionCorrectIds = linkedSetOf<Int>()
     private val sessionWrongIds = linkedSetOf<Int>()
     private var progressSegments: Int = 1
@@ -78,19 +80,15 @@ class GameViewModel(
     }
 
     // ------------ Навигация по экрану ------------
-
-
     private suspend fun prepareData() {
         onLoading()
 
         // 1. Загружаем выбранные категории
         val selectedCategories = getSelectedCategoriesUC()
 
-        val enums: Set<WordsCategoriesList> = selectedCategories
-            .mapNotNull { cat ->
-                WordsCategoriesList.values().find { it.key == cat.key }
-            }
-            .toSet()
+        val enums: Set<WordsCategoriesList> = selectedCategories.mapNotNull { cat ->
+            WordsCategoriesList.values().find { it.key == cat.key }
+        }.toSet()
 
         // 2. Читаем префы
         val interfaceLang = appPrefs.getUiLanguage()
@@ -106,14 +104,7 @@ class GameViewModel(
             level = wordsLevel,
             category = enums
         )
-
-        val settingsTest = _gameSettings.value
-        Log.d(
-            "DEBUG",
-            "prepareData: категории ${settingsTest?.category}, уровень слов ${settingsTest?.level}"
-        )
     }
-
 
 
     fun onLoading() {
@@ -134,9 +125,10 @@ class GameViewModel(
 
             _wordsPairs.value = allPairs
 
-            handler.postDelayed({
+            viewModelScope.launch {
+                delay(ConstantsTimeReaction.LOADING)
                 _gameState.value = _gameState.value?.copy(state = GameState.GAME)
-            }, ConstantsTimeReaction.LOADING)
+            }
         }
     }
 
@@ -175,7 +167,7 @@ class GameViewModel(
         ) ?: StatsState(
             lives = lives,
             score = score.toString(),
-            todaysScore = "0",
+            todaysScore = ZERO_STRING,
             progressSegments = progressSegments,
             progress = p
         )
@@ -183,7 +175,7 @@ class GameViewModel(
 
     private fun addScoreAndLive() {
         score += ConstantsGamePrices.ANSWER_PRICE
-        if (lives < 3) {
+        if (lives < MAX_LIVES) {
             lives++
         }
     }
@@ -214,21 +206,18 @@ class GameViewModel(
 
     // ------------ Загрузка пар ------------
     private suspend fun loadWordsFromDatabase(): Boolean {
-        val wordsNeeded = when (_gameState.value!!.gameType) {
-            GameType.WriteTheWord -> difficultLevel / 6
-            GameType.OneOfFour    -> difficultLevel * 4
-            else                  -> difficultLevel
+        val gameType = _gameState.value?.gameType ?: GameType.MATCH8
+
+        val wordsNeeded = when (gameType) {
+            GameType.WriteTheWord -> difficultLevel / WRITE_WORD_DIVIDER_LIST
+            GameType.OneOfFour -> difficultLevel * ONE_OF_FOUR_MULTIPLIER
+            else -> difficultLevel
         }
 
         val settings = _gameSettings.value ?: GameSettings()
-        Log.d("DEBUG", "loadWordsFromDatabase: ${settings.category} ${settings.level}")
 
         val pairs = wordsController.getWordPairs(
-            settings.language1,
-            settings.language2,
-            settings.level,
-            wordsNeeded,
-            settings.category
+            settings.language1, settings.language2, settings.level, wordsNeeded, settings.category
         )
 
         if (pairs.isEmpty()) {
@@ -248,7 +237,9 @@ class GameViewModel(
             correctIds = sessionCorrectIds.toList(), mistakeIds = sessionWrongIds.toList()
         )
         val todaysScore = scoreInteractor.getTodaysResult()
-        handler.postDelayed({
+
+        viewModelScope.launch {
+            delay(ConstantsTimeReaction.LOADING)
             _gameState.value = _gameState.value?.copy(
                 state = GameState.END_OF_GAME,
             )
@@ -257,7 +248,7 @@ class GameViewModel(
             )
             wordsController.putRoundStats(stats)
             scoreInteractor.updateTodaysResult(score)
-        }, ConstantsTimeReaction.LOADING)
+        }
     }
 
     fun restartGame() {
@@ -289,13 +280,7 @@ class GameViewModel(
         _showExitDialogEvent.value = Unit
     }
 
-    fun confirmExitGame() {
-        resetAll()
-    }
-
-
     fun resetStats() {
-        handler.removeCallbacksAndMessages(null)
         score = 0
 
         _wordsPairs.value = emptyList()
@@ -319,4 +304,3 @@ class GameViewModel(
         emitStats()
     }
 }
-

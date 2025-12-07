@@ -5,13 +5,13 @@ import android.os.Looper
 import com.sleeplessdog.matchthewords.game.data.repositories.AppPrefs
 import com.sleeplessdog.matchthewords.game.data.repositories.AppPrefsImpl
 import com.sleeplessdog.matchthewords.game.presentation.GameViewModel
+import com.sleeplessdog.matchthewords.game.presentation.fragments.GameSelectViewModel
 import com.sleeplessdog.matchthewords.game.presentation.fragments.SettingsViewModel
 import com.sleeplessdog.matchthewords.game.presentation.ingameFragments.OneOfFourViewModel
 import com.sleeplessdog.matchthewords.game.presentation.ingameFragments.TrueOrFalseViewModel
 import com.sleeplessdog.matchthewords.game.presentation.ingameFragments.WordsMatchingViewModel
 import com.sleeplessdog.matchthewords.game.presentation.ingameFragments.WriteTheWordViewModel
 import com.sleeplessdog.matchthewords.game.presentation.parentControllers.ProgressController
-import com.sleeplessdog.matchthewords.game.presentation.fragments.GameSelectViewModel
 import com.sleeplessdog.matchthewords.score.presentation.ScoreViewModel
 import com.sleeplessdog.matchthewords.settings.presentation.DatabaseViewModel
 import com.sleeplessdog.matchthewords.utils.ShuffleFunctions

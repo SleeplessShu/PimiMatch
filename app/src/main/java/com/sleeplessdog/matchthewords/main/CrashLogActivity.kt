@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.sleeplessdog.matchthewords.App
 import com.sleeplessdog.matchthewords.databinding.ActivityCrashLogBinding
+import com.sleeplessdog.matchthewords.utils.ConstantsApp
 import java.io.File
 
 class CrashLogActivity : AppCompatActivity() {
@@ -30,11 +31,11 @@ class CrashLogActivity : AppCompatActivity() {
         if (file.exists()) {
             binding.tvLog.text = file.readText()
             binding.emptyView.root.visibility = android.view.View.GONE
-            binding.containerButtons.alpha = 1f
+            binding.containerButtons.alpha = ConstantsApp.FULL_ALPHA
         } else {
             binding.tvLog.text = ""
             binding.emptyView.root.visibility = android.view.View.VISIBLE
-            binding.containerButtons.alpha = 0.4f
+            binding.containerButtons.alpha = ConstantsApp.HALF_ALPHA
         }
         // сбрасываем флаг — лог уже просмотрен
         App.clearCrashFlag()

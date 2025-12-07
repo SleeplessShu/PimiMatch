@@ -27,7 +27,3 @@ class ScoreAdapter(private var items: MutableList<GameResult>) : RecyclerView.Ad
         notifyDataSetChanged()
     }
 }
-
-
-
-

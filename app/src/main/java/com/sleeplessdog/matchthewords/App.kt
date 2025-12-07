@@ -89,7 +89,6 @@ class App : Application() {
         }
     }
 
-
     companion object {
 
         lateinit var database: AppDatabase

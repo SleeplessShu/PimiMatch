@@ -16,7 +16,7 @@ class DatabaseViewModel(
     private val _state = MutableLiveData<DbUpdateState>()
     val state: LiveData<DbUpdateState> = _state
 
-    fun getCurrentDatabaseDate(): String{
+    fun getCurrentDatabaseDate(): String {
         return dateManager.getLocalDbDate()
     }
 
@@ -27,7 +27,7 @@ class DatabaseViewModel(
             val localDate = dateManager.getLocalDbDate()
 
             val result = interactor.checkForUpdate(localDate)
-                if (result.isSuccess) {
+            if (result.isSuccess) {
                 val serverDate = result.getOrNull()
                 if (serverDate != null) {
                     _state.postValue(DbUpdateState.UpdateAvailable(serverDate))
