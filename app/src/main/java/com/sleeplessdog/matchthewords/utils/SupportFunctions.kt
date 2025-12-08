@@ -2,7 +2,7 @@ package com.sleeplessdog.matchthewords.utils
 
 import android.content.Context
 import android.content.res.Configuration
-import android.util.Log
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.appcompat.content.res.AppCompatResources
@@ -42,13 +42,11 @@ object SupportFunctions {
     fun sortMapByDateDescending(inputMap: Map<String, Int>): Map<String, Int> {
         val dateFormatter = DateTimeFormatter.ofPattern(DATE_PATTERN)
 
-        return inputMap
-            .mapKeys { entry ->
-                LocalDate.parse(
-                    entry.key,
-                    dateFormatter
-                )
-            } // Преобразуем ключи в LocalDate
+        return inputMap.mapKeys { entry ->
+            LocalDate.parse(
+                entry.key, dateFormatter
+            )
+        } // Преобразуем ключи в LocalDate
             .toSortedMap(compareByDescending { it }) // Сортируем по убыванию дат
             .mapKeys { entry -> entry.key.format(dateFormatter) } // Преобразуем обратно ключи в строковый формат
     }
@@ -74,9 +72,7 @@ object SupportFunctions {
     fun Context.stringByName(name: String, uiLanguage: Language): String {
         val localized = withLanguage(uiLanguage)
         val resId = localized.resources.getIdentifier(
-            name,
-            "string",
-            localized.packageName
+            name, "string", localized.packageName
         )
 
         return if (resId != 0) {
@@ -99,15 +95,14 @@ object SupportFunctions {
 
     fun createCategoryChip(parent: ViewGroup, item: CategoryUi): Chip {
         val ctx = parent.context
-        val chip = LayoutInflater.from(ctx)
-            .inflate(R.layout.view_category_chip, parent, false) as Chip
+        val chip =
+            LayoutInflater.from(ctx).inflate(R.layout.view_category_chip, parent, false) as Chip
 
         chip.text = item.title
         chip.isCheckable = true
         chip.tag = item.key
         chip.chipBackgroundColor = ContextCompat.getColorStateList(
-            ctx,
-            R.color.selector_options_button_bg
+            ctx, R.color.selector_options_button_bg
         )
         if (item.iconRes != 0) {
             chip.chipIcon = AppCompatResources.getDrawable(ctx, item.iconRes)
@@ -131,5 +126,17 @@ object SupportFunctions {
         val config = Configuration(resources.configuration)
         config.setLocale(locale)
         return createConfigurationContext(config)
+    }
+
+    fun colorWithAlpha(color: Int, alpha: Float): Int {
+        val a = (alpha.coerceIn(
+            ConstantsApp.EMPTY_ALPHA, ConstantsApp.FULL_ALPHA
+        ) * ConstantsApp.COLOR_MAX_CHANNEL).toInt()
+
+        val r = Color.red(color)
+        val g = Color.green(color)
+        val b = Color.blue(color)
+
+        return Color.argb(a, r, g, b)
     }
 }

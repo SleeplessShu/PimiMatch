@@ -3,6 +3,9 @@ package com.sleeplessdog.matchthewords.game.presentation.parentControllers
 import android.view.MotionEvent
 import android.view.View
 import com.sleeplessdog.matchthewords.utils.ConstantsApp
+import com.sleeplessdog.matchthewords.utils.ConstantsApp.SWIPE_COMMIT_THRESHOLD
+import com.sleeplessdog.matchthewords.utils.ConstantsApp.SWIPE_DRAG_LIMIT
+import com.sleeplessdog.matchthewords.utils.ConstantsApp.SWIPE_MAX_ROTATION
 import com.sleeplessdog.matchthewords.utils.ConstantsApp.SWIPE_VERTICAL_TRANSLATION_FACTOR
 import kotlin.math.abs
 
@@ -16,10 +19,6 @@ class SwipeTouchListener(
     private var downX = ConstantsApp.ZERO_SCALE
     private var downY = ConstantsApp.ZERO_SCALE
     private var isSwiping = false
-
-    private val dragLimit = ConstantsApp.SWIPE_DRAG_LIMIT
-    private val commitThreshold = ConstantsApp.SWIPE_COMMIT_THRESHOLD
-    private val maxRotation = ConstantsApp.SWIPE_MAX_ROTATION
 
     override fun onTouch(v: View, event: MotionEvent): Boolean {
         if (!canSwipe()) return false
@@ -37,22 +36,22 @@ class SwipeTouchListener(
                 val dx = event.rawX - downX
                 val dy = event.rawY - downY
 
-                if (!isSwiping && kotlin.math.abs(dy) > kotlin.math.abs(dx)) {
+                if (!isSwiping && abs(dy) > abs(dx)) {
                     false
                 } else {
                     isSwiping = true
 
                     val clamped = dx.coerceIn(
-                        -ConstantsApp.SWIPE_DRAG_LIMIT,
-                        ConstantsApp.SWIPE_DRAG_LIMIT
+                        -SWIPE_DRAG_LIMIT,
+                        SWIPE_DRAG_LIMIT
                     )
 
                     card.translationX = dx
                     card.translationY =
-                        -kotlin.math.abs(clamped) * ConstantsApp.SWIPE_VERTICAL_TRANSLATION_FACTOR
+                        -abs(clamped) * SWIPE_VERTICAL_TRANSLATION_FACTOR
 
                     card.rotation =
-                        (clamped / ConstantsApp.SWIPE_DRAG_LIMIT) * ConstantsApp.SWIPE_MAX_ROTATION
+                        (clamped / SWIPE_DRAG_LIMIT) * SWIPE_MAX_ROTATION
 
                     true
                 }
@@ -65,8 +64,8 @@ class SwipeTouchListener(
                 } else {
                     val dx = event.rawX - downX
 
-                    val commitRight = dx > ConstantsApp.SWIPE_COMMIT_THRESHOLD
-                    val commitLeft = dx < -ConstantsApp.SWIPE_COMMIT_THRESHOLD
+                    val commitRight = dx > SWIPE_COMMIT_THRESHOLD
+                    val commitLeft = dx < -SWIPE_COMMIT_THRESHOLD
 
                     when {
                         commitRight -> onSwipeRightCommit()

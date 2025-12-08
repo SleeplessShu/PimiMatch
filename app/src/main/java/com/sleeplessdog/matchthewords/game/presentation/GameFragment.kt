@@ -75,7 +75,6 @@ class GameFragment : Fragment() {
 
             override fun onSlide(bottomSheet: View, slideOffset: Float) {
 
-                val alpha = (slideOffset + 1) / 2
                 val newAlpha = if (slideOffset < 0) {
                     slideOffset + 1
                 } else {
