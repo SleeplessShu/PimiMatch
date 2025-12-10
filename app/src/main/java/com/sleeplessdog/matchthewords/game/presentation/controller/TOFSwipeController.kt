@@ -19,8 +19,4 @@ class TOFSwipeController(
             )
         )
     }
-
-    fun detach(card: View) {
-        card.setOnTouchListener(null)
-    }
 }

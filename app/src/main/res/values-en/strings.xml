@@ -37,7 +37,7 @@
     <string name="games">Games</string>
     <string name="score">Score</string>
     <string name="settings">Settings</string>
-    <string name="words">Words</string>
+    <string name="dictionary">Dictionary</string>
 
     <!--TOF-->
     <string name="tof_yes">Да</string>

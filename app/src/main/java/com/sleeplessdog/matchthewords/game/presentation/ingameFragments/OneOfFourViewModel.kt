@@ -12,10 +12,22 @@ import com.sleeplessdog.matchthewords.game.presentation.models.ButtonState
 import com.sleeplessdog.matchthewords.game.presentation.models.GameUiOOF
 import com.sleeplessdog.matchthewords.game.presentation.models.OneOfFourQuestion
 import com.sleeplessdog.matchthewords.game.presentation.models.Word
+import com.sleeplessdog.matchthewords.utils.ConstantsConditions.DEFAULT_QUESTION_SEQUENCE
+import com.sleeplessdog.matchthewords.utils.ConstantsConditions.MAX_BUTTON_INDEX
+import com.sleeplessdog.matchthewords.utils.ConstantsConditions.MIN_BUTTON_INDEX
+import com.sleeplessdog.matchthewords.utils.ConstantsConditions.ONE_OF_FOUR_SET
 import com.sleeplessdog.matchthewords.utils.ConstantsTimeReaction
 import com.sleeplessdog.matchthewords.utils.ShuffleFunctions
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+
+private data class ClickContext(
+    val buttonIndex: Int,
+    val question: OneOfFourQuestion,
+    val picked: Word,
+    val isCorrect: Boolean,
+    val wordsIds: List<Int>
+)
 
 class OneOfFourViewModel(
     val shuffleFunctions: ShuffleFunctions
@@ -36,7 +48,7 @@ class OneOfFourViewModel(
     private var current: OneOfFourQuestion? = null
 
     // защита от отложенных коллбеков после перехода к новому вопросу
-    private var questionSeq: Int = 0
+    private var questionSeq: Int = DEFAULT_QUESTION_SEQUENCE
 
     override fun setPool(pairs: List<Pair<Word, Word>>) {
         questions.clear()
@@ -45,23 +57,43 @@ class OneOfFourViewModel(
     }
 
     fun onAnswerClick(buttonIndex: Int) {
-        val state = _ui.value ?: return
-        if (state.locked) return
-        if (buttonIndex !in 0..3) return
-        val btnState = state.states.getOrNull(buttonIndex) ?: ButtonState.DEFAULT
-        if (!btnState.enabled) return
-        val q = current ?: return
-        val picked = q.optionsSecond.getOrNull(buttonIndex) ?: return
-        val isCorrect = picked.id == q.correctSecondId
-        val wordsIds = listOf(picked.id, q.correctSecondId)
-        if (isCorrect) {
-            reactOnCorrect(wordsIds, buttonIndex, q)
+        val ctx = buildClickContext(buttonIndex) ?: return
+
+        if (ctx.isCorrect) {
+            reactOnCorrect(
+                wordsIds = ctx.wordsIds, buttonIndex = ctx.buttonIndex, question = ctx.question
+            )
         } else {
-            reactOnWrong(wordsIds, buttonIndex)
+            reactOnWrong(
+                wordsIds = ctx.wordsIds, buttonIndex = ctx.buttonIndex
+            )
         }
     }
 
-    private fun reactOnCorrect(wordsIds: List<Int>, buttonIndex: Int, q: OneOfFourQuestion) {
+    private fun buildClickContext(buttonIndex: Int): ClickContext? {
+        val state = _ui.value ?: return null
+        if (state.locked) return null
+        if (buttonIndex !in MIN_BUTTON_INDEX..MAX_BUTTON_INDEX) return null
+
+        val btnState = state.states.getOrNull(buttonIndex) ?: ButtonState.DEFAULT
+        if (!btnState.enabled) return null
+
+        val q = current ?: return null
+        val picked = q.optionsSecond.getOrNull(buttonIndex) ?: return null
+
+        val isCorrect = picked.id == q.correctSecondId
+        val wordsIds = listOf(picked.id, q.correctSecondId)
+
+        return ClickContext(
+            buttonIndex = buttonIndex,
+            question = q,
+            picked = picked,
+            isCorrect = isCorrect,
+            wordsIds = wordsIds
+        )
+    }
+
+    private fun reactOnCorrect(wordsIds: List<Int>, buttonIndex: Int, question: OneOfFourQuestion) {
         events.value = GameEvent.Correct(wordsIds)
         paintAndLock(buttonIndex)
         val seq = questionSeq
@@ -69,7 +101,7 @@ class OneOfFourViewModel(
         viewModelScope.launch {
             delay(ConstantsTimeReaction.REACTION)
             if (questionSeq == seq) {
-                consumeAndNext(q)
+                consumeAndNext(question)
             }
         }
     }
@@ -109,13 +141,13 @@ class OneOfFourViewModel(
         _ui.value = GameUiOOF(
             originalText = built.originalFirst.text,
             options = built.optionsSecond.map { it.text },
-            states = List(4) { ButtonState.DEFAULT },
+            states = List(ONE_OF_FOUR_SET) { ButtonState.DEFAULT },
             locked = false
         )
     }
 
     private fun paintAndLock(correctIndex: Int) {
-        val st = MutableList(4) { ButtonState.DISABLED }
+        val st = MutableList(ONE_OF_FOUR_SET) { ButtonState.DISABLED }
         st[correctIndex] = ButtonState.CORRECT
         _ui.value = _ui.value?.copy(states = st, locked = true)
     }

@@ -32,7 +32,7 @@
     <string name="games">Игры</string>
     <string name="score">Прогресс</string>
     <string name="settings">Настройки</string>
-    <string name="words">Словарь</string>
+    <string name="dictionary">Словарь</string>
 
     <!--TOF-->
     <string name="tof_yes">Да</string>

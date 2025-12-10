@@ -17,4 +17,7 @@ object ConstantsPaths {
     const val KEY_STUDY_LANG = "study_lang"
     const val KEY_LEVELS = "levels"
     const val KEY_DIFFICULTY = "difficulty"
+    const val CRASH_FILE = "crash_log.txt"
+    const val PREFS = "crash_prefs"
+    const val KEY_HAS_CRASH = "has_crash"
 }

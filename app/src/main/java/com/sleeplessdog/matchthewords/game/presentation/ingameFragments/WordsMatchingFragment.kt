@@ -12,16 +12,12 @@ import com.sleeplessdog.matchthewords.databinding.WordsMatchingFragmentBinding
 import com.sleeplessdog.matchthewords.game.presentation.GameViewModel
 import com.sleeplessdog.matchthewords.game.presentation.holders.WordsMatchingAdapter
 import com.sleeplessdog.matchthewords.game.presentation.models.Word
-import org.koin.androidx.viewmodel.ext.android.sharedViewModel
+import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class WordsMatchingFragment : Fragment(R.layout.words_matching_fragment) {
-    private val parentVM: GameViewModel by sharedViewModel(
-        owner = { requireParentFragment() }
-    )
+    private val parentVM: GameViewModel by activityViewModel()
     private val childVM: WordsMatchingViewModel by viewModel()
-
-
 
     private var _binding: WordsMatchingFragmentBinding? = null
     private val binding: WordsMatchingFragmentBinding get() = _binding!!
@@ -48,14 +44,12 @@ class WordsMatchingFragment : Fragment(R.layout.words_matching_fragment) {
 
     private fun setupUI() {
         adapter = WordsMatchingAdapter(
-            onWordClick = {word: Word -> childVM.onWordClick(word)}
-        )
+            onWordClick = { word: Word -> childVM.onWordClick(word) })
         binding.rvWordsList.layoutManager = LinearLayoutManager(requireContext())
         binding.rvWordsList.adapter = adapter
     }
 
     private fun setupObservers() {
-        // Получаем ВЕСЬ пул от родителя — один раз на старт игры
         parentVM.wordsPairs.observe(viewLifecycleOwner) { allPairs ->
             if (!allPairs.isNullOrEmpty()) {
                 childVM.setPool(allPairs)

@@ -1,6 +1,5 @@
 package com.sleeplessdog.matchthewords.game.presentation
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -11,17 +10,17 @@ import com.sleeplessdog.matchthewords.game.domain.api.ScoreInteractor
 import com.sleeplessdog.matchthewords.game.domain.interactors.WordsController
 import com.sleeplessdog.matchthewords.game.domain.models.WordsCategoriesList
 import com.sleeplessdog.matchthewords.game.domain.usecase.GetSelectedCategoriesUC
+import com.sleeplessdog.matchthewords.game.presentation.controller.GameEconomyController
+import com.sleeplessdog.matchthewords.game.presentation.controller.GameProgressManager
 import com.sleeplessdog.matchthewords.game.presentation.interfaces.GameEvent
 import com.sleeplessdog.matchthewords.game.presentation.models.DifficultLevel
 import com.sleeplessdog.matchthewords.game.presentation.models.GameSettings
 import com.sleeplessdog.matchthewords.game.presentation.models.GameState
 import com.sleeplessdog.matchthewords.game.presentation.models.GameType
 import com.sleeplessdog.matchthewords.game.presentation.models.MatchState
-import com.sleeplessdog.matchthewords.game.presentation.models.SessionStats
 import com.sleeplessdog.matchthewords.game.presentation.models.StatsState
 import com.sleeplessdog.matchthewords.game.presentation.models.Word
 import com.sleeplessdog.matchthewords.game.presentation.parentControllers.ProgressController
-import com.sleeplessdog.matchthewords.utils.ConstantsApp.DEFAULT_DIFFICULT_LEVEL
 import com.sleeplessdog.matchthewords.utils.ConstantsApp.MAX_LIVES
 import com.sleeplessdog.matchthewords.utils.ConstantsApp.START_LIVES
 import com.sleeplessdog.matchthewords.utils.ConstantsApp.ZERO_STRING
@@ -35,170 +34,72 @@ import kotlinx.coroutines.launch
 
 class GameViewModel(
     private val wordsController: WordsController,
-    private val progressController: ProgressController,
+    progressController: ProgressController,
     private val scoreInteractor: ScoreInteractor,
     private val appPrefs: AppPrefs,
     private val languagePrefs: LanguagePrefs,
     private val getSelectedCategoriesUC: GetSelectedCategoriesUC
 ) : ViewModel() {
 
-    // Верхнее состояние экрана игры
     private val _gameState = MutableLiveData(MatchState())
     val gameState: LiveData<MatchState> = _gameState
 
     private val _statsState = MutableLiveData(StatsState())
     val statsState: LiveData<StatsState> = _statsState
 
-    // Настройки матча
     private val _gameSettings = MutableLiveData(GameSettings())
     val gameSettings: LiveData<GameSettings> = _gameSettings
 
-    // Пул пар для конкретного раунда/страницы — его потребляют ВСЕ дочерние VM
     private val _wordsPairs = MutableLiveData<List<Pair<Word, Word>>>()
     val wordsPairs: LiveData<List<Pair<Word, Word>>> = _wordsPairs
 
     private val _showExitDialogEvent = MutableLiveData<Unit>()
     val showExitDialogEvent: LiveData<Unit> = _showExitDialogEvent
 
-    // «игровая экономика»
-    private var score = 0
-    private var lives = START_LIVES
-    private var difficultLevel = DEFAULT_DIFFICULT_LEVEL
-    private val sessionCorrectIds = linkedSetOf<Int>()
-    private val sessionWrongIds = linkedSetOf<Int>()
-    private var progressSegments: Int = 1
-    private var currentStep: Int = 0
+    private val economy = GameEconomyController(
+        maxLives = MAX_LIVES,
+        startLives = START_LIVES
+    )
 
-    // кеш загруженных пар
+    private val progressManager = GameProgressManager(progressController)
+
     private var allPairs: List<Pair<Word, Word>> = emptyList()
 
     init {
         onGame()
     }
 
-    // ------------ Game select ------------
+    // ========================= GAME FLOW =========================
+
     fun setGame(gameType: GameType) {
         _gameState.value = _gameState.value?.copy(gameType = gameType)
     }
 
-    // ------------ Навигация по экрану ------------
-    private suspend fun prepareData() {
-        onLoading()
-
-        // 1. Загружаем выбранные категории
-        val selectedCategories = getSelectedCategoriesUC()
-
-        val enums: Set<WordsCategoriesList> = selectedCategories.mapNotNull { cat ->
-            WordsCategoriesList.values().find { it.key == cat.key }
-        }.toSet()
-
-        // 2. Читаем префы
-        val interfaceLang = languagePrefs.getUiLanguage()
-        val studyLang = languagePrefs.getStudyLanguage()
-        val difficultLevel = appPrefs.getDifficulty()
-        val wordsLevel = appPrefs.getLevels()
-
-        // 3. Обновляем настройки одним махом
-        _gameSettings.value = GameSettings(
-            language1 = interfaceLang,
-            language2 = studyLang,
-            difficult = difficultLevel,
-            level = wordsLevel,
-            category = enums
-        )
-    }
-
-
-    fun onLoading() {
-        _gameState.value = _gameState.value?.copy(state = GameState.LOADING)
-    }
-
     fun onGame() {
         viewModelScope.launch {
-            // шаг 1: подготовить настройки (здесь же подтянутся категории из БД)
             prepareData()
-
-            // шаг 2: настроить "экономику" и прогресс
             setupGameStats()
 
-            // шаг 3: загрузить слова
             val ok = loadWordsFromDatabase()
             if (!ok) return@launch
 
             _wordsPairs.value = allPairs
-
-            viewModelScope.launch {
-                delay(ConstantsTimeReaction.LOADING)
-                _gameState.value = _gameState.value?.copy(state = GameState.GAME)
-            }
+            delay(ConstantsTimeReaction.LOADING)
+            _gameState.value = _gameState.value?.copy(state = GameState.GAME)
         }
     }
 
-    // ------------ Экономика ------------
-    fun reactOnCorrect() {
-        addScoreAndLive()
-        advanceStepOnCorrect()
-        emitStats()
-    }
-
-    fun reactOnError() {
-        removeScoreAndLive()
-        advanceStepOnError()
-        emitStats()
-    }
-
-    private fun advanceStepOnCorrect() {
-        currentStep += 1
-    }
-
-    private fun advanceStepOnError() {
-        if (progressController.advancesOnWrong(_gameState.value?.gameType ?: GameType.MATCH8)) {
-            currentStep += 1
-        }
-    }
-
-    private fun emitStats() {
-        val type = _gameState.value?.gameType ?: GameType.MATCH8
-        val p = progressController.progressOf(currentStep, progressSegments, type)
-
-        _statsState.value = _statsState.value?.copy(
-            lives = lives,
-            score = score.toString(),
-            progressSegments = progressSegments,
-            progress = p
-        ) ?: StatsState(
-            lives = lives,
-            score = score.toString(),
-            todaysScore = ZERO_STRING,
-            progressSegments = progressSegments,
-            progress = p
-        )
-    }
-
-    private fun addScoreAndLive() {
-        score += ConstantsGamePrices.ANSWER_PRICE
-        if (lives < MAX_LIVES) {
-            lives++
-        }
-    }
-
-    private fun removeScoreAndLive() {
-        lives--
-        if (lives <= 0) {
-            onGameEnd()
-        }
-        score -= ConstantsGamePrices.MISTAKE_PRICE
-    }
+    // ========================= EVENTS =========================
 
     fun onGameEvent(ev: GameEvent) {
         when (ev) {
             is GameEvent.Correct -> {
-                sessionCorrectIds.addAll(ev.wordsIds)
+                economy.addCorrectIds(ev.wordsIds)
                 reactOnCorrect()
             }
 
             is GameEvent.Wrong -> {
-                sessionWrongIds.addAll(ev.wordsIds)
+                economy.addWrongIds(ev.wordsIds)
                 reactOnError()
             }
 
@@ -206,20 +107,60 @@ class GameViewModel(
         }
     }
 
-    // ------------ Загрузка пар ------------
+    private fun reactOnCorrect() {
+        economy.onCorrect(ConstantsGamePrices.ANSWER_PRICE)
+        progressManager.onCorrect()
+        emitStats()
+    }
+
+    private fun reactOnError() {
+        val isDead = economy.onWrong(ConstantsGamePrices.MISTAKE_PRICE)
+
+        val type = _gameState.value?.gameType ?: GameType.MATCH8
+        progressManager.onWrong(type)
+
+        emitStats()
+
+        if (isDead) onGameEnd()
+    }
+
+    // ========================= DATA =========================
+
+    private suspend fun prepareData() {
+        setLoading()
+
+        val selectedCategories = getSelectedCategoriesUC()
+
+        val enums = selectedCategories.mapNotNull { cat ->
+            WordsCategoriesList.entries.find { it.key == cat.key }
+        }.toSet()
+
+        _gameSettings.value = GameSettings(
+            language1 = languagePrefs.getUiLanguage(),
+            language2 = languagePrefs.getStudyLanguage(),
+            difficult = appPrefs.getDifficulty(),
+            level = appPrefs.getLevels(),
+            category = enums
+        )
+    }
+
     private suspend fun loadWordsFromDatabase(): Boolean {
         val gameType = _gameState.value?.gameType ?: GameType.MATCH8
 
         val wordsNeeded = when (gameType) {
-            GameType.WriteTheWord -> difficultLevel / WRITE_WORD_DIVIDER_LIST
-            GameType.OneOfFour -> difficultLevel * ONE_OF_FOUR_MULTIPLIER
-            else -> difficultLevel
+            GameType.WriteTheWord -> economy.difficultLevel / WRITE_WORD_DIVIDER_LIST
+            GameType.OneOfFour   -> economy.difficultLevel * ONE_OF_FOUR_MULTIPLIER
+            else                 -> economy.difficultLevel
         }
 
-        val settings = _gameSettings.value ?: GameSettings()
+        val settings = _gameSettings.value ?: return false
 
         val pairs = wordsController.getWordPairs(
-            settings.language1, settings.language2, settings.level, wordsNeeded, settings.category
+            settings.language1,
+            settings.language2,
+            settings.level,
+            wordsNeeded,
+            settings.category
         )
 
         if (pairs.isEmpty()) {
@@ -231,78 +172,98 @@ class GameViewModel(
         return true
     }
 
-    // ------------ Конец игры/сброс ------------
-    fun onGameEnd() {
-        onLoading()
+    // ========================= GAME END =========================
 
-        val stats = SessionStats(
-            correctIds = sessionCorrectIds.toList(), mistakeIds = sessionWrongIds.toList()
-        )
+    fun onGameEnd() {
+        setLoading()
+
+        val stats = economy.buildSessionStats()
         val todaysScore = scoreInteractor.getTodaysResult()
 
         viewModelScope.launch {
             delay(ConstantsTimeReaction.LOADING)
-            _gameState.value = _gameState.value?.copy(
-                state = GameState.END_OF_GAME,
-            )
+
+            _gameState.value = _gameState.value?.copy(state = GameState.END_OF_GAME)
+
             _statsState.value = _statsState.value?.copy(
-                lives = lives, todaysScore = todaysScore.toString()
+                lives = economy.lives,
+                todaysScore = todaysScore.toString()
             )
+
             wordsController.putRoundStats(stats)
-            scoreInteractor.updateTodaysResult(score)
+            scoreInteractor.updateTodaysResult(economy.score)
         }
     }
+
+    // ========================= RESET =========================
 
     fun restartGame() {
         resetStats()
         onGame()
     }
 
-    private fun setupGameStats() {
-        score = 0
-
-        difficultLevel = SupportFunctions.getGameDifficult(
-            _gameSettings.value?.difficult ?: DifficultLevel.MEDIUM
-        )
-
-        lives = SupportFunctions.getLivesCount(
-            _gameSettings.value?.difficult ?: DifficultLevel.MEDIUM
-        )
-
-        progressSegments = progressController.stepsFor(
-            _gameSettings.value?.difficult ?: DifficultLevel.MEDIUM,
-            _gameState.value?.gameType ?: GameType.MATCH8
-        )
-
-        currentStep = 0
+    fun resetStats() {
+        economy.resetScoreOnly()
+        _wordsPairs.value = emptyList()
+        progressManager.resetOnlyStep()
         emitStats()
+    }
+
+    fun resetAll() {
+        val diff = DifficultLevel.MEDIUM
+
+        economy.resetAll(
+            diffLevelUpdate = SupportFunctions.getGameDifficult(diff),
+            livesUpdate = SupportFunctions.getLivesCount(diff)
+        )
+
+        _gameSettings.value = GameSettings()
+        _gameState.value = MatchState(state = GameState.GAME)
+
+        progressManager.reset(diff, GameType.MATCH8)
+        emitStats()
+    }
+
+    // ========================= STATS =========================
+
+    private fun setupGameStats() {
+        val difficult = _gameSettings.value?.difficult ?: DifficultLevel.MEDIUM
+
+        economy.setup(
+            difficultLevel = SupportFunctions.getGameDifficult(difficult),
+            lives = SupportFunctions.getLivesCount(difficult)
+        )
+
+        progressManager.setup(
+            difficult = difficult,
+            gameType = _gameState.value?.gameType ?: GameType.MATCH8
+        )
+
+        emitStats()
+    }
+
+    private fun emitStats() {
+        val type = _gameState.value?.gameType ?: GameType.MATCH8
+
+        _statsState.value = _statsState.value?.copy(
+            lives = economy.lives,
+            score = economy.score.toString(),
+            progressSegments = progressManager.progressSegments,
+            progress = progressManager.progress(type)
+        ) ?: StatsState(
+            lives = economy.lives,
+            score = economy.score.toString(),
+            todaysScore = ZERO_STRING,
+            progressSegments = progressManager.progressSegments,
+            progress = progressManager.progress(type)
+        )
     }
 
     fun showGameExitQuestion() {
         _showExitDialogEvent.value = Unit
     }
 
-    fun resetStats() {
-        score = 0
-
-        _wordsPairs.value = emptyList()
-        _gameState.value = _gameState.value?.copy(state = GameState.GAME) ?: MatchState(
-            state = GameState.LOADING
-        )
-
-        currentStep = 0
-        emitStats()
-    }
-
-    fun resetAll() {
-        resetStats()
-        _gameSettings.value = GameSettings()
-        difficultLevel = SupportFunctions.getGameDifficult(DifficultLevel.MEDIUM)
-        lives = SupportFunctions.getLivesCount(DifficultLevel.MEDIUM)
-        _gameState.value = MatchState(state = GameState.GAME)
-
-        progressSegments = progressController.stepsFor(DifficultLevel.MEDIUM, GameType.MATCH8)
-        currentStep = 0
-        emitStats()
+    private fun setLoading() {
+        _gameState.value = _gameState.value?.copy(state = GameState.LOADING)
     }
 }

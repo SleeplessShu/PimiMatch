@@ -6,6 +6,7 @@ import com.sleeplessdog.matchthewords.game.data.repositories.AppPrefs
 import com.sleeplessdog.matchthewords.game.data.repositories.AppPrefsImpl
 import com.sleeplessdog.matchthewords.game.data.repositories.LanguagePrefs
 import com.sleeplessdog.matchthewords.game.data.repositories.LanguagePrefsImpl
+import com.sleeplessdog.matchthewords.game.domain.interactors.SettingsInteractor
 import com.sleeplessdog.matchthewords.game.presentation.GameViewModel
 import com.sleeplessdog.matchthewords.game.presentation.fragments.GameSelectViewModel
 import com.sleeplessdog.matchthewords.game.presentation.fragments.SettingsViewModel
@@ -46,15 +47,15 @@ val presentationModule = module {
         ScoreViewModel(get())
     }
 
-    viewModel() {
+    viewModel {
         DatabaseViewModel(get(), get())
     }
 
-    viewModel() {
+    viewModel {
         OneOfFourViewModel(get())
     }
 
-    viewModel() {
+    viewModel {
         WriteTheWordViewModel()
     }
 
@@ -68,15 +69,15 @@ val presentationModule = module {
 
     viewModel {
         SettingsViewModel(
-            observeFeaturedUC = get(),
-            observeAllGroupedUC = get(),
-            toggleUC = get(),
-            saveSelectionUC = get(),
-            createUserUC = get(),
+            settingsInteractor = get(),
             app = androidApplication(),
             appPrefs = get(),
             languagePrefs = get()
         )
+    }
+
+    single <SettingsInteractor> {
+        SettingsInteractor(get(), get(), get(), get(), get())
     }
 
     single<AppPrefs> { AppPrefsImpl(get()) }

@@ -44,9 +44,9 @@
     </fragment>
 
     <fragment
-        android:id="@+id/wordsFragment"
-        android:name="com.sleeplessdog.matchthewords.words.presentation.WordsFragment"
-        android:label="WordsFragment" >
+        android:id="@+id/dictionaryFragment"
+        android:name="com.sleeplessdog.matchthewords.words.presentation.DictionaryFragment"
+        android:label="DictionaryFragment" >
     </fragment>
 
     <fragment

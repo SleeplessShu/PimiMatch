@@ -6,12 +6,18 @@ import android.util.Log
 import androidx.appcompat.app.AppCompatDelegate
 import com.google.firebase.appcheck.FirebaseAppCheck
 import com.google.firebase.appcheck.debug.DebugAppCheckProviderFactory
+import androidx.core.content.edit
+import com.sleeplessdog.matchthewords.di.dataModule
 import com.sleeplessdog.matchthewords.di.domainModule
 import com.sleeplessdog.matchthewords.di.presentationModule
 import com.sleeplessdog.matchthewords.game.data.database.AppDatabase
+import com.sleeplessdog.matchthewords.utils.ConstantsPaths.CRASH_FILE
+import com.sleeplessdog.matchthewords.utils.ConstantsPaths.KEY_HAS_CRASH
+import com.sleeplessdog.matchthewords.utils.ConstantsPaths.PREFS
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.GlobalContext.startKoin
 import java.io.File
+import java.io.IOException
 import java.io.PrintWriter
 import java.io.StringWriter
 import java.text.SimpleDateFormat
@@ -73,17 +79,18 @@ class App : Application() {
                 }
 
                 // ставим флаг
-                getSharedPreferences(PREFS, MODE_PRIVATE).edit().putBoolean(KEY_HAS_CRASH, true)
-                    .apply()
+                getSharedPreferences(PREFS, MODE_PRIVATE).edit {
+                    putBoolean(KEY_HAS_CRASH, true)
+                }
 
                 Log.e("CRASH", stackTrace)
-            } catch (e: Exception) {
+            } catch (e: IOException) {
                 Log.e("CRASH", "Failed to save crash", e)
             } finally {
                 // передаём дальше в системный/дефолтный хендлер
                 defaultHandler?.uncaughtException(thread, throwable) ?: run {
                     android.os.Process.killProcess(android.os.Process.myPid())
-                    System.exit(1)
+
                 }
             }
         }
@@ -93,18 +100,13 @@ class App : Application() {
 
         lateinit var database: AppDatabase
         lateinit var appContext: Context
-            private set
-
-        private const val CRASH_FILE = "crash_log.txt"
-        private const val PREFS = "crash_prefs"
-        private const val KEY_HAS_CRASH = "has_crash"
 
         fun crashFilePath(): String = appContext.filesDir.resolve(CRASH_FILE).absolutePath
 
         fun clearCrashFlag() {
-            appContext.getSharedPreferences(PREFS, MODE_PRIVATE).edit()
-                .putBoolean(KEY_HAS_CRASH, false).apply()
-        }
+            appContext.getSharedPreferences(PREFS, MODE_PRIVATE).edit {
+                putBoolean(KEY_HAS_CRASH, false).apply()
+        }}
 
         fun hasCrash(): Boolean =
             appContext.getSharedPreferences(PREFS, MODE_PRIVATE).getBoolean(KEY_HAS_CRASH, false)

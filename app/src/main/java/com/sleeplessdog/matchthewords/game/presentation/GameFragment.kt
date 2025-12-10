@@ -129,7 +129,7 @@ class GameFragment : Fragment() {
             }
         }
         viewModel.statsState.observe(viewLifecycleOwner) { stats ->
-            binding.tvScores.setText(stats.score)
+            binding.tvScores.text = stats.score
             binding.progressBar.setSegments(stats.progressSegments)
             binding.progressBar.setProgress(stats.progress)
             setHearts(stats.lives)

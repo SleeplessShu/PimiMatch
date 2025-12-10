@@ -66,4 +66,22 @@ object ConstantsApp {
     const val SWIPE_MAX_ROTATION = 15f
     const val SWIPE_VERTICAL_TRANSLATION_FACTOR = 0.12f
     const val SWIPE_RESET_DURATION_MS = 180L
+
+    // Loading screen pulse animation
+    const val ZERO_DURATION_MS = 0L
+
+    const val LOADING_SCALE_FACTOR = 1.3f
+
+    const val LOADING_PULSE_MAIN_DURATION = 3000L
+    const val LOADING_PULSE_TR_DURATION = 2200L
+    const val LOADING_PULSE_BL_DURATION = 1400L
+    const val LOADING_PULSE_BR_DURATION = 1800L
+    const val LOADING_PULSE_TL_DURATION = 2000L
+
+    const val LOADING_PULSE_MAIN_DELAY = 80L
+    const val LOADING_PULSE_TR_DELAY = 300L
+    const val LOADING_PULSE_BL_DELAY = 200L
+    const val LOADING_PULSE_BR_DELAY = 500L
+    const val LOADING_PULSE_TL_DELAY = 100L
+
 }

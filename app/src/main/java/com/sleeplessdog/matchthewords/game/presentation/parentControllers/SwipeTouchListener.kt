@@ -80,7 +80,6 @@ class SwipeTouchListener(
         }
     }
 
-
     private fun reset() {
         card.animate()
             .translationX(ConstantsApp.ZERO_SCALE)

@@ -6,7 +6,7 @@ import com.sleeplessdog.matchthewords.game.domain.repositories.ScoreRepository
 
 class ScoreInteractorImpl(
     private val scoreRepository: ScoreRepository
-): ScoreInteractor {
+) : ScoreInteractor {
     override fun updateTodaysResult(matchResult: Int) {
         scoreRepository.updateTodaysResult(matchResult)
     }

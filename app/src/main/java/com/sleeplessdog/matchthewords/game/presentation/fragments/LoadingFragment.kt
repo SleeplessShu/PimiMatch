@@ -10,14 +10,19 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.sleeplessdog.matchthewords.R
 import com.sleeplessdog.matchthewords.databinding.LoadingBinding
+import com.sleeplessdog.matchthewords.utils.ConstantsApp
 
 class LoadingFragment : Fragment(R.layout.loading) {
 
     private var _binding: LoadingBinding? = null
-    private val binding: LoadingBinding get() = _binding!!
+    private val binding: LoadingBinding
+        get() = _binding!!
+
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
-    ): View? {
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
         _binding = LoadingBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -33,25 +38,66 @@ class LoadingFragment : Fragment(R.layout.loading) {
     }
 
     private fun startLoadingAnimation() {
-        val scaleFactor = 1.3f // +30%
-        binding.starMain.pulse(scaleFactor, 3000L, 80L)
-        binding.starTr.pulse(scaleFactor, 2200L, 300L)
-        binding.starBl.pulse(scaleFactor, 1400L, 200L)
-        binding.starBr.pulse(scaleFactor, 1800L, 500L)
-        binding.starTl.pulse(scaleFactor, 2000L, 100L)
+        val scaleFactor = ConstantsApp.LOADING_SCALE_FACTOR
+
+        binding.starMain.pulse(
+            scale = scaleFactor,
+            durationMs = ConstantsApp.LOADING_PULSE_MAIN_DURATION,
+            startDelayMs = ConstantsApp.LOADING_PULSE_MAIN_DELAY
+        )
+
+        binding.starTr.pulse(
+            scale = scaleFactor,
+            durationMs = ConstantsApp.LOADING_PULSE_TR_DURATION,
+            startDelayMs = ConstantsApp.LOADING_PULSE_TR_DELAY
+        )
+
+        binding.starBl.pulse(
+            scale = scaleFactor,
+            durationMs = ConstantsApp.LOADING_PULSE_BL_DURATION,
+            startDelayMs = ConstantsApp.LOADING_PULSE_BL_DELAY
+        )
+
+        binding.starBr.pulse(
+            scale = scaleFactor,
+            durationMs = ConstantsApp.LOADING_PULSE_BR_DURATION,
+            startDelayMs = ConstantsApp.LOADING_PULSE_BR_DELAY
+        )
+
+        binding.starTl.pulse(
+            scale = scaleFactor,
+            durationMs = ConstantsApp.LOADING_PULSE_TL_DURATION,
+            startDelayMs = ConstantsApp.LOADING_PULSE_TL_DELAY
+        )
     }
 
-    fun View.pulse(scale: Float, duration: Long, startDelay: Long = 0L) {
-        val scaleX = ObjectAnimator.ofFloat(this, View.SCALE_X, 1f, scale, 1f).apply {
-            this.duration = duration
-            this.startDelay = startDelay
+    private fun View.pulse(
+        scale: Float,
+        durationMs: Long,
+        startDelayMs: Long = ConstantsApp.ZERO_DURATION_MS
+    ) {
+        val scaleX = ObjectAnimator.ofFloat(
+            this,
+            View.SCALE_X,
+            ConstantsApp.FULL_SCALE,
+            scale,
+            ConstantsApp.FULL_SCALE
+        ).apply {
+            duration = durationMs
+            startDelay = startDelayMs
             repeatCount = ValueAnimator.INFINITE
             repeatMode = ValueAnimator.REVERSE
         }
 
-        val scaleY = ObjectAnimator.ofFloat(this, View.SCALE_Y, 1f, scale, 1f).apply {
-            this.duration = duration
-            this.startDelay = startDelay
+        val scaleY = ObjectAnimator.ofFloat(
+            this,
+            View.SCALE_Y,
+            ConstantsApp.FULL_SCALE,
+            scale,
+            ConstantsApp.FULL_SCALE
+        ).apply {
+            duration = durationMs
+            startDelay = startDelayMs
             repeatCount = ValueAnimator.INFINITE
             repeatMode = ValueAnimator.REVERSE
         }

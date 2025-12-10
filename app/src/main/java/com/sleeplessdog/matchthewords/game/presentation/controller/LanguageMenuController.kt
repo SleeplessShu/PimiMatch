@@ -5,7 +5,7 @@ import android.widget.TextView
 import androidx.core.view.isVisible
 import com.sleeplessdog.matchthewords.utils.ConstantsApp
 
-class LanguageMenuManager(
+class LanguageMenuController(
     private val root: View,              // binding.languageSelectRoot
     private val bg: View,                // binding.languagesBackground
     private val bgSolid: View,           // binding.languagesBackgroundSolid

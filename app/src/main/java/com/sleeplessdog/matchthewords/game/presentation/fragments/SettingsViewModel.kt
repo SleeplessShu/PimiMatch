@@ -8,18 +8,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sleeplessdog.matchthewords.game.data.repositories.AppPrefs
 import com.sleeplessdog.matchthewords.game.data.repositories.LanguagePrefs
+import com.sleeplessdog.matchthewords.game.domain.interactors.SettingsInteractor
 import com.sleeplessdog.matchthewords.game.domain.models.LanguageLevel
 import com.sleeplessdog.matchthewords.game.domain.models.WordCategory
-import com.sleeplessdog.matchthewords.game.domain.usecase.CreateUserCategoryUC
-import com.sleeplessdog.matchthewords.game.domain.usecase.ObserveAllCategoriesGroupedUC
-import com.sleeplessdog.matchthewords.game.domain.usecase.ObserveFeaturedCategoriesUC
-import com.sleeplessdog.matchthewords.game.domain.usecase.SaveSelectionUC
-import com.sleeplessdog.matchthewords.game.domain.usecase.ToggleCategoryUC
 import com.sleeplessdog.matchthewords.game.presentation.models.CategoriesUiState
 import com.sleeplessdog.matchthewords.game.presentation.models.CategoryUi
 import com.sleeplessdog.matchthewords.game.presentation.models.DifficultLevel
 import com.sleeplessdog.matchthewords.game.presentation.models.Language
-import com.sleeplessdog.matchthewords.utils.ConstantsApp
 import com.sleeplessdog.matchthewords.utils.ConstantsApp.FEATURED_LIMIT
 import com.sleeplessdog.matchthewords.utils.SupportFunctions.drawableIdByName
 import com.sleeplessdog.matchthewords.utils.SupportFunctions.stringByName
@@ -30,11 +25,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
 class SettingsViewModel(
-    private val observeFeaturedUC: ObserveFeaturedCategoriesUC,
-    private val observeAllGroupedUC: ObserveAllCategoriesGroupedUC,
-    private val toggleUC: ToggleCategoryUC,
-    private val saveSelectionUC: SaveSelectionUC,
-    private val createUserUC: CreateUserCategoryUC,
+    private val settingsInteractor: SettingsInteractor,
     private val app: Application,
     private val appPrefs: AppPrefs,
     private val languagePrefs: LanguagePrefs,
@@ -86,7 +77,8 @@ class SettingsViewModel(
 
         viewModelScope.launch {
             combine(
-                observeFeaturedUC(ConstantsApp.FEATURED_LIMIT), observeAllGroupedUC()
+                settingsInteractor.featured(FEATURED_LIMIT),
+                settingsInteractor.allGrouped()
             ) { featured, grouped ->
                 val toUi: (WordCategory) -> CategoryUi = { m ->
                     val uiLang = _uiLanguage.value ?: languagePrefs.getUiLanguage()
@@ -120,16 +112,16 @@ class SettingsViewModel(
     }
 
     fun onToggle(key: String) = viewModelScope.launch {
-        toggleUC(key)
+        settingsInteractor.toggle(key)
     }
 
     fun onSave(selectedKeys: Set<String>) = viewModelScope.launch {
-        saveSelectionUC(selectedKeys)
+        settingsInteractor.saveSelection(selectedKeys)
     }
 
     fun onCreateUserCategory(key: String, titleKey: String, iconKey: String) =
         viewModelScope.launch {
-            createUserUC(key, titleKey, iconKey)
+            settingsInteractor.createCategory(key, titleKey, iconKey)
         }
 
     fun onLanguagePicked(newLang: Language, currentLangMode: LanguageAdapterState) {

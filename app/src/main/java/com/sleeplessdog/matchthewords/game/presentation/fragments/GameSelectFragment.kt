@@ -10,9 +10,10 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.sleeplessdog.matchthewords.R
 import com.sleeplessdog.matchthewords.databinding.GameSelectFragmentBinding
 import com.sleeplessdog.matchthewords.game.presentation.controller.LanguageAdapter
-import com.sleeplessdog.matchthewords.game.presentation.controller.LanguageMenuManager
+import com.sleeplessdog.matchthewords.game.presentation.controller.LanguageMenuController
 import com.sleeplessdog.matchthewords.game.presentation.controller.toFlagLargeRes
 import com.sleeplessdog.matchthewords.game.presentation.models.GameType
+import com.sleeplessdog.matchthewords.utils.ConstantsTimeReaction.LANGUAGE_LIST_CLOSE
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class GameSelectFragment : Fragment() {
@@ -22,7 +23,7 @@ class GameSelectFragment : Fragment() {
     private val binding get() = _binding!!
 
     private lateinit var langAdapter: LanguageAdapter
-    private lateinit var languageMenuManager: LanguageMenuManager
+    private lateinit var languageMenuController: LanguageMenuController
     private var isLangShown = false
 
     override fun onCreateView(
@@ -42,7 +43,7 @@ class GameSelectFragment : Fragment() {
     }
 
     private fun setupLanguageManager() {
-        languageMenuManager = LanguageMenuManager(
+        languageMenuController = LanguageMenuController(
             root = binding.languageSelectRoot,
             bg = binding.languagesBackground,
             bgSolid = binding.languagesBackgroundSolid,
@@ -57,8 +58,8 @@ class GameSelectFragment : Fragment() {
             langAdapter.setSelected(picked)
 
             binding.rvLanguages.postDelayed({
-                languageMenuManager.hide()
-            }, 150)
+                languageMenuController.hide()
+            }, LANGUAGE_LIST_CLOSE)
         }
 
         binding.rvLanguages.apply {
@@ -145,7 +146,7 @@ class GameSelectFragment : Fragment() {
 
     private fun setupLanguageButton() {
         binding.languageSelect.setOnClickListener {
-            languageMenuManager.show(R.string.std_language) {
+            languageMenuController.show(R.string.std_language) {
                 val list = viewModel.availableLanguages.value ?: emptyList()
                 val selected = viewModel.studyLanguage.value
                 langAdapter.submit(list, selected)

@@ -1,11 +1,13 @@
-package com.sleeplessdog.matchthewords
+package com.sleeplessdog.matchthewords.di
 
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Handler
+import androidx.core.content.edit
 import androidx.room.Room
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.storage.FirebaseStorage
+import com.sleeplessdog.matchthewords.App
 import com.sleeplessdog.matchthewords.game.data.database.AppDatabase
 import com.sleeplessdog.matchthewords.game.data.database.WordCategoryDao
 import com.sleeplessdog.matchthewords.game.data.database.resolveAssetDatabase
@@ -73,7 +75,7 @@ val dataModule = module {
         val sel = resolveAssetDatabase(ctx) // получаем и путь, и дату
 
         val prefs: SharedPreferences = get(qualifier = named(KEY_DB_PREFS))
-        prefs.edit().putString(KEY_DB_DATE, sel.date).apply()
+        prefs.edit() { putString(KEY_DB_DATE, sel.date) }
 
         Room.databaseBuilder(ctx, AppDatabase::class.java, dbName).createFromAsset(sel.assetPath)
             .build()

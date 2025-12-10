@@ -1,10 +1,12 @@
 package com.sleeplessdog.matchthewords.game.data
 
-import androidx.room.*
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.Index
+import androidx.room.PrimaryKey
 
 @Entity(
-    tableName = "word_categories",
-    indices = [Index(value = ["key"], unique = true)]
+    tableName = "word_categories", indices = [Index(value = ["key"], unique = true)]
 )
 data class WordCategoryEntity(
     @PrimaryKey val id: Int? = null,

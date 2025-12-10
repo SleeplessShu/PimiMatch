@@ -44,23 +44,29 @@ class TOFButtonController(
     }
 
     private fun attachPressEffect(v: View, b: TofButton) {
-        v.setOnTouchListener { _, e ->
+        v.setOnTouchListener { view, e ->
             when (e.actionMasked) {
-                MotionEvent.ACTION_DOWN -> b.applyState(TOFButtonState.PRESSED)
-                MotionEvent.ACTION_CANCEL,
-                MotionEvent.ACTION_UP -> b.applyState(TOFButtonState.DEFAULT)
+                MotionEvent.ACTION_DOWN -> {
+                    b.applyState(TOFButtonState.PRESSED)
+                }
+
+                MotionEvent.ACTION_UP -> {
+                    b.applyState(TOFButtonState.DEFAULT)
+                    view.performClick()
+                }
+
+                MotionEvent.ACTION_CANCEL -> {
+                    b.applyState(TOFButtonState.DEFAULT)
+                }
             }
-            false
+            true
         }
     }
+
 
     fun reset() {
         btnTrue.applyState(TOFButtonState.DEFAULT)
         btnFalse.applyState(TOFButtonState.DEFAULT)
-    }
-
-    fun getOpposite(of: TofButton): TofButton {
-        return if (of.isTrue) btnFalse else btnTrue
     }
 
     private fun TofButton.applyState(state: TOFButtonState) {

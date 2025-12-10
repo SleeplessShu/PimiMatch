@@ -10,13 +10,12 @@ import com.sleeplessdog.matchthewords.R
 import com.sleeplessdog.matchthewords.databinding.GameOneOfFourBinding
 import com.sleeplessdog.matchthewords.game.presentation.GameViewModel
 import com.sleeplessdog.matchthewords.game.presentation.models.ButtonState
-import org.koin.androidx.viewmodel.ext.android.sharedViewModel
+import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
-import kotlin.getValue
 
 class OneOfFourFragment : Fragment(R.layout.game_one_of_four) {
 
-    private val parentVM: GameViewModel by sharedViewModel(owner = { requireParentFragment() })
+    private val parentVM: GameViewModel by activityViewModel()
     private val childVM: OneOfFourViewModel by viewModel()
 
     private var _binding: GameOneOfFourBinding? = null
