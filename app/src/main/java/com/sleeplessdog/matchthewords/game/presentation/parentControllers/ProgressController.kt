@@ -4,7 +4,7 @@ import com.sleeplessdog.matchthewords.game.presentation.models.DifficultLevel
 import com.sleeplessdog.matchthewords.game.presentation.models.GameType
 import com.sleeplessdog.matchthewords.utils.SupportFunctions
 
-class ProgressController() {
+class ProgressController {
 
     fun stepsFor(difficult: DifficultLevel, type: GameType): Int {
         val wordsInMatch = SupportFunctions.getGameDifficult(difficult)

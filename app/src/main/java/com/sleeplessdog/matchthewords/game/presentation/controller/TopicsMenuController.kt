@@ -5,20 +5,12 @@ import androidx.core.view.isVisible
 import com.google.android.flexbox.FlexboxLayout
 import com.google.android.material.chip.Chip
 import com.sleeplessdog.matchthewords.game.presentation.models.CategoryUi
+import com.sleeplessdog.matchthewords.game.presentation.models.TopicsMenuViews
 import com.sleeplessdog.matchthewords.utils.ConstantsApp
 import com.sleeplessdog.matchthewords.utils.SupportFunctions
 
 class TopicsMenuController(
-    private val root: View,
-    private val topicsBackground: View,
-    private val header: View,
-    private val categoriesScroll: View,
-    private val bottomButtons: View,
-    private val groupUser: FlexboxLayout,
-    private val groupDefault: FlexboxLayout,
-    btnShowAll: View,
-    btnCancel: View,
-    btnSave: View,
+    private val topicsMenuViews: TopicsMenuViews,
     private val getPreselectedKeys: () -> Set<String>,
     private val onSaveSelection: (Set<String>) -> Unit
 ) {
@@ -28,23 +20,23 @@ class TopicsMenuController(
     private var lastDefaults: List<CategoryUi> = emptyList()
 
     init {
-        root.visibility = View.GONE
+        topicsMenuViews.root.visibility = View.GONE
 
-        btnShowAll.setOnClickListener {
+        topicsMenuViews.btnShowAll.setOnClickListener {
             preselected = getPreselectedKeys()
             show()
             renderGroups()
         }
 
-        btnCancel.setOnClickListener {
+        topicsMenuViews.btnCancel.setOnClickListener {
             hide()
         }
 
-        topicsBackground.setOnClickListener {
+        topicsMenuViews.background.setOnClickListener {
             hide()
         }
 
-        btnSave.setOnClickListener {
+        topicsMenuViews.btnSave.setOnClickListener {
             val selected = readSelectedKeys()
             onSaveSelection(selected)
             hide()
@@ -54,7 +46,7 @@ class TopicsMenuController(
     fun updateGroups(user: List<CategoryUi>, defaults: List<CategoryUi>) {
         lastUser = user
         lastDefaults = defaults
-        if (root.isVisible) {
+        if (topicsMenuViews.root.isVisible) {
             renderGroups()
         }
     }
@@ -62,8 +54,8 @@ class TopicsMenuController(
     // ---------- render ----------
 
     private fun renderGroups() {
-        renderGroup(groupUser, lastUser)
-        renderGroup(groupDefault, lastDefaults)
+        renderGroup(topicsMenuViews.groupUser, lastUser)
+        renderGroup(topicsMenuViews.groupDefault, lastDefaults)
     }
 
     private fun renderGroup(group: FlexboxLayout, items: List<CategoryUi>) {
@@ -86,22 +78,22 @@ class TopicsMenuController(
                 if (chip.isChecked) key else null
             }
 
-        return (collect(groupUser) + collect(groupDefault)).toSet()
+        return (collect(topicsMenuViews.groupUser) + collect(topicsMenuViews.groupDefault)).toSet()
     }
 
     // ---------- animations ----------
 
     private fun show() {
-        if (root.isVisible) return
+        if (topicsMenuViews.root.isVisible) return
 
-        root.alpha = ConstantsApp.ZERO_SCALE
-        root.visibility = View.VISIBLE
-        root.animate()
+        topicsMenuViews.root.alpha = ConstantsApp.ZERO_SCALE
+        topicsMenuViews.root.visibility = View.VISIBLE
+        topicsMenuViews.root.animate()
             .alpha(ConstantsApp.FULL_ALPHA)
             .setDuration(ConstantsApp.ANIMATION_DURATION_FOREGROUND)
             .start()
 
-        topicsBackground.apply {
+        topicsMenuViews.background.apply {
             alpha = ConstantsApp.ZERO_SCALE
             visibility = View.VISIBLE
             animate()
@@ -110,7 +102,7 @@ class TopicsMenuController(
                 .start()
         }
 
-        val contentViews = listOf(header, categoriesScroll, bottomButtons)
+        val contentViews = listOf(topicsMenuViews.header, topicsMenuViews.categoriesScroll, topicsMenuViews.bottomButtons)
         contentViews.forEach { view ->
             view.alpha = ConstantsApp.ZERO_SCALE
             view.translationY = ConstantsApp.TOPICS_MENU_CONTENT_OFFSET_Y
@@ -123,17 +115,17 @@ class TopicsMenuController(
     }
 
     private fun hide() {
-        if (!root.isVisible) return
+        if (!topicsMenuViews.root.isVisible) return
 
-        topicsBackground.animate()
+        topicsMenuViews.background.animate()
             .alpha(ConstantsApp.ZERO_SCALE)
             .setDuration(ConstantsApp.ANIMATION_DURATION_BACKGROUND)
             .withEndAction {
-                topicsBackground.visibility = View.GONE
+                topicsMenuViews.background.visibility = View.GONE
             }
             .start()
 
-        val contentViews = listOf(header, categoriesScroll, bottomButtons)
+        val contentViews = listOf(topicsMenuViews.header, topicsMenuViews.categoriesScroll, topicsMenuViews.bottomButtons)
         var finished = 0
         val total = contentViews.size
 
@@ -145,13 +137,13 @@ class TopicsMenuController(
                 .withEndAction {
                     finished++
                     if (finished == total) {
-                        root.visibility = View.GONE
+                        topicsMenuViews.root.visibility = View.GONE
 
                         contentViews.forEach { v ->
                             v.alpha = ConstantsApp.FULL_ALPHA
                             v.translationY = ConstantsApp.ZERO_SCALE
                         }
-                        topicsBackground.alpha = ConstantsApp.FULL_ALPHA
+                        topicsMenuViews.background.alpha = ConstantsApp.FULL_ALPHA
                     }
                 }
                 .start()

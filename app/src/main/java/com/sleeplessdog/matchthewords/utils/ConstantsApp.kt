@@ -4,6 +4,7 @@ object ConstantsApp {
     const val FADE_IN_DURATION_MS = 200L
     const val FULL_ALPHA = 1f
     const val HALF_ALPHA = 0.4f
+    const val HALF_ALPHA_WTW = 0.45f
     const val EMPTY_ALPHA = 0f
     const val ZERO_SCALE = 0f
     const val FULL_SCALE = 1f

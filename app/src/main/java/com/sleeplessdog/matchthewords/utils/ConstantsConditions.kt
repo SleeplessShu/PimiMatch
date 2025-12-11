@@ -8,6 +8,10 @@ object ConstantsConditions {
     const val DEFAULT_QUESTION_SEQUENCE = 0
     const val MIN_BUTTON_INDEX = 0
     const val MAX_BUTTON_INDEX = 3
+    const val OOF_OPTION_1 = 0
+    const val OOF_OPTION_2 = 1
+    const val OOF_OPTION_3 = 2
+    const val OOF_OPTION_4 = 3
 
     //----------------------ToF----------------------
     const val MIN_VARIANTS_COUNT_TOF = 2

@@ -34,11 +34,10 @@ class GameSelectViewModel(
             }
         }
         val ui = languagePrefs.getUiLanguage()
-        val study = languagePrefs.getStudyLanguage()
-        rebuild(ui, study)
+        rebuild(ui)
     }
 
-    private fun rebuild(ui: Language, study: Language) {
+    private fun rebuild(ui: Language) {
         _availableLanguages.value = Language.entries.filter { it != ui }
     }
 
@@ -46,7 +45,7 @@ class GameSelectViewModel(
         val ui = _uiLanguage.value ?: Language.RUSSIAN
         _studyLanguage.value = newStudy
         languagePrefs.saveLanguages(ui, newStudy)
-        rebuild(ui, newStudy)
+        rebuild(ui)
     }
 
     fun onGamePicked(type: GameType) {

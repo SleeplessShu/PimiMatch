@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.sleeplessdog.matchthewords.R
 import com.sleeplessdog.matchthewords.databinding.SettingsFragmentBinding
 import com.sleeplessdog.matchthewords.game.domain.models.LanguageLevel
+import com.sleeplessdog.matchthewords.game.domain.models.LanguageLevelChips
 import com.sleeplessdog.matchthewords.game.presentation.controller.DifficultyCardController
 import com.sleeplessdog.matchthewords.game.presentation.controller.LanguageAdapter
 import com.sleeplessdog.matchthewords.game.presentation.controller.LanguageLevelController
@@ -16,6 +17,7 @@ import com.sleeplessdog.matchthewords.game.presentation.controller.LanguageMenuC
 import com.sleeplessdog.matchthewords.game.presentation.controller.TopicsMenuController
 import com.sleeplessdog.matchthewords.game.presentation.controller.toFlagLargeRes
 import com.sleeplessdog.matchthewords.game.presentation.models.CategoryUi
+import com.sleeplessdog.matchthewords.game.presentation.models.TopicsMenuViews
 import com.sleeplessdog.matchthewords.utils.ConstantsApp
 import com.sleeplessdog.matchthewords.utils.SupportFunctions
 import kotlinx.coroutines.launch
@@ -61,14 +63,14 @@ class SettingsFragment : Fragment(R.layout.settings_fragment) {
 
     private fun setupLevelController() {
         levelController = LanguageLevelController(
-            chipA1 = binding.btnA1,
-            chipA2 = binding.btnA2,
-            chipB1 = binding.btnB1,
-            chipB2 = binding.btnB2,
-            chipC1 = binding.btnC1,
-            chipC2 = binding.btnC2,
-            onToggle = { level -> vm.toggleLevel(level) }
-        )
+            chips = LanguageLevelChips(
+                a1 = binding.btnA1,
+                a2 = binding.btnA2,
+                b1 = binding.btnB1,
+                b2 = binding.btnB2,
+                c1 = binding.btnC1,
+                c2 = binding.btnC2
+            ), onToggle = { level -> vm.toggleLevel(level) })
     }
 
     private fun setupDifficultyController() {
@@ -77,31 +79,26 @@ class SettingsFragment : Fragment(R.layout.settings_fragment) {
             medium = binding.cardMedium,
             hard = binding.cardHard,
             expert = binding.cardExpert,
-            onPick = { level -> vm.onDifficultyPicked(level) }
-        )
+            onPick = { level -> vm.onDifficultyPicked(level) })
     }
 
     private fun setupTopicsController() {
         topicsController = TopicsMenuController(
-            root = binding.rootTopics,
-            topicsBackground = binding.topicsBackground,
-            header = binding.header,
-            categoriesScroll = binding.categoriesScroll,
-            bottomButtons = binding.bottomButtons,
-            groupUser = binding.cgUserCategories,
-            groupDefault = binding.cgDefaultCategories,
-            btnShowAll = binding.btnShowAllCategories,
-            btnCancel = binding.btnCancel,
-            btnSave = binding.btnSave,
-            getPreselectedKeys = {
-                vm.state.value.user
-                    .plus(vm.state.value.defaults)
-                    .filter { it.isSelected }
-                    .map { it.key }
-                    .toSet()
-            },
-            onSaveSelection = { keys -> vm.onSave(keys) }
-        )
+            topicsMenuViews = TopicsMenuViews(
+                root = binding.rootTopics,
+                background = binding.topicsBackground,
+                header = binding.header,
+                categoriesScroll = binding.categoriesScroll,
+                bottomButtons = binding.bottomButtons,
+                groupUser = binding.cgUserCategories,
+                groupDefault = binding.cgDefaultCategories,
+                btnShowAll = binding.btnShowAllCategories,
+                btnCancel = binding.btnCancel,
+                btnSave = binding.btnSave
+            ), getPreselectedKeys = {
+                vm.state.value.user.plus(vm.state.value.defaults).filter { it.isSelected }
+                    .map { it.key }.toSet()
+            }, onSaveSelection = { keys -> vm.onSave(keys) })
     }
 
     private fun setupLanguageList() {
@@ -129,8 +126,7 @@ class SettingsFragment : Fragment(R.layout.settings_fragment) {
             vm.state.collect { state ->
                 renderFeatured(state.featured)
                 topicsController.updateGroups(
-                    user = state.user,
-                    defaults = state.defaults
+                    user = state.user, defaults = state.defaults
                 )
             }
         }

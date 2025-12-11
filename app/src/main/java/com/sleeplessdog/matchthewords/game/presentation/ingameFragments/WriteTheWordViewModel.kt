@@ -83,10 +83,9 @@ class WriteTheWordViewModel : ViewModel(), InGameLogic {
 
     fun onLetterClick(position: Int) {
         val state = _ui.value ?: return
-        if (state.locked) return
-
         val l = letters[position]
-        if (l.used) return               // уже использована — игнор
+
+        if (state.locked || l.used) return
 
         letters[position] = l.copy(used = true)
         _ui.value = state.copy(

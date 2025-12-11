@@ -12,6 +12,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.sleeplessdog.matchthewords.R
 import com.sleeplessdog.matchthewords.databinding.ItemLetterBinding
 import com.sleeplessdog.matchthewords.game.presentation.models.WriteTheWordLetterUi
+import com.sleeplessdog.matchthewords.utils.ConstantsApp.FULL_ALPHA
+import com.sleeplessdog.matchthewords.utils.ConstantsApp.HALF_ALPHA_WTW
+import com.sleeplessdog.matchthewords.utils.ConstantsTimeReaction.PRESS_DELAY_MS
 
 class LettersAdapter(
     private val onClick: (position: Int) -> Unit
@@ -38,17 +41,14 @@ class LettersAdapter(
     }
 
     private fun handleClickOptimistic(position: Int) {
-        if (position == RecyclerView.NO_POSITION) return
-        val item = currentList.getOrNull(position) ?: return
-        if (locked || item.used) return
+        val item = currentList.getOrNull(position)
 
-        // 1) Мгновенно помечаем букву использованной и перерисовываем список
+
+        if (item == null || locked || item.used ||  position == RecyclerView.NO_POSITION) return
+
         val newItem = item.copy(used = true)
         val newList = currentList.toMutableList().also { it[position] = newItem }
         submitList(newList)
-
-        // 2) Отдаём событие во VM с небольшой задержкой,
-        //    чтобы ripple/нажатие визуально отыграло
         uiHandler.postDelayed({ onClick(position) }, PRESS_DELAY_MS)
     }
 
@@ -77,13 +77,11 @@ class LettersAdapter(
 
             val enabled = !item.used && !locked
             binding.root.isEnabled = enabled
-            binding.root.alpha = if (enabled) 1f else 0.45f
+            binding.root.alpha = if (enabled) FULL_ALPHA else HALF_ALPHA_WTW
         }
     }
 
     companion object {
-        private const val PRESS_DELAY_MS = 120L
-
         private val DIFF = object : DiffUtil.ItemCallback<WriteTheWordLetterUi>() {
             override fun areItemsTheSame(oldItem: WriteTheWordLetterUi, newItem: WriteTheWordLetterUi) =
                 oldItem.id == newItem.id

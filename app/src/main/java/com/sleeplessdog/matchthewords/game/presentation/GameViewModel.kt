@@ -146,14 +146,15 @@ class GameViewModel(
 
     private suspend fun loadWordsFromDatabase(): Boolean {
         val gameType = _gameState.value?.gameType ?: GameType.MATCH8
+        val settings = _gameSettings.value
+
+        if (settings == null) return false
 
         val wordsNeeded = when (gameType) {
             GameType.WriteTheWord -> economy.difficultLevel / WRITE_WORD_DIVIDER_LIST
-            GameType.OneOfFour   -> economy.difficultLevel * ONE_OF_FOUR_MULTIPLIER
-            else                 -> economy.difficultLevel
+            GameType.OneOfFour    -> economy.difficultLevel * ONE_OF_FOUR_MULTIPLIER
+            else                  -> economy.difficultLevel
         }
-
-        val settings = _gameSettings.value ?: return false
 
         val pairs = wordsController.getWordPairs(
             settings.language1,
@@ -163,13 +164,13 @@ class GameViewModel(
             settings.category
         )
 
-        if (pairs.isEmpty()) {
+        return if (pairs.isEmpty()) {
             onGameEnd()
-            return false
+            false
+        } else {
+            allPairs = pairs
+            true
         }
-
-        allPairs = pairs
-        return true
     }
 
     // ========================= GAME END =========================
@@ -209,20 +210,7 @@ class GameViewModel(
         emitStats()
     }
 
-    fun resetAll() {
-        val diff = DifficultLevel.MEDIUM
 
-        economy.resetAll(
-            diffLevelUpdate = SupportFunctions.getGameDifficult(diff),
-            livesUpdate = SupportFunctions.getLivesCount(diff)
-        )
-
-        _gameSettings.value = GameSettings()
-        _gameState.value = MatchState(state = GameState.GAME)
-
-        progressManager.reset(diff, GameType.MATCH8)
-        emitStats()
-    }
 
     // ========================= STATS =========================
 

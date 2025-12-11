@@ -10,6 +10,10 @@ import com.sleeplessdog.matchthewords.R
 import com.sleeplessdog.matchthewords.databinding.GameOneOfFourBinding
 import com.sleeplessdog.matchthewords.game.presentation.GameViewModel
 import com.sleeplessdog.matchthewords.game.presentation.models.ButtonState
+import com.sleeplessdog.matchthewords.utils.ConstantsConditions.OOF_OPTION_1
+import com.sleeplessdog.matchthewords.utils.ConstantsConditions.OOF_OPTION_2
+import com.sleeplessdog.matchthewords.utils.ConstantsConditions.OOF_OPTION_3
+import com.sleeplessdog.matchthewords.utils.ConstantsConditions.OOF_OPTION_4
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
@@ -57,10 +61,10 @@ class OneOfFourFragment : Fragment(R.layout.game_one_of_four) {
         }
 
         // Клики
-        binding.b1.setOnClickListener { childVM.onAnswerClick(0) }
-        binding.b2.setOnClickListener { childVM.onAnswerClick(1) }
-        binding.b3.setOnClickListener { childVM.onAnswerClick(2) }
-        binding.b4.setOnClickListener { childVM.onAnswerClick(3) }
+        binding.b1.setOnClickListener { childVM.onAnswerClick(OOF_OPTION_1) }
+        binding.b2.setOnClickListener { childVM.onAnswerClick(OOF_OPTION_2) }
+        binding.b3.setOnClickListener { childVM.onAnswerClick(OOF_OPTION_3) }
+        binding.b4.setOnClickListener { childVM.onAnswerClick(OOF_OPTION_4) }
     }
 
     private fun getBackgroundRes(state: ButtonState?) =

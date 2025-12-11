@@ -97,8 +97,11 @@ class SettingsViewModel(
                 val allDomain = userDomain + defaultDomain
 
                 val featuredDomain =
-                    allDomain.sortedWith(compareByDescending<WordCategory> { it.isSelected }.thenByDescending { it.isUser }
-                        .thenBy { it.orderInBlock }.thenBy { it.titleKey }).take(FEATURED_LIMIT)
+                    allDomain.sortedWith(compareByDescending<WordCategory> { it.isSelected }
+                        .thenByDescending { it.isUser }
+                        .thenBy { it.orderInBlock }
+                        .thenBy { it.titleKey })
+                        .take(FEATURED_LIMIT)
 
                 CategoriesUiState(
                     featured = featuredDomain.map(toUi),
