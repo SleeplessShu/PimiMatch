@@ -4,9 +4,8 @@
     android:layout_width="48dp"
     android:layout_height="48dp"
     android:layout_margin="6dp"
-    android:background="@drawable/word_background_default"
-    android:backgroundTint="@color/gray_05"
-    android:foreground="?attr/selectableItemBackground">
+    android:background="@drawable/bg_button_rounded_12"
+    >
 
     <TextView
         android:id="@+id/tLetter"
