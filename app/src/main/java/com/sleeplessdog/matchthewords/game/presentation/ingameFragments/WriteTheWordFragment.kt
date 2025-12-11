@@ -1,10 +1,14 @@
 package com.sleeplessdog.matchthewords.game.presentation.ingameFragments
 
 
+import android.annotation.SuppressLint
+import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.google.android.flexbox.FlexDirection
@@ -47,6 +51,7 @@ class WriteTheWordFragment : Fragment(R.layout.write_the_word_fragment) {
         }
         binding.rvLetters.layoutManager = flex
         setupObservers()
+        // setupTouchListeners()
     }
 
     override fun onDestroyView() {
@@ -68,7 +73,7 @@ class WriteTheWordFragment : Fragment(R.layout.write_the_word_fragment) {
             adapter.locked = ui.locked
             adapter.submitList(ui.letters)
             binding.btnClearLetter.isEnabled = !ui.locked && ui.input.isNotEmpty()
-             binding.btnClear.isEnabled = !ui.locked && ui.input.isNotEmpty()
+            binding.btnClear.isEnabled = !ui.locked && ui.input.isNotEmpty()
             binding.btnCheck.isEnabled = !ui.locked && ui.input.isNotEmpty()
         }
 
@@ -77,7 +82,7 @@ class WriteTheWordFragment : Fragment(R.layout.write_the_word_fragment) {
         }
 
         binding.btnClearLetter.setOnClickListener { childVM.onDeleteLetter() }
-         binding.btnClear.setOnClickListener { childVM.onClear() }
+        binding.btnClear.setOnClickListener { childVM.onClear() }
         binding.btnCheck.setOnClickListener { childVM.onCheck() }
     }
 }
