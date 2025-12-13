@@ -39,101 +39,102 @@ import com.sleeplessdog.matchthewords.utils.ConstantsPaths.THEME_PREFERENCES
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
-val dataModule =
-    module {
-        single {
-            FirebaseDatabase.getInstance(FIREBASE_PATH)
-        }
+val dataModule = module {
+    single {
+        FirebaseDatabase.getInstance(FIREBASE_PATH)
+    }
 
-        single {
-            FirebaseStorage.getInstance()
-        }
+    single {
+        FirebaseStorage.getInstance()
+    }
 
-        single(named(THEME_PREFERENCES)) {
-            App.appContext.getSharedPreferences(NIGHT_MODE, Context.MODE_PRIVATE)
-        }
+    single(named(THEME_PREFERENCES)) {
+        App.appContext.getSharedPreferences(NIGHT_MODE, Context.MODE_PRIVATE)
+    }
 
-        single<WordsDatabase> {
-            WordsDatabase(get())
-        }
+    single<WordsDatabase> {
+        WordsDatabase(get())
+    }
 
-        factory<Handler> {
-            Handler()
-        }
+    factory<Handler> {
+        Handler()
+    }
 
-        single<Context> {
-            App.appContext
-        }
+    single<Context> {
+        App.appContext
+    }
 
-        single { get<AppDatabase>().wordDao() }
+    single { get<AppDatabase>().wordDao() }
 
-        single(named(KEY_DB_PREFS)) {
-            App.appContext.getSharedPreferences(
-                KEY_DB_PREFS,
-                Context.MODE_PRIVATE,
+    single(named(KEY_DB_PREFS)) {
+        App.appContext.getSharedPreferences(
+            KEY_DB_PREFS,
+            Context.MODE_PRIVATE,
+        )
+    }
+
+    single {
+        val dbName = DICTIONARY_NAME
+        val ctx: Context = get()
+
+        val sel = resolveAssetDatabase(ctx)
+
+        val prefs: SharedPreferences = get(
+            qualifier =
+                named(
+                    KEY_DB_PREFS
+                ),
+        )
+        prefs.edit {
+            putString(
+                KEY_DB_DATE,
+                sel.date,
             )
         }
 
-        single {
-            val dbName = DICTIONARY_NAME
-            val ctx: Context = get()
+        Room.databaseBuilder(
+            ctx,
+            AppDatabase::class.java,
+            dbName,
+        ).createFromAsset(sel.assetPath).build()
+    }
 
-            val sel = resolveAssetDatabase(ctx)
-
-            val prefs: SharedPreferences = get(
-                qualifier = named(KEY_DB_PREFS)
-            )
-            prefs.edit {
-                putString(
-                    KEY_DB_DATE,
-                    sel.date,
-                )
-            }
-
-            Room.databaseBuilder(
-                ctx,
-                AppDatabase::class.java,
-                dbName,
-            )
-                .createFromAsset(sel.assetPath)
-                .build()
-        }
-
-        single(named(KEY_DB_SCORE)) {
-            App.appContext.getSharedPreferences(
-                KEY_DB_SCORE_HISTORY,
-                Context.MODE_PRIVATE,
-            )
-        }
-        single<ScoreRepository> {
-            ScoreRepositoryImpl(
-                sharedPreferences = get(
+    single(named(KEY_DB_SCORE)) {
+        App.appContext.getSharedPreferences(
+            KEY_DB_SCORE_HISTORY,
+            Context.MODE_PRIVATE,
+        )
+    }
+    single<ScoreRepository> {
+        ScoreRepositoryImpl(
+            sharedPreferences =
+                get(
                     named(
                         KEY_DB_SCORE,
-                    )
-                )
-            )
-        }
-
-        single<ServerDateRepository> {
-            ServerDateRepositoryImpl(get(named(KEY_DB_PREFS)))
-        }
-
-        single<ServerDbInteractor> {
-            ServerDbInteractorImpl(get(), get(),)
-        }
-
-        single { AppDb.build(get()) }
-        single<WordCategoryDao> {
-            get<AppDb>().wordCategoryDao()
-        }
-
-        single<WordCategoriesRepository> { WordCategoriesRepositoryImpl(get()) }
-        factory { ObserveFeaturedCategoriesUC(get()) }
-        factory { ObserveAllCategoriesGroupedUC(get()) }
-        factory { ToggleCategoryUC(get()) }
-        factory { SaveSelectionUC(get()) }
-        factory { CreateUserCategoryUC(get()) }
-        factory { DeleteUserCategoryUC(get()) }
-        factory { GetSelectedCategoriesUC(get()) }
+                    ),
+                ),
+        )
     }
+
+    single<ServerDateRepository> {
+        ServerDateRepositoryImpl(get(named(KEY_DB_PREFS)))
+    }
+
+    single<ServerDbInteractor> {
+        ServerDbInteractorImpl(get(), get())
+    }
+
+    single { AppDb.build(get()) }
+    single<WordCategoryDao> {
+        get<AppDb>().wordCategoryDao()
+    }
+
+    single<WordCategoriesRepository> { WordCategoriesRepositoryImpl(get()) }
+    factory { ObserveFeaturedCategoriesUC(get()) }
+    factory { ObserveAllCategoriesGroupedUC(get()) }
+    factory { ToggleCategoryUC(get()) }
+    factory { SaveSelectionUC(get()) }
+    factory { CreateUserCategoryUC(get()) }
+    factory { DeleteUserCategoryUC(get()) }
+    factory { GetSelectedCategoriesUC(get()) }
+}
