@@ -61,20 +61,22 @@ class App : Application() {
                 throwable.printStackTrace(PrintWriter(sw))
                 val stackTrace = sw.toString()
 
-                val ts = SimpleDateFormat(
-                    "yyyy-MM-dd HH:mm:ss",
-                    Locale.US,
-                ).format(
-                    System.currentTimeMillis(),
-                )
-                val header = buildString {
-                    appendLine("=== Crash ===")
-                    appendLine("Time      : $ts")
-                    appendLine("Thread    : ${thread.name} (${thread.id})")
-                    appendLine("Device    : ${android.os.Build.MANUFACTURER} ${android.os.Build.MODEL}")
-                    appendLine("SDK       : ${android.os.Build.VERSION.SDK_INT}")
-                    appendLine("------------------------------")
-                }
+                val ts =
+                    SimpleDateFormat(
+                        "yyyy-MM-dd HH:mm:ss",
+                        Locale.US,
+                    ).format(
+                        System.currentTimeMillis(),
+                    )
+                val header =
+                    buildString {
+                        appendLine("=== Crash ===")
+                        appendLine("Time      : $ts")
+                        appendLine("Thread    : ${thread.name} (${thread.id})")
+                        appendLine("Device    : ${android.os.Build.MANUFACTURER} ${android.os.Build.MODEL}")
+                        appendLine("SDK       : ${android.os.Build.VERSION.SDK_INT}")
+                        appendLine("------------------------------")
+                    }
 
                 openFileOutput(CRASH_FILE, MODE_APPEND).use { fos ->
                     fos.write((header + stackTrace + "\n\n").toByteArray())
@@ -88,7 +90,6 @@ class App : Application() {
             } catch (e: IOException) {
                 Log.e("CRASH", "Failed to save crash", e)
             } finally {
-
                 defaultHandler?.uncaughtException(thread, throwable) ?: run {
                     android.os.Process.killProcess(android.os.Process.myPid())
                 }
