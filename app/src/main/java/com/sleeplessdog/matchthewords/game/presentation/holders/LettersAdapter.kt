@@ -60,12 +60,25 @@ class LettersAdapter(
     }
 
     private fun canHandleClick(position: Int, item: WriteTheWordLetterUi?): Boolean {
-        // Проверки выстроены по принципу "раннего выхода"
-        if (locked) return false
-        if (position == RecyclerView.NO_POSITION) return false
-        if (item == null || item.used) return false
+        if (!isAdapterContextValid(position)) {
+            return false
+        }
 
-        return true
+        return isItemInteractable(item)
+    }
+
+    private fun isAdapterContextValid(position: Int): Boolean {
+        if (locked) {
+            return false
+        }
+        return position != RecyclerView.NO_POSITION
+    }
+
+    private fun isItemInteractable(item: WriteTheWordLetterUi?): Boolean {
+        if (item == null) {
+            return false
+        }
+        return !item.used
     }
 
     class VH(
