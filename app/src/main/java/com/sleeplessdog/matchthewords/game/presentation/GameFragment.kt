@@ -32,11 +32,10 @@ class GameFragment : Fragment() {
     private val viewModel: GameViewModel by viewModel()
     private var _binding: GameFragmentBinding? = null
     private val binding: GameFragmentBinding get() = _binding!!
-
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<View>
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?,
     ): View? {
         _binding = GameFragmentBinding.inflate(inflater, container, false)
         return binding.root
@@ -62,7 +61,8 @@ class GameFragment : Fragment() {
         bottomSheetBehavior = BottomSheetBehavior.from(binding.bottomSheetExit.root)
         bottomSheetBehavior.isHideable = true
         bottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
-        bottomSheetBehavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
+        bottomSheetBehavior.addBottomSheetCallback(object :
+            BottomSheetBehavior.BottomSheetCallback() {
             override fun onStateChanged(bottomSheet: View, newState: Int) {
                 if (newState == BottomSheetBehavior.STATE_HIDDEN) {
                     binding.overlay.visibility = View.GONE
@@ -73,7 +73,6 @@ class GameFragment : Fragment() {
 
             override fun onSlide(bottomSheet: View, slideOffset: Float) {
 
-                val alpha = (slideOffset + 1) / 2
                 val newAlpha = if (slideOffset < 0) {
                     slideOffset + 1
                 } else {
@@ -84,7 +83,6 @@ class GameFragment : Fragment() {
             }
         })
 
-        // 4. Обработка нажатия на Overlay (чтобы закрыть шторку тапом мимо)
         binding.overlay.setOnClickListener {
             bottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
         }
@@ -95,7 +93,6 @@ class GameFragment : Fragment() {
         }
 
         binding.bottomSheetExit.btnExit.setOnClickListener {
-            //bottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
             returnToGameSelect()
         }
     }
@@ -129,7 +126,7 @@ class GameFragment : Fragment() {
             }
         }
         viewModel.statsState.observe(viewLifecycleOwner) { stats ->
-            binding.tvScores.setText(stats.score)
+            binding.tvScores.text = stats.score
             binding.progressBar.setSegments(stats.progressSegments)
             binding.progressBar.setProgress(stats.progress)
             setHearts(stats.lives)
@@ -148,6 +145,7 @@ class GameFragment : Fragment() {
             showExitBottomSheet()
         }
     }
+
     private fun showExitBottomSheet() {
         bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
     }
@@ -194,7 +192,7 @@ class GameFragment : Fragment() {
             getHitRect(rect)
             val addX = ((rect.width() * (factor - 1f)) / 2f).roundToInt()
             val addY = ((rect.height() * (factor - 1f)) / 2f).roundToInt()
-            rect.inset(-addX, -addY)               // расширяем область
+            rect.inset(-addX, -addY)
             parentView.touchDelegate = TouchDelegate(rect, this)
         }
     }
