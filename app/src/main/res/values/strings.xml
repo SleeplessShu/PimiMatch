@@ -11,6 +11,11 @@
 
     <string name="empty">     </string>
 
+    <!-- LANDING PAGES -->
+    <string name="landing_start_button">Начнём!</string>
+    <string name="landing_start_salut">HOLA!\nSALUT!\nBAREV!</string>
+    <string name="landing_accept">Понятно!</string>
+
     <!-- endgame fragment -->
     <string name="end_game_phrase_win">Победа!</string>
     <string name="end_game_phrase_loose">Провал!</string>
