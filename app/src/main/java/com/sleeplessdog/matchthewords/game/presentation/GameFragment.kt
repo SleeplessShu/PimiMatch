@@ -21,6 +21,7 @@ import com.sleeplessdog.matchthewords.game.presentation.ingameFragments.WordsMat
 import com.sleeplessdog.matchthewords.game.presentation.ingameFragments.WriteTheWordFragment
 import com.sleeplessdog.matchthewords.game.presentation.models.GameState
 import com.sleeplessdog.matchthewords.game.presentation.models.GameType
+import com.sleeplessdog.matchthewords.game.presentation.models.LandingConditions
 import com.sleeplessdog.matchthewords.game.presentation.parentControllers.HeartsController
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import kotlin.math.roundToInt
@@ -124,13 +125,18 @@ class GameFragment : Fragment() {
                     binding.buttonBack.isVisible = false
                 }
             }
+            if (newState.landingConditions.shouldShow) {
+                showLanding(newState.landingConditions)
+            }
         }
+
         viewModel.statsState.observe(viewLifecycleOwner) { stats ->
             binding.tvScores.text = stats.score
             binding.progressBar.setSegments(stats.progressSegments)
             binding.progressBar.setProgress(stats.progress)
             setHearts(stats.lives)
         }
+
         binding.buttonBack.expandTouchAreaByFactor(6f)
 
         binding.buttonBack.setOnClickListener {
@@ -144,6 +150,8 @@ class GameFragment : Fragment() {
         viewModel.showExitDialogEvent.observe(viewLifecycleOwner) {
             showExitBottomSheet()
         }
+
+
     }
 
     private fun showExitBottomSheet() {
@@ -152,8 +160,7 @@ class GameFragment : Fragment() {
 
     private fun returnToGameSelect() {
         viewModel.resetAll()
-        val dir = GameFragmentDirections
-            .actionGameFragmentToGameSelectFragment()
+        val dir = GameFragmentDirections.actionGameFragmentToGameSelectFragment()
         findNavController().navigate(dir)
     }
 
@@ -184,6 +191,32 @@ class GameFragment : Fragment() {
         heartsController.render(heartsQuantity)
     }
 
+    private fun showLanding(landingConditions: LandingConditions) {
+        val showLanding = landingConditions.shouldShow
+        val header = getString(landingConditions.headerTextId)
+        val text = getString(landingConditions.regularTextId)
+        binding.landingOverlayView.root.isVisible = showLanding
+        binding.landingOverlayView.tvHeader.text = header
+        binding.landingOverlayView.tvText.text = text
+        binding.landingOverlayView.animationView.setAnimation(landingConditions.animation)
+        binding.landingOverlayView.animationView.playAnimation()
+        binding.landingOverlayView.btnStart.setOnClickListener {
+            viewModel.onLandingShown(landingConditions.key)
+            binding.landingOverlayView.root.animate().alpha(0f).setDuration(300).withEndAction {
+                binding.landingOverlayView.root.isVisible = false
+                binding.landingOverlayView.root.alpha = 1f
+            }
+        }
+
+        binding.landingOverlayView.btnSettings.setOnClickListener {
+            viewModel.resetAll()
+            val dir = GameFragmentDirections.actionGameFragmentToSettingsFragment()
+            findNavController().navigate(dir)
+
+        }
+    }
+
+
     fun View.expandTouchAreaByFactor(factor: Float) {
         val parentView = parent as? View ?: return
         if (factor <= 1f) return
@@ -197,3 +230,4 @@ class GameFragment : Fragment() {
         }
     }
 }
+

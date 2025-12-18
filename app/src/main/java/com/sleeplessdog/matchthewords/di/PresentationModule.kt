@@ -40,6 +40,7 @@ val presentationModule = module {
             scoreInteractor = get(),
             appPrefs = get(),
             getSelectedCategoriesUC = get(),
+            landingManager = get(),
         )
     }
 
