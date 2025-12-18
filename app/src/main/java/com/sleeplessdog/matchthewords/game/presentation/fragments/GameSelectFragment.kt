@@ -148,7 +148,9 @@ class GameSelectFragment : Fragment() {
                     binding.landingOverlayView.textView.text =
                         getString(R.string.landing_start_salut)
                     binding.landingOverlayView.btn.text = getString(R.string.landing_start_button)
-                    binding.landingOverlayView.animationView.setAnimation(R.raw.animations_loading)
+                    binding.landingOverlayView.animationViewCurtains.setAnimation(R.raw.animations_first_curtans)
+                    binding.landingOverlayView.animationView.setAnimation(R.raw.animations_first_juggles)
+                    binding.landingOverlayView.animationViewCurtains.playAnimation()
                     binding.landingOverlayView.animationView.playAnimation()
                     binding.landingOverlayView.btn.setOnClickListener {
                         Log.d("DEBUG", "shouldShow: $shouldShow ")

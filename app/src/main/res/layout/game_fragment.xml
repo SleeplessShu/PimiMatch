@@ -142,8 +142,9 @@
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
-    <androidx.compose.ui.platform.ComposeView
+    <include
         android:id="@+id/landingOverlayView"
+        layout="@layout/landing_game_overlay"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
