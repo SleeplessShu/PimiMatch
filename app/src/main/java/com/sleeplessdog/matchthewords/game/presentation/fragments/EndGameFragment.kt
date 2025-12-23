@@ -64,21 +64,21 @@ class EndGameFragment : Fragment(R.layout.end_game_fragment) {
                 showResult(
                     result = getString(R.string.end_game_phrase_win),
                     phrase = getString(R.string.eg_congrats),
-                    image = R.drawable.pimi_game_end_victory,
+                    animation = R.raw.animation_victory_default,
                     stats = stats
                 )
             } else {
                 showResult(
                     result = getString(R.string.end_game_phrase_loose),
                     phrase = getString(R.string.eg_sorrow),
-                    image = R.drawable.pimi_game_end_fail,
-                    stats = stats
+                    animation = R.drawable.pimi_game_end_fail,
+                    stats = stats,
                 )
             }
         }
     }
 
-    private fun showResult(result: String, phrase: String, image: Int, stats: EndGameStats?) {
+    private fun showResult(result: String, phrase: String, animation: Int, stats: EndGameStats?) {
         val errors = stats?.mistakesCount
         val score = stats?.score
         val words = stats?.wordsCount
@@ -88,7 +88,8 @@ class EndGameFragment : Fragment(R.layout.end_game_fragment) {
         binding.tvErrors.text = errors.toString()
         binding.tvScore.text = score.toString()
         binding.tvWords.text = words.toString()
-        binding.pimi.setImageResource(image)
+        binding.animationView.setAnimation(animation)
+        binding.animationView.playAnimation()
     }
 
     private fun returnToGameSelect() {

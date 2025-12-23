@@ -14,6 +14,19 @@
         app:layout_constraintGuide_percent="0.50" />
 
     <com.airbnb.lottie.LottieAnimationView
+        android:id="@+id/animationBgView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:scaleType="centerCrop"
+        app:layout_constraintBottom_toBottomOf="@id/baseBackground"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:lottie_autoPlay="true"
+        app:lottie_loop="true"
+        app:lottie_rawRes="@raw/animation_bg_confeti" />
+
+    <com.airbnb.lottie.LottieAnimationView
         android:id="@+id/animationView"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -26,16 +39,6 @@
         app:lottie_loop="true"
         app:lottie_rawRes="@raw/animations_first_juggles" />
 
-    <ImageView
-        android:id="@+id/pimi"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="52dp"
-        android:src="@drawable/pimi_game_end_victory"
-        app:layout_constraintBottom_toTopOf="@id/baseBackground"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnSaveWords"
@@ -80,11 +83,12 @@
 
     <TextView
         android:id="@+id/tvResult"
-        style="@style/Text.H2.HeadlineLarge"
+        style="@style/Text.H1.DisplayLarge"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         android:fontFamily="@font/murs_gothic_wide_dark"
+        android:textSize="30sp"
         android:textColor="@color/white"
         app:layout_constraintEnd_toEndOf="@id/baseBackground"
         app:layout_constraintStart_toStartOf="@id/baseBackground"
@@ -93,7 +97,7 @@
 
     <TextView
         android:id="@+id/tvPhrase"
-        style="@style/Text.T3.TextLarge"
+        style="@style/Text.H3.HeadlineSmall"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textColor="@color/gray_03"
