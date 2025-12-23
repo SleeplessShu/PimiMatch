@@ -299,20 +299,27 @@ class GameViewModel(
 
     // ------------ Конец игры/сброс ------------
     fun onGameEnd() {
-        onLoading()
+        //onLoading()
 
         val stats = SessionStats(
             correctIds = sessionCorrectIds.toList(), mistakeIds = sessionWrongIds.toList()
         )
         val todaysScore = scoreInteractor.getTodaysResult()
         viewModelScope.launch {
-            delay(TimeConstants.LOADING_PROCESS)
+            //delay(TimeConstants.LOADING_PROCESS)
             _gameState.value = _gameState.value?.copy(
                 state = GameState.END_OF_GAME,
             )
             _statsState.value = _statsState.value?.copy(
                 lives = lives, todaysScore = todaysScore.toString()
             )
+            _endGameStats.value = EndGameStats(
+                isWin = lives > 0,
+                mistakesCount = sessionWrongIds.size,
+                score = score,
+                wordsCount = sessionCorrectIds.size
+            )
+
             wordsController.putRoundStats(stats)
             scoreInteractor.updateTodaysResult(score)
         }
@@ -381,6 +388,16 @@ class GameViewModel(
     }
 
     fun onLandingShown(landingKey: LandingKeys) {
+        _gameState.value = _gameState.value?.copy(
+            landingConditions =
+                LandingConditions(
+                    shouldShow = false,
+                    headerTextId = 0,
+                    regularTextId = 0,
+                    animation = 0,
+                    key = landingKey,
+                )
+        )
         landingManager.setShown(landingKey)
     }
 }
