@@ -80,7 +80,10 @@ class WriteTheWordViewModel : ViewModel(), InGameLogic {
     /** оставляем часть ДО '/', плюс trim */
     private fun cleanTranslation(raw: String): String {
         val beforeSlash = raw.substringBefore('/')
-        return beforeSlash.trim()
+        return beforeSlash
+            .replace("\\s".toRegex(), "")  // удаляем все пробелы включая невидимые
+            .replace("\u00A0", "")         // на всякий удаляем неразрывный пробел
+            .trim()
     }
 
     private val usedIndicesStack = mutableListOf<Int>()
@@ -123,22 +126,6 @@ class WriteTheWordViewModel : ViewModel(), InGameLogic {
             isCheckEnabled = enabled
         )
     }
-
-    /*fun onBackspace() {
-        val state = _ui.value ?: return
-        if (state.locked || state.input.isEmpty()) return
-
-        // снимаем used с последней добавленной буквы по символу
-        val lastChar = state.input.last()
-        val idx = letters.indexOfLast { it.used && it.char == lastChar }
-        if (idx != -1) {
-            letters[idx] = letters[idx].copy(used = false)
-            _ui.value = state.copy(
-                input = state.input.dropLast(1),
-                letters = letters.toList()
-            )
-        }
-    }*/
 
     fun onClear() {
         val state = _ui.value ?: return
