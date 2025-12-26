@@ -55,7 +55,7 @@ class LettersAdapter(
         uiHandler.postDelayed({ onClick(position) }, PRESS_DELAY_MS)
     }
 
-    @SuppressLint("ResourceAsColor", "ClickableViewAccessibility")
+    @SuppressLint("ClickableViewAccessibility")
     class VH(
         private val binding: ItemLetterBinding,
         private val onOptimisticClick: (Int) -> Unit
@@ -107,7 +107,14 @@ class LettersAdapter(
             binding.tLetter.setTextColor(context.getColor(R.color.white))
         }
 
-        fun bind(item: WriteTheWordLetterUi, locked: Boolean, isSelected: Boolean = false) {
+        fun onSelectedHighlight() {
+            val context = binding.root.context
+            val background = binding.root.background as? GradientDrawable
+            background?.setColor(context.getColor(R.color.yellow_primary))
+            binding.tLetter.setTextColor(context.getColor(R.color.white))
+        }
+
+        fun bind(item: WriteTheWordLetterUi, locked: Boolean, isSelected: Boolean) {
             val isSpace = item.char == ' '
 
             binding.iconSpace.visibility = if (isSpace) View.VISIBLE else View.GONE
@@ -124,20 +131,9 @@ class LettersAdapter(
             binding.root.alpha = if (enabled) 1f else 0.45f
 
             when {
-                item.used -> {
-                    // Буква использована — серый фон, серый текст (как после отпускания)
-                    onReleaseHighlight()
-                }
-
-                isSelected -> {
-                    // Выбрана, но ещё не "used" — например, при клике
-                    onReleaseHighlight()
-                }
-
-                else -> {
-                    // По умолчанию
-                    clearHighlight()
-                }
+                item.used -> onReleaseHighlight()
+                isSelected -> onSelectedHighlight()
+                else -> clearHighlight()
             }
         }
     }
