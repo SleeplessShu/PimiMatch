@@ -130,6 +130,7 @@ class WriteTheWordViewModel : ViewModel(), InGameLogic {
     fun onClear() {
         val state = _ui.value ?: return
         letters = letters.map { it.copy(used = false) }.toMutableList()
+        usedIndicesStack.clear()
         _ui.value = state.copy(
             input = "",
             letters = letters.toList(),

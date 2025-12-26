@@ -1,4 +1,4 @@
-<!-- fragment_anagram.xml -->
+<!-- write_the_word_fragment.xml -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -55,6 +55,7 @@
             android:layout_height="48dp"
             android:background="@drawable/bg_button_rounded_12"
             android:backgroundTint="@color/btn_bg_tint"
+            android:contentDescription="@string/btn_clear_word"
             android:src="@drawable/delete_word"
             app:tint="@color/btn_icon_tint" />
 
@@ -68,6 +69,7 @@
             android:layout_height="48dp"
             android:background="@drawable/bg_button_rounded_12"
             android:backgroundTint="@color/btn_bg_tint"
+            android:contentDescription="@string/btn_clear_letter"
             android:src="@drawable/delete_letter"
             app:tint="@color/btn_icon_tint" />
     </LinearLayout>
@@ -81,6 +83,7 @@
         android:id="@+id/btnCheck"
         android:layout_width="match_parent"
         android:layout_height="64dp"
+        android:contentDescription="@string/btn_check"
         android:text="Проверить"
         android:textColor="@color/dark_text_used"
         android:textSize="20sp" />
