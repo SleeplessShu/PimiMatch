@@ -43,7 +43,6 @@ class PimiScrollbarController(
 
         if (range <= 0 || travel <= 0) {
             thumb.translationY = 0f
-            
             return
         }
         thumb.visibility = View.VISIBLE

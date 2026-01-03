@@ -50,7 +50,7 @@ class EndGameViewModel(
 
         viewModelScope.launch {
             addToUserDictionaryUC(wordsIds)
-
+            Log.d("DEBUG", "написать обработку для возврата резалтата")
         }
     }
 
