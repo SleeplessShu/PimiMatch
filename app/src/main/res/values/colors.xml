@@ -34,4 +34,6 @@
     <color name="orange_primary">#FF894A</color>
     <color name="red_primary">#F26155</color>
     <color name="red_secondary">#E75246</color>
+    <color name="day_lightGreen">#EB0DA8</color>
+
 </resources>

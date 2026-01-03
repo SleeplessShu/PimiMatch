@@ -10,7 +10,7 @@ class UserDictionaryRepository(private val dao: UserDictionaryDao) {
 
     fun getAllWords() = dao.getAllUserWords()
 
-    suspend fun saveWord(word: List<UserWordEntity>) {
+    suspend fun saveWords(word: List<UserWordEntity>) {
         dao.insertOrUpdateWord(word)
     }
 
@@ -32,7 +32,6 @@ class UserDictionaryRepository(private val dao: UserDictionaryDao) {
             )
         }
 
-        // 2. Сохраняем все подготовленные слова в базу данных одним вызовом
         dao.insertOrUpdateWord(userWordsToSave)
     }
 

@@ -41,6 +41,7 @@ class EndGameFragment : Fragment(R.layout.end_game_fragment) {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        pimiController = null
         _binding = null
     }
 
@@ -48,7 +49,6 @@ class EndGameFragment : Fragment(R.layout.end_game_fragment) {
         super.onViewCreated(view, savedInstanceState)
         setupObservers()
         setupUI()
-        setupPimiThumbOnce()
     }
 
     private fun setupUI() {
@@ -57,6 +57,22 @@ class EndGameFragment : Fragment(R.layout.end_game_fragment) {
         }
 
         binding.actionWithWordsOverlayView.rvWords.adapter = wordsAdapter
+
+        binding.btnReportWords.setOnClickListener {
+            childViewModel.reportAboutMistake()
+        }
+
+        binding.btnSaveWords.setOnClickListener {
+            childViewModel.saveWordsToUsersDictionary()
+        }
+
+        binding.actionWithWordsOverlayView.buttonBack.setOnClickListener { childViewModel.hideActions() }
+
+        binding.actionWithWordsOverlayView.btnCancel.setOnClickListener { childViewModel.hideActions() }
+
+        binding.actionWithWordsOverlayView.checkboxSelectAll.setOnCheckedChangeListener { _, isChecked ->
+            wordsAdapter.toggleSelectAll(isChecked)
+        }
 
         binding.bNewGame.setOnClickListener {
             returnToGameSelect()
@@ -72,8 +88,9 @@ class EndGameFragment : Fragment(R.layout.end_game_fragment) {
     private fun setupObservers() {
         parentViewModel.endGameStats.observe(viewLifecycleOwner) { stats ->
             wordsAdapter.submitList(stats.sessionPairs)
+
             binding.actionWithWordsOverlayView.rvWords.post {
-                setupPimiThumb()
+                setupPimiThumbOnce()
             }
 
             val isWin = stats.isWin
@@ -120,50 +137,21 @@ class EndGameFragment : Fragment(R.layout.end_game_fragment) {
             }
             binding.actionWithWordsOverlayView.root.isVisible = event.isVisible
             if (event.isVisible) {
-                setupPimiThumbOnce()
-                binding.actionWithWordsOverlayView.root.post {
-                    pimiController?.forceUpdate()
-                }
-                binding.actionWithWordsOverlayView.rvWords.post {
-                    pimiController?.forceUpdate()
-                }
+                pimiController?.forceUpdate()
             }
         }
-
-        binding.btnReportWords.setOnClickListener {
-            childViewModel.reportAboutMistake()
-        }
-
-        binding.btnSaveWords.setOnClickListener {
-            childViewModel.saveWordsToUsersDictionary()
-        }
-
-        binding.actionWithWordsOverlayView.buttonBack.setOnClickListener { childViewModel.hideActions() }
-
-        binding.actionWithWordsOverlayView.btnCancel.setOnClickListener { childViewModel.hideActions() }
-
-        binding.actionWithWordsOverlayView.checkboxSelectAll.setOnCheckedChangeListener { _, isChecked ->
-            wordsAdapter.toggleSelectAll(isChecked)
-        }
-    }
-
-    private fun setupPimiThumb() {
-        val recyclerView = binding.actionWithWordsOverlayView.rvWords
-        val thumb = binding.actionWithWordsOverlayView.tumblerPimi
-        val track = binding.actionWithWordsOverlayView.pathPimi
-        val scrollableAdapter = PimiRecyclerViewAdapter(recyclerView)
-        val scrollbarController = PimiScrollbarController(scrollableAdapter, track, thumb)
-        scrollbarController.attach()
     }
 
     private fun setupPimiThumbOnce() {
         if (pimiController != null) return
+        if (_binding == null) return
 
         val recyclerView = binding.actionWithWordsOverlayView.rvWords
         val thumb = binding.actionWithWordsOverlayView.tumblerPimi
         val track = binding.actionWithWordsOverlayView.pathPimi
 
         val scrollableAdapter = PimiRecyclerViewAdapter(recyclerView)
+
         pimiController =
             PimiScrollbarController(scrollableAdapter, track, thumb).also { it.attach() }
     }
@@ -188,7 +176,7 @@ class EndGameFragment : Fragment(R.layout.end_game_fragment) {
             removeAllAnimatorListeners()
             addAnimatorListener(object : AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: Animator) {
-                    setFrame(maxFrame.toInt() - 1)
+                    frame = (maxFrame.toInt() - 1)
                     pauseAnimation()
                 }
             })

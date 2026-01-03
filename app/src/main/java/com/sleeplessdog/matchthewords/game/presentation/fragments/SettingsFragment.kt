@@ -2,8 +2,11 @@ package com.sleeplessdog.matchthewords.game.presentation.fragments
 
 import android.os.Bundle
 import android.view.View
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.flexbox.FlexboxLayout
 import com.google.android.material.chip.Chip
@@ -20,6 +23,7 @@ import com.sleeplessdog.matchthewords.game.presentation.models.CategoryUi
 import com.sleeplessdog.matchthewords.game.presentation.models.DifficultLevel
 import com.sleeplessdog.matchthewords.main.MainActivity
 import com.sleeplessdog.matchthewords.utils.SupportFunctions
+import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 enum class LanguageAdapterState {
@@ -48,7 +52,7 @@ class SettingsFragment : Fragment(R.layout.settings_fragment) {
 
     private lateinit var langAdapter: LanguageAdapter
     private lateinit var languageMenuManager: LanguageMenuManager
-    private lateinit var pimiController: PimiScrollbarController
+    private var pimiController: PimiScrollbarController? = null
 
     private var preselected: Set<String> = emptySet()
 
@@ -61,13 +65,16 @@ class SettingsFragment : Fragment(R.layout.settings_fragment) {
         setupObservers()
     }
 
-    private fun setupPimiThumb() {
+    private fun setupPimiThumbOnce() {
+        if (pimiController != null) return
+        if (_binding == null) return
+
         val scrollView = binding.categoriesScroll
         val thumb = binding.tumblerPimi
         val track = binding.pathPimi
         val scrollableAdapter = PimiScrollViewAdapter(scrollView)
-        val scrollbarController = PimiScrollbarController(scrollableAdapter, track, thumb)
-        scrollbarController.attach()
+        pimiController =
+            PimiScrollbarController(scrollableAdapter, track, thumb).also { it.attach() }
     }
 
     private fun setupLanguageMenuManager() {
@@ -125,11 +132,13 @@ class SettingsFragment : Fragment(R.layout.settings_fragment) {
     }
 
     private fun setupObservers() {
-        viewLifecycleOwner.lifecycleScope.launchWhenStarted {
-            vm.state.collect { state ->
-                renderFeatured(state.featured)
-                renderGroup(binding.cgUserCategories, state.user)
-                renderGroup(binding.cgDefaultCategories, state.defaults)
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                vm.state.collect { state ->
+                    renderFeatured(state.featured)
+                    renderGroup(binding.cgUserCategories, state.user)
+                    renderGroup(binding.cgDefaultCategories, state.defaults)
+                }
             }
         }
 
@@ -203,7 +212,7 @@ class SettingsFragment : Fragment(R.layout.settings_fragment) {
         }
 
         vm.uiLanguageList.observe(viewLifecycleOwner) { list ->
-            if (currentLangMode == LanguageAdapterState.UI && binding.rvLanguageList.visibility == View.VISIBLE) {
+            if (currentLangMode == LanguageAdapterState.UI && binding.rvLanguageList.isVisible) {
                 val selected = vm.uiLanguage.value
                 langAdapter.submit(list, selected)
                 selected?.let { langAdapter.setSelected(it) }
@@ -211,7 +220,7 @@ class SettingsFragment : Fragment(R.layout.settings_fragment) {
         }
 
         vm.studyLanguageList.observe(viewLifecycleOwner) { list ->
-            if (currentLangMode == LanguageAdapterState.STUDY && binding.rvLanguageList.visibility == View.VISIBLE) {
+            if (currentLangMode == LanguageAdapterState.STUDY && binding.rvLanguageList.isVisible) {
                 val selected = vm.studyLanguage.value
                 langAdapter.submit(list, selected)
                 selected?.let { langAdapter.setSelected(it) }
@@ -270,7 +279,7 @@ class SettingsFragment : Fragment(R.layout.settings_fragment) {
 
     private fun showTopicsMenu() {
         val root = binding.rootTopics
-        if (root.visibility == View.VISIBLE) return
+        if (root.isVisible) return
 
         root.alpha = 0f
         root.visibility = View.VISIBLE
@@ -291,7 +300,7 @@ class SettingsFragment : Fragment(R.layout.settings_fragment) {
             view.animate().alpha(1f).translationY(0f).setDuration(200).start()
         }
         (requireActivity() as? MainActivity)?.setBottomNavVisibility(false)
-        setupPimiThumb()
+        setupPimiThumbOnce()
     }
 
     private fun hideTopicsMenu() {
@@ -326,6 +335,7 @@ class SettingsFragment : Fragment(R.layout.settings_fragment) {
 
     override fun onDestroyView() {
         _binding = null
+        pimiController = null
         super.onDestroyView()
     }
 }

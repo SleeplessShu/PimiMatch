@@ -8,7 +8,7 @@ import com.sleeplessdog.matchthewords.game.presentation.models.Word
 
 data class SelectableWordPair(
     val pair: Pair<Word, Word>,
-    var isSelected: Boolean = false,
+    val isSelected: Boolean = false,
 )
 
 class EndGameWordsAdapter(
@@ -16,17 +16,17 @@ class EndGameWordsAdapter(
 ) : RecyclerView.Adapter<EndGameWordsAdapter.WordPairViewHolder>() {
 
 
-    private var items: List<SelectableWordPair> = emptyList()
+    private var items: MutableList<SelectableWordPair> = mutableListOf()
 
     inner class WordPairViewHolder(val binding: EndGameRwCheckboxElementBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
         init {
             itemView.setOnClickListener {
-                if (adapterPosition != RecyclerView.NO_POSITION) {
-                    val item = items[adapterPosition]
-                    item.isSelected = !item.isSelected
-                    notifyItemChanged(adapterPosition)
+                if (bindingAdapterPosition != RecyclerView.NO_POSITION) {
+                    items[bindingAdapterPosition] =
+                        switchSelectedState(items[bindingAdapterPosition])
+                    notifyItemChanged(bindingAdapterPosition)
                     reportSelectionChange()
                 }
             }
@@ -53,19 +53,27 @@ class EndGameWordsAdapter(
     override fun getItemCount(): Int = items.size
 
     fun submitList(pairs: List<Pair<Word, Word>>) {
-        this.items = pairs.map { SelectableWordPair(it) }
-        notifyDataSetChanged()
+        val oldSize = items.size
+        items.clear()
+        notifyItemRangeRemoved(0, oldSize)
+        items.addAll(pairs.map { SelectableWordPair(it) })
+        notifyItemRangeInserted(0, items.size)
         reportSelectionChange()
     }
 
-    fun toggleSelectAll(isSelected: Boolean) {
-        items.forEach { it.isSelected = isSelected }
-        notifyDataSetChanged()
+    fun toggleSelectAll(newState: Boolean) {
+        val updatedItems = items.map { it.copy(isSelected = newState) }
+        items = updatedItems.toMutableList()
+        notifyItemRangeChanged(0, items.size)
         reportSelectionChange()
     }
 
     private fun reportSelectionChange() {
         val selected = items.filter { it.isSelected }.map { it.pair }
         onSelectionChanged(selected)
+    }
+
+    private fun switchSelectedState(currentItem: SelectableWordPair): SelectableWordPair {
+        return currentItem.copy(isSelected = !currentItem.isSelected)
     }
 }
