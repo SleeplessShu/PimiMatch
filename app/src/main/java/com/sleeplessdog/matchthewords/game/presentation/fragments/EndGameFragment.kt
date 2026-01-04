@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.airbnb.lottie.LottieAnimationView
@@ -13,14 +14,23 @@ import com.sleeplessdog.matchthewords.R
 import com.sleeplessdog.matchthewords.databinding.EndGameFragmentBinding
 import com.sleeplessdog.matchthewords.game.presentation.GameFragmentDirections
 import com.sleeplessdog.matchthewords.game.presentation.GameViewModel
+import com.sleeplessdog.matchthewords.game.presentation.controller.PimiRecyclerViewAdapter
+import com.sleeplessdog.matchthewords.game.presentation.controller.PimiScrollbarController
+import com.sleeplessdog.matchthewords.game.presentation.holders.EndGameWordsAdapter
 import com.sleeplessdog.matchthewords.game.presentation.models.EndGameStats
+import com.sleeplessdog.matchthewords.game.presentation.models.EndGameWordsAction
 import org.koin.androidx.viewmodel.ext.android.sharedViewModel
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class EndGameFragment : Fragment(R.layout.end_game_fragment) {
     private val parentViewModel: GameViewModel by sharedViewModel(owner = { requireParentFragment() })
+    private val childViewModel: EndGameViewModel by viewModel()
+
     private var _binding: EndGameFragmentBinding? = null
     private val binding: EndGameFragmentBinding get() = _binding!!
 
+    private lateinit var wordsAdapter: EndGameWordsAdapter
+    private var pimiController: PimiScrollbarController? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?,
@@ -31,6 +41,7 @@ class EndGameFragment : Fragment(R.layout.end_game_fragment) {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        pimiController = null
         _binding = null
     }
 
@@ -38,11 +49,30 @@ class EndGameFragment : Fragment(R.layout.end_game_fragment) {
         super.onViewCreated(view, savedInstanceState)
         setupObservers()
         setupUI()
-
     }
 
     private fun setupUI() {
+        wordsAdapter = EndGameWordsAdapter { selectedPairs ->
+            childViewModel.updateSelectedPairs(newPairs = selectedPairs)
+        }
 
+        binding.actionWithWordsOverlayView.rvWords.adapter = wordsAdapter
+
+        binding.btnReportWords.setOnClickListener {
+            childViewModel.reportAboutMistake()
+        }
+
+        binding.btnSaveWords.setOnClickListener {
+            childViewModel.saveWordsToUsersDictionary()
+        }
+
+        binding.actionWithWordsOverlayView.buttonBack.setOnClickListener { childViewModel.hideActions() }
+
+        binding.actionWithWordsOverlayView.btnCancel.setOnClickListener { childViewModel.hideActions() }
+
+        binding.actionWithWordsOverlayView.checkboxSelectAll.setOnCheckedChangeListener { _, isChecked ->
+            wordsAdapter.toggleSelectAll(isChecked)
+        }
 
         binding.bNewGame.setOnClickListener {
             returnToGameSelect()
@@ -57,9 +87,13 @@ class EndGameFragment : Fragment(R.layout.end_game_fragment) {
 
     private fun setupObservers() {
         parentViewModel.endGameStats.observe(viewLifecycleOwner) { stats ->
+            wordsAdapter.submitList(stats.sessionPairs)
+
+            binding.actionWithWordsOverlayView.rvWords.post {
+                setupPimiThumbOnce()
+            }
 
             val isWin = stats.isWin
-
             if (isWin) {
                 showResult(
                     result = getString(R.string.end_game_phrase_win),
@@ -78,6 +112,60 @@ class EndGameFragment : Fragment(R.layout.end_game_fragment) {
                 )
             }
         }
+
+        childViewModel.actionsWithWords.observe(viewLifecycleOwner) { event ->
+
+            if (event == null) {
+                binding.actionWithWordsOverlayView.root.isVisible = false
+                return@observe
+            }
+
+            when (event.action) {
+                EndGameWordsAction.REPORT_ABOUT_MISTAKE -> {
+                    setupWordsView(
+                        header = getString(R.string.report_words),
+                        acceptButton = getString(R.string.report),
+                        onAcceptClick = { childViewModel.sendReport() })
+                }
+
+                EndGameWordsAction.SAVE_WORDS_TO_USERS_DICTIONARY -> {
+                    setupWordsView(
+                        header = getString(R.string.add_to_dictionary),
+                        acceptButton = getString(R.string.save),
+                        onAcceptClick = { childViewModel.saveSelectedWords() })
+                }
+            }
+            binding.actionWithWordsOverlayView.root.isVisible = event.isVisible
+            if (event.isVisible) {
+                pimiController?.forceUpdate()
+            }
+        }
+    }
+
+    private fun setupPimiThumbOnce() {
+        if (pimiController != null) return
+        if (_binding == null) return
+
+        val recyclerView = binding.actionWithWordsOverlayView.rvWords
+        val thumb = binding.actionWithWordsOverlayView.tumblerPimi
+        val track = binding.actionWithWordsOverlayView.pathPimi
+
+        val scrollableAdapter = PimiRecyclerViewAdapter(recyclerView)
+
+        pimiController =
+            PimiScrollbarController(scrollableAdapter, track, thumb).also { it.attach() }
+    }
+
+    private fun setupWordsView(
+        header: String,
+        acceptButton: String,
+        onAcceptClick: () -> Unit,
+    ) {
+        binding.actionWithWordsOverlayView.header.text = header
+        binding.actionWithWordsOverlayView.btnSave.text = acceptButton
+        binding.actionWithWordsOverlayView.btnSave.setOnClickListener {
+            onAcceptClick()
+        }
     }
 
     private fun playAndStopOnLastFrame(where: LottieAnimationView, what: Int) {
@@ -88,7 +176,7 @@ class EndGameFragment : Fragment(R.layout.end_game_fragment) {
             removeAllAnimatorListeners()
             addAnimatorListener(object : AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: Animator) {
-                    setFrame(maxFrame.toInt() - 1)
+                    frame = (maxFrame.toInt() - 1)
                     pauseAnimation()
                 }
             })
@@ -129,24 +217,20 @@ class EndGameFragment : Fragment(R.layout.end_game_fragment) {
         binding.tvScore.text = score.toString()
         binding.tvWords.text = words.toString()
         playAndStopOnLastFrame(
-            where = binding.animationIdleView,
-            what = animation
+            where = binding.animationIdleView, what = animation
         )
         playLoop(
-            where = binding.animationBgView,
-            what = background
+            where = binding.animationBgView, what = background
         )
     }
 
     private fun returnToGameSelect() {
-        val dir = GameFragmentDirections
-            .actionGameFragmentToGameSelectFragment()
+        val dir = GameFragmentDirections.actionGameFragmentToGameSelectFragment()
         findNavController().navigate(dir)
     }
 
     private fun goToSettings() {
-        val dir = GameFragmentDirections
-            .actionGameFragmentToSettingsFragment()
+        val dir = GameFragmentDirections.actionGameFragmentToSettingsFragment()
         findNavController().navigate(dir)
     }
 }
