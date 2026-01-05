@@ -204,18 +204,18 @@ class LottieAnimationController {
     }
 
     fun playLoopCut(
-        @RawRes res: Int,
-        view: LottieAnimationView,
+        @RawRes what: Int,
+        where: LottieAnimationView,
         loop: Boolean = true,
         cutFromStartFrames: Int = 0,
         cutFromEndFrames: Int = 0,
     ) {
-        view.removeAllAnimatorListeners()
-        view.removeAllLottieOnCompositionLoadedListener()
+        where.removeAllAnimatorListeners()
+        where.removeAllLottieOnCompositionLoadedListener()
 
-        view.setAnimation(res)
+        where.setAnimation(what)
 
-        view.addLottieOnCompositionLoadedListener { composition ->
+        where.addLottieOnCompositionLoadedListener { composition ->
             val maxFrame = composition.endFrame
             val startFrame =
                 (composition.startFrame + cutFromStartFrames).coerceAtLeast(composition.startFrame)
@@ -225,22 +225,21 @@ class LottieAnimationController {
             val safeStart = startFrame.coerceAtMost(endFrame)
             val safeEnd = endFrame.coerceAtLeast(safeStart)
 
-            view.repeatCount = if (loop) LottieDrawable.INFINITE else 0
+            where.repeatCount = if (loop) LottieDrawable.INFINITE else 0
 
             // важно: ограничиваем диапазон
-            view.setMinAndMaxFrame(
-                safeStart.roundToInt(),
-                safeEnd.roundToInt()
+            where.setMinAndMaxFrame(
+                safeStart.roundToInt(), safeEnd.roundToInt()
             )
 
             // каждый запуск будет начинаться с minFrame
-            view.setFrame(safeStart.roundToInt())
-            view.playAnimation()
+            where.setFrame(safeStart.roundToInt())
+            where.playAnimation()
         }
 
         // если композиция уже загружена — listener может не вызваться,
         // поэтому вручную дернем конфиг на уже загруженной:
-        view.composition?.let { composition ->
+        where.composition?.let { composition ->
             val maxFrame = composition.endFrame
             val startFrame =
                 (composition.startFrame + cutFromStartFrames).coerceAtLeast(composition.startFrame)
@@ -249,10 +248,10 @@ class LottieAnimationController {
             val safeStart = startFrame.coerceAtMost(endFrame)
             val safeEnd = endFrame.coerceAtLeast(safeStart)
 
-            view.repeatCount = if (loop) LottieDrawable.INFINITE else 0
-            view.setMinAndMaxFrame(safeStart.roundToInt(), safeEnd.roundToInt())
-            view.setFrame(safeStart.roundToInt())
-            view.playAnimation()
+            where.repeatCount = if (loop) LottieDrawable.INFINITE else 0
+            where.setMinAndMaxFrame(safeStart.roundToInt(), safeEnd.roundToInt())
+            where.setFrame(safeStart.roundToInt())
+            where.playAnimation()
         }
     }
 
@@ -321,4 +320,115 @@ class LottieAnimationController {
 
         }
     }
+
+    fun finishAtFrame(
+        where: LottieAnimationView,
+        finalFrame: Int,
+        hideOnEnd: Boolean,
+    ) {
+        where.cancelAnimation()
+
+        where.frame = finalFrame
+
+        if (hideOnEnd) {
+            where.isVisible = false
+        }
+
+        where.removeAllAnimatorListeners()
+    }
+
+    fun playOnceCut(
+        where: LottieAnimationView,
+        @RawRes what: Int,
+        cutFromStartFrames: Int = 0,
+        cutFromEndFrames: Int = 0,
+        hideOnEnd: Boolean = true,
+        onFinished: (() -> Unit)? = null,
+    ) {
+        where.apply {
+            removeAllAnimatorListeners()
+            removeAllLottieOnCompositionLoadedListener()
+            cancelAnimation()
+
+            isVisible = true
+            alpha = 1f
+            repeatCount = 0
+            setAnimation(what)
+        }
+
+        var finished = false
+
+        fun finish(finalFrame: Int) {
+            if (finished) return
+            finished = true
+
+            where.cancelAnimation()
+            where.frame = finalFrame
+
+            if (hideOnEnd) {
+                where.isVisible = false
+            }
+
+            where.removeAllAnimatorListeners()
+            onFinished?.invoke()
+        }
+
+        fun configureAndPlay() {
+            val c = where.composition ?: return
+
+            val startFrame =
+                (c.startFrame + cutFromStartFrames)
+                    .coerceAtLeast(c.startFrame)
+                    .coerceAtMost(c.endFrame)
+
+            val endFrame =
+                (c.endFrame - cutFromEndFrames)
+                    .coerceAtLeast(startFrame)
+                    .coerceAtMost(c.endFrame)
+
+            where.setMinAndMaxFrame(
+                startFrame.toInt(),
+                endFrame.toInt()
+            )
+
+            where.frame = startFrame.toInt()
+
+            where.addAnimatorListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator) {
+                    finish(endFrame.toInt())
+                }
+
+                override fun onAnimationCancel(animation: Animator) {
+                }
+            })
+
+            where.playAnimation()
+        }
+
+        if (where.composition != null) {
+            configureAndPlay()
+        } else {
+            where.addLottieOnCompositionLoadedListener {
+                configureAndPlay()
+            }
+        }
+    }
+
+    fun playAndStopOnLastFrame(where: LottieAnimationView, what: Int) {
+        where.apply {
+            setAnimation(what)
+            repeatCount = 0
+
+            removeAllAnimatorListeners()
+            addAnimatorListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator) {
+                    frame = (maxFrame.toInt() - 1)
+                    pauseAnimation()
+                }
+            })
+
+            playAnimation()
+        }
+    }
+
 }

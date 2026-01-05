@@ -1,7 +1,5 @@
 package com.sleeplessdog.matchthewords.game.presentation.fragments
 
-import android.animation.Animator
-import android.animation.AnimatorListenerAdapter
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -14,6 +12,7 @@ import com.sleeplessdog.matchthewords.R
 import com.sleeplessdog.matchthewords.databinding.EndGameFragmentBinding
 import com.sleeplessdog.matchthewords.game.presentation.GameFragmentDirections
 import com.sleeplessdog.matchthewords.game.presentation.GameViewModel
+import com.sleeplessdog.matchthewords.game.presentation.controller.LottieAnimationController
 import com.sleeplessdog.matchthewords.game.presentation.controller.PimiRecyclerViewAdapter
 import com.sleeplessdog.matchthewords.game.presentation.controller.PimiScrollbarController
 import com.sleeplessdog.matchthewords.game.presentation.holders.EndGameWordsAdapter
@@ -31,6 +30,7 @@ class EndGameFragment : Fragment(R.layout.end_game_fragment) {
 
     private lateinit var wordsAdapter: EndGameWordsAdapter
     private var pimiController: PimiScrollbarController? = null
+    private val lottieController = LottieAnimationController()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?,
@@ -49,6 +49,7 @@ class EndGameFragment : Fragment(R.layout.end_game_fragment) {
         super.onViewCreated(view, savedInstanceState)
         setupObservers()
         setupUI()
+
     }
 
     private fun setupUI() {
@@ -125,14 +126,20 @@ class EndGameFragment : Fragment(R.layout.end_game_fragment) {
                     setupWordsView(
                         header = getString(R.string.report_words),
                         acceptButton = getString(R.string.report),
-                        onAcceptClick = { childViewModel.sendReport() })
+                        onAcceptClick = {
+                            childViewModel.sendReport()
+                            playResultAnimation(EndGameWordsAction.REPORT_ABOUT_MISTAKE)
+                        })
                 }
 
                 EndGameWordsAction.SAVE_WORDS_TO_USERS_DICTIONARY -> {
                     setupWordsView(
                         header = getString(R.string.add_to_dictionary),
                         acceptButton = getString(R.string.save),
-                        onAcceptClick = { childViewModel.saveSelectedWords() })
+                        onAcceptClick = {
+                            childViewModel.saveSelectedWords()
+                            playResultAnimation(EndGameWordsAction.SAVE_WORDS_TO_USERS_DICTIONARY)
+                        })
                 }
             }
             binding.actionWithWordsOverlayView.root.isVisible = event.isVisible
@@ -168,24 +175,32 @@ class EndGameFragment : Fragment(R.layout.end_game_fragment) {
         }
     }
 
-    private fun playAndStopOnLastFrame(where: LottieAnimationView, what: Int) {
-        where.apply {
-            setAnimation(what)
-            repeatCount = 0
 
-            removeAllAnimatorListeners()
-            addAnimatorListener(object : AnimatorListenerAdapter() {
-                override fun onAnimationEnd(animation: Animator) {
-                    frame = (maxFrame.toInt() - 1)
-                    pauseAnimation()
-                }
-            })
+    private fun playResultAnimation(type: EndGameWordsAction) {
+        when (type) {
+            EndGameWordsAction.REPORT_ABOUT_MISTAKE -> {
+                lottieController.playOnceCut(
+                    where = binding.onActionDone,
+                    what = R.raw.animation_error_report_260104,
+                    cutFromStartFrames = 1,
+                    cutFromEndFrames = 1,
+                    hideOnEnd = true,
+                )
+            }
 
-            playAnimation()
+            EndGameWordsAction.SAVE_WORDS_TO_USERS_DICTIONARY -> {
+                lottieController.playOnceCut(
+                    where = binding.onActionDone,
+                    what = R.raw.animation_save_to_dictionary_260104,
+                    cutFromStartFrames = 1,
+                    cutFromEndFrames = 1,
+                    hideOnEnd = true,
+                )
+            }
         }
     }
 
-    private fun playLoop(where: LottieAnimationView, what: Int) {
+    private fun playLoop1(where: LottieAnimationView, what: Int) {
         where.apply {
             setAnimation(what)
 
@@ -216,11 +231,16 @@ class EndGameFragment : Fragment(R.layout.end_game_fragment) {
         binding.tvErrors.text = errors.toString()
         binding.tvScore.text = score.toString()
         binding.tvWords.text = words.toString()
-        playAndStopOnLastFrame(
-            where = binding.animationIdleView, what = animation
+        lottieController.playAndStopOnLastFrame(
+            where = binding.animationIdleView,
+            what = animation
         )
-        playLoop(
-            where = binding.animationBgView, what = background
+        lottieController.playLoopCut(
+            what = background,
+            where = binding.animationBgView,
+            loop = true,
+            cutFromStartFrames = 1,
+            cutFromEndFrames = 1,
         )
     }
 
