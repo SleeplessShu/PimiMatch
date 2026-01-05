@@ -76,7 +76,6 @@
                     android:id="@+id/heart1"
                     android:layout_width="50dp"
                     android:layout_height="40dp"
-                    android:background="@color/green_primary"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     app:lottie_autoPlay="false"

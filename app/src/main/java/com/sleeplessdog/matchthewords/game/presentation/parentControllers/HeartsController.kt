@@ -97,7 +97,7 @@ class HeartsController(
             HeartState.FAST_DARK_TO_MEDIUM -> lav.setAnimation(R.raw.animation_becomes)
             HeartState.APPEAR_MEDIUM_ORANGE -> lav.setAnimation(R.raw.animation_become)
             HeartState.MEDIUM_TO_BRIGHT -> lav.setAnimation(R.raw.animation_get_heart_to_two)
-            HeartState.APPEAR_BRIGHT_ORANGE -> lav.setAnimation(R.raw.animation_get_heart_to_three)
+            HeartState.APPEAR_BRIGHT_ORANGE -> lav.setAnimation(R.raw.animation_get_three_hearts)
         }
         lav.playAnimation()
     }
