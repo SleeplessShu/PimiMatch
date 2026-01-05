@@ -1,11 +1,13 @@
-package com.sleeplessdog.matchthewords
+package com.sleeplessdog.matchthewords.di
 
 import android.content.Context
 import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import androidx.room.Room
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.storage.FirebaseStorage
+import com.sleeplessdog.matchthewords.App
 import com.sleeplessdog.matchthewords.game.data.database.AppDictionaryDatabase
 import com.sleeplessdog.matchthewords.game.data.database.AppGroupsDictionary
 import com.sleeplessdog.matchthewords.game.data.database.UserDictionaryDatabase
@@ -28,42 +30,49 @@ import com.sleeplessdog.matchthewords.server.data.ServerDateRepositoryImpl
 import com.sleeplessdog.matchthewords.server.domain.ServerDateRepository
 import com.sleeplessdog.matchthewords.server.domain.ServerDbInteractor
 import com.sleeplessdog.matchthewords.server.domain.ServerDbInteractorImpl
+import com.sleeplessdog.matchthewords.utils.ConstantsPaths.FIREBASE_KEY
+import com.sleeplessdog.matchthewords.utils.ConstantsPaths.LOCAL_DATABASE_DICTIONARY_NAME
+import com.sleeplessdog.matchthewords.utils.ConstantsPaths.SHARED_PREFS_DATABASE_SETTINGS
+import com.sleeplessdog.matchthewords.utils.ConstantsPaths.SHARED_PREFS_SCORE_KEY
+import com.sleeplessdog.matchthewords.utils.ConstantsPaths.SHARED_PREFS_SCORE_REPOSITORY
+import com.sleeplessdog.matchthewords.utils.ConstantsPaths.SHARED_PREFS_THEME_KEY
+import com.sleeplessdog.matchthewords.utils.ConstantsPaths.SHARED_PREFS_THEME_REPOSITORY
+import com.sleeplessdog.matchthewords.utils.ConstantsPaths.USER_DATABASE_DICTIONARY_NAME
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
-
 val dataModule = module {
 
     single {
-        FirebaseDatabase.getInstance("https://match-the-words-d26c2-default-rtdb.europe-west1.firebasedatabase.app")
+        FirebaseDatabase.getInstance(FIREBASE_KEY)
     }
 
     single {
         FirebaseStorage.getInstance()
     }
 
-    single(named("themePreferences")) {
-        App.appContext.getSharedPreferences("NightMode", Context.MODE_PRIVATE)
+    single(named(SHARED_PREFS_THEME_KEY)) {
+        App.appContext.getSharedPreferences(SHARED_PREFS_THEME_REPOSITORY, Context.MODE_PRIVATE)
     }
 
     single<WordsDatabase> {
         WordsDatabase(get())
     }
     factory<Handler> {
-        Handler()
+        Handler(Looper.getMainLooper())
     }
     single<Context> {
         App.appContext
     }
     single { get<AppDictionaryDatabase>().wordDao() }
 
-    single(named("db_prefs")) {
-        App.appContext.getSharedPreferences("db_prefs", Context.MODE_PRIVATE)
+    single(named(SHARED_PREFS_DATABASE_SETTINGS)) {
+        App.appContext.getSharedPreferences(SHARED_PREFS_DATABASE_SETTINGS, Context.MODE_PRIVATE)
     }
 
     single<AppDictionaryDatabase> {
-        val dbName = "dictionary.db"
+        val dbName = LOCAL_DATABASE_DICTIONARY_NAME
         val ctx: Context = get()
 
         Room.databaseBuilder(ctx, AppDictionaryDatabase::class.java, dbName)
@@ -72,7 +81,7 @@ val dataModule = module {
 
     single {
         Room.databaseBuilder(
-            androidContext(), UserDictionaryDatabase::class.java, "user_dictionary_db"
+            androidContext(), UserDictionaryDatabase::class.java, USER_DATABASE_DICTIONARY_NAME
         ).fallbackToDestructiveMigration().build()
     }
     Log.d(
@@ -88,15 +97,15 @@ val dataModule = module {
         UserDictionaryRepository(dao = get())
     }
 
-    single(named("scoreStore")) {
-        App.appContext.getSharedPreferences("ScoreHistory", Context.MODE_PRIVATE)
+    single(named(SHARED_PREFS_SCORE_KEY)) {
+        App.appContext.getSharedPreferences(SHARED_PREFS_SCORE_REPOSITORY, Context.MODE_PRIVATE)
     }
     single<ScoreRepository> {
-        ScoreRepositoryImpl(get(named("scoreStore")))
+        ScoreRepositoryImpl(get(named(SHARED_PREFS_SCORE_KEY)))
     }
 
     single<ServerDateRepository> {
-        ServerDateRepositoryImpl(get(named("db_prefs")))
+        ServerDateRepositoryImpl(get(named(SHARED_PREFS_DATABASE_SETTINGS)))
     }
 
     single<ServerDbInteractor> {
