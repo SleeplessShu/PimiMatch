@@ -202,8 +202,8 @@ class GameFragment : Fragment() {
         binding.landingFirstOverlayView.tvHeader.text = header
         binding.landingFirstOverlayView.tvText.text = text
         lottieController.playLoopCut(
-            res = landingConditions.animation,
-            view = binding.landingFirstOverlayView.animationIdleView,
+            what = landingConditions.animation,
+            where = binding.landingFirstOverlayView.animationIdleView,
             loop = true,
             cutFromStartFrames = 2,
             cutFromEndFrames = 2,
