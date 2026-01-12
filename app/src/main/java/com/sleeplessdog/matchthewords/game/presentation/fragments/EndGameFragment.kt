@@ -61,10 +61,12 @@ class EndGameFragment : Fragment(R.layout.end_game_fragment) {
         binding.actionWithWordsOverlayView.rvWords.adapter = wordsAdapter
 
         binding.btnReportWords.setOnClickListener {
+            wordsAdapter.toggleSelectAll(false)
             childViewModel.reportAboutMistake()
         }
 
         binding.btnSaveWords.setOnClickListener {
+            wordsAdapter.toggleSelectAll(false)
             childViewModel.saveWordsToUsersDictionary()
         }
 
@@ -72,8 +74,10 @@ class EndGameFragment : Fragment(R.layout.end_game_fragment) {
 
         binding.actionWithWordsOverlayView.btnCancel.setOnClickListener { childViewModel.hideActions() }
 
-        binding.actionWithWordsOverlayView.checkboxSelectAll.setOnCheckedChangeListener { _, isChecked ->
-            wordsAdapter.toggleSelectAll(isChecked)
+        binding.actionWithWordsOverlayView.addAll.setOnClickListener {
+            val isChecked = binding.actionWithWordsOverlayView.checkboxSelectAll.isChecked
+            binding.actionWithWordsOverlayView.checkboxSelectAll.isChecked = !isChecked
+            wordsAdapter.toggleSelectAll(!isChecked)
         }
 
         binding.bNewGame.setOnClickListener {
@@ -88,14 +92,18 @@ class EndGameFragment : Fragment(R.layout.end_game_fragment) {
     }
 
     private fun setupObservers() {
+        /**
+         * мониторинг блокировки кнопки отправки сообщения/сохраниня слов
+         */
         viewLifecycleOwner.lifecycleScope.launch {
-
             childViewModel.isActionEnabled.collect { enabled ->
                 binding.actionWithWordsOverlayView.btnSave.isEnabled = enabled
-
             }
         }
 
+        /**
+         * получение данных о результатах игры: победа/поражение, участвовавшие слова
+         */
         parentViewModel.endGameStats.observe(viewLifecycleOwner) { stats ->
             wordsAdapter.submitPairs(stats.sessionPairs)
 
@@ -123,8 +131,10 @@ class EndGameFragment : Fragment(R.layout.end_game_fragment) {
             }
         }
 
+        /**
+         * настройка overlay для выбора действий с словами
+         */
         childViewModel.actionsWithWords.observe(viewLifecycleOwner) { event ->
-
             if (event == null) {
                 binding.actionWithWordsOverlayView.root.isVisible = false
                 return@observe
@@ -137,6 +147,7 @@ class EndGameFragment : Fragment(R.layout.end_game_fragment) {
                         onAcceptClick = {
                             childViewModel.sendReport()
                             binding.onActionDoneRoot.isVisible = true
+                            binding.btnReportWords.isEnabled = false
                             playResultAnimation(EndGameWordsAction.REPORT_ABOUT_MISTAKE)
                         })
                 }
@@ -148,6 +159,7 @@ class EndGameFragment : Fragment(R.layout.end_game_fragment) {
                         onAcceptClick = {
                             childViewModel.saveSelectedWords()
                             binding.onActionDoneRoot.isVisible = true
+                            binding.btnSaveWords.isEnabled = false
                             playResultAnimation(EndGameWordsAction.SAVE_WORDS_TO_USERS_DICTIONARY)
                         })
                 }
@@ -159,6 +171,9 @@ class EndGameFragment : Fragment(R.layout.end_game_fragment) {
         }
     }
 
+    /**
+     * скроллбар для ресайклвью
+     */
     private fun setupPimiThumbOnce() {
         if (pimiController != null) return
         if (_binding == null) return
@@ -173,6 +188,9 @@ class EndGameFragment : Fragment(R.layout.end_game_fragment) {
             PimiScrollbarController(scrollableAdapter, track, thumb).also { it.attach() }
     }
 
+    /**
+     * установка подписей к кнопкам
+     */
     private fun setupWordsView(
         header: String,
         acceptButton: String,
@@ -185,7 +203,9 @@ class EndGameFragment : Fragment(R.layout.end_game_fragment) {
         }
     }
 
-
+    /**
+     * воспроизведение анимации после отправки жалобы/сохранения слов
+     */
     private fun playResultAnimation(type: EndGameWordsAction) {
         when (type) {
             EndGameWordsAction.REPORT_ABOUT_MISTAKE -> {
@@ -214,6 +234,9 @@ class EndGameFragment : Fragment(R.layout.end_game_fragment) {
         }
     }
 
+    /**
+     * установка значений результата игры
+     */
     private fun showResult(
         result: String,
         phrase: String,
