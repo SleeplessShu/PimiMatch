@@ -36,5 +36,13 @@ val textSize16Bold = TextStyle(
     fontFamily = myFontFamily,
     letterSpacing = 0.sp,
     lineHeight = 21.sp,
-    fontSize = 20.sp,
+    fontSize = 16.sp,
+)
+val textSize16SemiBold = TextStyle(
+    fontStyle = FontStyle.Normal,
+    fontWeight = FontWeight.SemiBold,
+    fontFamily = myFontFamily,
+    letterSpacing = 0.sp,
+    lineHeight = 19.2.sp,
+    fontSize = 16.sp,
 )
