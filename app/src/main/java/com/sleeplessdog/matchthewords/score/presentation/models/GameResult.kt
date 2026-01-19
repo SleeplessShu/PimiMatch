@@ -1,4 +1,4 @@
-package com.sleeplessdog.matchthewords.score.models
+package com.sleeplessdog.matchthewords.score.presentation.models
 
 data class GameResult(
     val date: String = "2024-01-01",
