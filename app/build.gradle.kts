@@ -73,7 +73,6 @@ dependencies {
 
     implementation(libs.androidx.gridlayout)
 
-
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.ui.test.android)
     androidTestImplementation(libs.androidx.junit)
