@@ -72,9 +72,10 @@ dependencies {
     implementation(libs.androidx.material3)
 
     implementation(libs.androidx.gridlayout)
-    implementation(libs.androidx.ui.test.android)
+
 
     testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.ui.test.android)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
@@ -90,7 +91,7 @@ dependencies {
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
+    //androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
 
     implementation("com.github.bumptech.glide:glide:4.14.2")
     kapt("com.github.bumptech.glide:compiler:4.14.2")
@@ -131,4 +132,9 @@ dependencies {
 
     implementation("com.airbnb.android:lottie:6.4.0")
     implementation("com.airbnb.android:lottie-compose:6.4.0")
+
+    implementation("androidx.navigation:navigation-compose:2.8.5")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
+
+    debugImplementation("androidx.compose.ui:ui-tooling:1.6.2")
 }

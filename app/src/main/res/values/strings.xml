@@ -150,6 +150,21 @@
     <!--описание контента-->
     <string name="exit_button">Кнопка выхода</string>
 
+    <!--ScoreScreen-->
+    <string name="h1_my_level">Мой уровень:</string>
+    <string name="h2_statistic">Статистика</string>
+    <string name="tab_week">Неделя</string>
+    <string name="tab_all_time">Всё время</string>
+    <string name="h2_awards">Награды</string>
+    <string name="awards_header">все</string>
+    <string name="stats_words_learned">Слов пройдено</string>
+    <string name="stats_categories_learned">Категорий выучено</string>
+    <string name="stats_games_played">Игр сыграно</string>
+    <string name="stats_scores">Очков набрано</string>
+
+    <!--AwardsScreen-->
+    <string name="my_awards">Мои трофеи</string>
+
     <!--toast-->
     <string name="error_auth_declined">Ошибка авторизации</string>
     <string name="dictionary">Словарь</string>
