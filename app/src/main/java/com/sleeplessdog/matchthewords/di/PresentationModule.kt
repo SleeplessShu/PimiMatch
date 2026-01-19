@@ -47,9 +47,9 @@ val presentationModule = module {
         )
     }
 
-    viewModel {
-        ScoreViewModel(get())
-    }
+
+    viewModel { ScoreViewModel() }
+
 
     viewModel() {
         DatabaseViewModel(get(), get())
