@@ -39,24 +39,27 @@ import com.sleeplessdog.matchthewords.ui.theme.BlackPrimary
 import com.sleeplessdog.matchthewords.ui.theme.DarkTextDefault
 import com.sleeplessdog.matchthewords.ui.theme.Gray03
 import com.sleeplessdog.matchthewords.ui.theme.Gray05
-import com.sleeplessdog.matchthewords.ui.theme.White01
 import com.sleeplessdog.matchthewords.ui.theme.textSize14SemiBold
 import com.sleeplessdog.matchthewords.ui.theme.textSize16Bold
 import com.sleeplessdog.matchthewords.ui.theme.textSize16SemiBold
 import com.sleeplessdog.matchthewords.ui.theme.textSize20Medium
 import com.sleeplessdog.matchthewords.ui.theme.textSize24Medium
 
-data class WordMyGroup(val myGroupName: String, val words: List<String>)
+data class WordMyGroup(val myGroupName: String, val words: List<String>, val iconItem: String)
 data class WordStandardGroup(val standardGroupName: String, val words: List<String>)
+
+@Composable
+fun DictionaryUi(viewModel: DictionaryViewModel) {
+    val categoriesGrouped by viewModel.categoriesGrouped.collectAsState()
+
+}
 
 @Composable
 fun DictionaryScreen(
     myGroups: List<WordMyGroup>,
     standardGroups: List<WordStandardGroup>,
-    viewModel: DictionaryViewModel,
-    bufferWords: List<String>
+    bufferWords: List<String>,
 ) {
-    val categoriesGrouped by viewModel.categoriesGrouped.collectAsState()
     var groupState by remember { mutableStateOf(DictionaryWordGroups.BOTH_PARTIALLY) }
 
     Column(modifier = Modifier.background(BlackPrimary)) {
@@ -204,7 +207,7 @@ fun MyGroupsTable(
             .clip(RoundedCornerShape(12.dp))
     ) {
         MyGroupTableRow(
-            stringWord = "Добавленные слова",
+            title = "Добавленные слова",
             rowIndex = -1,
             wordsCount = bufferWords.size
         )
@@ -212,7 +215,7 @@ fun MyGroupsTable(
         val groupsToShow = if (expanded) groups else groups.take(2)
         groupsToShow.forEachIndexed { index, group ->
             MyGroupTableRow(
-                stringWord = group.myGroupName,
+                title = group.myGroupName,
                 wordsCount = group.words.size,
                 rowIndex = index
             )
@@ -222,7 +225,7 @@ fun MyGroupsTable(
         }
         Divider(color = BlackPrimary, thickness = 1.dp)
         MyGroupTableRow(
-            stringWord = "Создать группу",
+            title = "Создать группу",
             rowIndex = -2,
         )
     }
@@ -231,7 +234,7 @@ fun MyGroupsTable(
 @Composable
 fun MyGroupTableRow(
     rowIndex: Int,
-    stringWord: String,
+    title: String,
     wordsCount: Int? = null
 ) {
     val clickableIconPainter =
@@ -260,7 +263,7 @@ fun MyGroupTableRow(
         Spacer(modifier = Modifier.width(8.dp))
         Column {
             Text(
-                stringWord,
+                title,
                 style = textSize16Bold,
                 color = DarkTextDefault
             )
@@ -426,13 +429,13 @@ fun DictionaryScreenPreview() {
     DictionaryScreen(
         myGroups = listOf(
             WordMyGroup(
-                "Приветствия", listOf("Привет", "Здравствуй", "Добрый день")
+                "Приветствия", listOf("Привет", "Здравствуй", "Добрый день"), ""
             ),
             WordMyGroup(
-                "Птички", listOf("Попугай", "Аист", "Сокол", "Воробей", "Чайка")
+                "Птички", listOf("Попугай", "Аист", "Сокол", "Воробей", "Чайка"), ""
             ),
             WordMyGroup(
-                "Рыбы", listOf("Осетр")
+                "Рыбы", listOf("Осетр"), ""
             )
         ),
         standardGroups = listOf(
