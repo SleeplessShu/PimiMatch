@@ -13,9 +13,6 @@ class DictionaryViewModel(
     private val repository: WordCategoriesRepository
 ) : ViewModel() {
 
-    /*  private val _groupState = MutableStateFlow(DictionaryWordGroups.BOTH_PARTIALLY)
-      val groupState: StateFlow<DictionaryWordGroups> = _groupState*/
-
     private val _categoriesGrouped = MutableStateFlow(
         CategoriesGrouped(user = emptyList(), defaults = emptyList())
     )
@@ -33,6 +30,4 @@ class DictionaryViewModel(
             )
         }
     }
-
-
 }
