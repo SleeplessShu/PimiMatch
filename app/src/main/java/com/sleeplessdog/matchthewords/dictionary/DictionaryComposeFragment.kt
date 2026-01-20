@@ -18,13 +18,13 @@ class DictionaryComposeFragment : Fragment() {
                 DictionaryScreen(
                     myGroups = listOf(
                         WordMyGroup(
-                            "Приветствия", listOf("Привет", "Здравствуй", "Добрый день")
+                            "Приветствия", listOf("Привет", "Здравствуй", "Добрый день"), ""
                         ),
                         WordMyGroup(
-                            "Птички", listOf("Попугай", "Аист", "Сокол", "Воробей", "Чайка")
+                            "Птички", listOf("Попугай", "Аист", "Сокол", "Воробей", "Чайка"), ""
                         ),
                         WordMyGroup(
-                            "Рыбы", listOf("Осетр")
+                            "Рыбы", listOf("Осетр"), ""
                         )
                     ),
                     standardGroups = listOf(
