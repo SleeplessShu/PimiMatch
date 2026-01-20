@@ -1,6 +1,7 @@
 package com.sleeplessdog.matchthewords.dictionary
 
 import android.widget.Toast
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -11,14 +12,17 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Divider
-import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -45,26 +49,31 @@ import com.sleeplessdog.matchthewords.ui.theme.textSize16SemiBold
 import com.sleeplessdog.matchthewords.ui.theme.textSize20Medium
 import com.sleeplessdog.matchthewords.ui.theme.textSize24Medium
 
-data class WordMyGroup(val myGroupName: String, val words: List<String>, val iconItem: String)
-data class WordStandardGroup(val standardGroupName: String, val words: List<String>)
-
 @Composable
 fun DictionaryUi(viewModel: DictionaryViewModel) {
-    val categoriesGrouped by viewModel.categoriesGrouped.collectAsState()
-
+    val state by viewModel.categoriesGrouped.collectAsState()
+    DictionaryScreen(state.userGroups, state.defaultGroups, bufferWords = listOf())
 }
 
 @Composable
 fun DictionaryScreen(
-    myGroups: List<WordMyGroup>,
-    standardGroups: List<WordStandardGroup>,
+    myGroups: List<MyGroup>,
+    standardGroups: List<StandardGroup>,
     bufferWords: List<String>,
 ) {
     var groupState by remember { mutableStateOf(DictionaryWordGroups.BOTH_PARTIALLY) }
+    val scrollState = rememberScrollState()
 
-    Column(modifier = Modifier.background(BlackPrimary)) {
+    Column(
+        modifier = Modifier
+            .background(BlackPrimary)
+            .verticalScroll(scrollState)
+    ) {
+
         HeaderDictionary()
+
         Spacer(modifier = Modifier.height(8.dp))
+
         MyGroupsHeader(
             showAll = groupState == DictionaryWordGroups.BOTH_PARTIALLY || groupState == DictionaryWordGroups.MY_ONLY,
             onClick = {
@@ -76,15 +85,17 @@ fun DictionaryScreen(
             }, groupState = groupState
         )
         Spacer(modifier = Modifier.height(10.dp))
+
         if (groupState == DictionaryWordGroups.BOTH_PARTIALLY || groupState == DictionaryWordGroups.MY_ONLY
         ) {
             MyGroupsTable(
                 myGroups,
                 expanded = groupState == DictionaryWordGroups.MY_ONLY,
-                bufferWords = bufferWords
+                bufferWords = bufferWords,
             )
             Spacer(modifier = Modifier.height(24.dp))
         }
+
         StandardGroupsHeader(
             showAll = groupState == DictionaryWordGroups.BOTH_PARTIALLY || groupState == DictionaryWordGroups.STANDARD_ONLY,
             onClick = {
@@ -96,14 +107,19 @@ fun DictionaryScreen(
             },
             groupState = groupState
         )
+
         Spacer(modifier = Modifier.height(8.dp))
+
         if (groupState == DictionaryWordGroups.BOTH_PARTIALLY || groupState == DictionaryWordGroups.STANDARD_ONLY
         ) {
             Spacer(modifier = Modifier.height(10.dp))
+
             StandardGroupsTable(
                 standardGroups,
-                expanded = groupState == DictionaryWordGroups.STANDARD_ONLY
+                expanded = groupState == DictionaryWordGroups.STANDARD_ONLY,
             )
+
+            Spacer(modifier = Modifier.height(60.dp))
         }
     }
 }
@@ -141,7 +157,8 @@ fun HeaderDictionary() {
                 modifier = Modifier
                     .padding(end = 16.dp)
                     .clickable {
-                        Toast.makeText(context, "Иконка нажата", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Лупа нажата", Toast.LENGTH_SHORT)
+                            .show()
                     }
             )
         }
@@ -196,18 +213,19 @@ fun MyGroupsHeader(
 
 @Composable
 fun MyGroupsTable(
-    groups: List<WordMyGroup>,
+    groups: List<MyGroup>,
     expanded: Boolean,
-    bufferWords: List<String>
+    bufferWords: List<String>,
 ) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
+            .animateContentSize()
             .padding(horizontal = 20.dp)
             .clip(RoundedCornerShape(12.dp))
     ) {
         MyGroupTableRow(
-            title = "Добавленные слова",
+            titleKey = stringResource(R.string.added_words),
             rowIndex = -1,
             wordsCount = bufferWords.size
         )
@@ -215,8 +233,8 @@ fun MyGroupsTable(
         val groupsToShow = if (expanded) groups else groups.take(2)
         groupsToShow.forEachIndexed { index, group ->
             MyGroupTableRow(
-                title = group.myGroupName,
-                wordsCount = group.words.size,
+                titleKey = group.myGroupName,
+                wordsCount = group.countWords,
                 rowIndex = index
             )
             if (index != groups.lastIndex) {
@@ -225,7 +243,7 @@ fun MyGroupsTable(
         }
         Divider(color = BlackPrimary, thickness = 1.dp)
         MyGroupTableRow(
-            title = "Создать группу",
+            titleKey = stringResource(R.string.create_group),
             rowIndex = -2,
         )
     }
@@ -234,9 +252,16 @@ fun MyGroupsTable(
 @Composable
 fun MyGroupTableRow(
     rowIndex: Int,
-    title: String,
+    titleKey: String,
     wordsCount: Int? = null
 ) {
+    val context = LocalContext.current
+    val resId = remember(titleKey) {
+        context.resources.getIdentifier(titleKey, "string", context.packageName)
+    }
+
+    val titleText = if (resId != 0) stringResource(id = resId) else titleKey
+
     val clickableIconPainter =
         painterResource(id = R.drawable.icon_dots_three_outline_vertical)
     val leftIconPainter = when (rowIndex) {
@@ -256,14 +281,14 @@ fun MyGroupTableRow(
             tint = DarkTextDefault,
             contentDescription = "Icon for row $rowIndex",
             modifier = Modifier
-                .size(24.dp)
+                .size(36.dp)
                 .padding(start = 12.dp),
 
             )
         Spacer(modifier = Modifier.width(8.dp))
         Column {
             Text(
-                title,
+                titleText,
                 style = textSize16Bold,
                 color = DarkTextDefault
             )
@@ -288,7 +313,8 @@ fun MyGroupTableRow(
                     .padding(end = 10.dp)
                     .size(24.dp)
                     .clickable {
-                        // TODO: обработка клика
+                        Toast.makeText(context, "Три точки нажаты", Toast.LENGTH_SHORT)
+                            .show()
                     }
             )
         }
@@ -355,7 +381,7 @@ fun StandardGroupsHeader(
 
 @Composable
 fun StandardGroupsTable(
-    groups: List<WordStandardGroup>,
+    groups: List<StandardGroup>,
     expanded: Boolean
 ) {
     Column(
@@ -367,7 +393,12 @@ fun StandardGroupsTable(
     ) {
         val groupsToShow = if (expanded) groups else groups.take(3)
         groupsToShow.forEachIndexed { index, group ->
-            StandardGroupTableRow(group = group)
+            StandardGroupTableRow(
+                titleKey = group.standardGroupName,
+                wordsCount = group.countWords,
+                iconKey = group.iconItem
+            )
+
             if (index != groups.lastIndex) {
                 Divider(color = BlackPrimary, thickness = 1.dp)
             }
@@ -377,22 +408,39 @@ fun StandardGroupsTable(
 
 @Composable
 fun StandardGroupTableRow(
-    group: WordStandardGroup,
+    wordsCount: Int,
+    iconKey: String,
+    titleKey: String,
 ) {
+    val context = LocalContext.current
+    val resId = remember(titleKey) {
+        context.resources.getIdentifier(titleKey, "string", context.packageName)
+    }
+    val titleText = if (resId != 0) stringResource(id = resId) else titleKey
+
+    val resIdIcon = remember(iconKey) {
+        context.resources.getIdentifier(iconKey, "drawable", context.packageName)
+    }
+    val iconPainter = if (resIdIcon != 0) {
+        painterResource(id = resIdIcon)
+    } else {
+        // fallback иконка в случае ошибки
+        painterResource(id = R.drawable.icon_add_standard_group) // замени на своё
+    }
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .background(Gray05)
             .height(68.dp),
         verticalAlignment = Alignment.CenterVertically,
-
         ) {
         Icon(
-            painter = painterResource(id = R.drawable.icon_add_standard_group),
+            painter = iconPainter,
             contentDescription = null,
             tint = DarkTextDefault,
             modifier = Modifier
-                .size(24.dp)
+                .size(36.dp)
                 .padding(start = 12.dp)
         )
         Spacer(modifier = Modifier.width(16.dp))
@@ -400,26 +448,29 @@ fun StandardGroupTableRow(
             Text(
                 style = textSize16Bold,
                 color = DarkTextDefault,
-                text = group.standardGroupName,
+                text = titleText,
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(4.dp)) // Отступ между двумя текстами
             Text(
-                text = "${group.words.size} ${pluralizeWord(group.words.size)}",
+                text = "$wordsCount ${pluralizeWord(wordsCount)}",
                 style = textSize14SemiBold,
                 color = DarkTextDefault.copy(alpha = 0.6f),
             )
         }
         Spacer(modifier = Modifier.weight(1f))
-        IconButton(onClick = {
-            println("Кнопка для ${group.standardGroupName} нажата")
-        }) {
-            Icon(
-                painter = painterResource(id = R.drawable.icon_play_circle),
-                tint = DarkTextDefault,
-                contentDescription = "Кнопка действия"
-            )
-        }
+        Icon(
+            painter = painterResource(id = R.drawable.icon_play_circle),
+            tint = DarkTextDefault,
+            contentDescription = "Кнопка действия",
+            modifier = Modifier
+                .size(24.dp)
+                .clickable {
+                    Toast.makeText(context, "Плей нажат", Toast.LENGTH_SHORT)
+                        .show()
+                }
+        )
+        Spacer(modifier = Modifier.padding(end = 12.dp))
     }
 }
 
@@ -428,23 +479,23 @@ fun StandardGroupTableRow(
 fun DictionaryScreenPreview() {
     DictionaryScreen(
         myGroups = listOf(
-            WordMyGroup(
-                "Приветствия", listOf("Привет", "Здравствуй", "Добрый день"), ""
+            MyGroup(
+                "Приветствия", 3, ""
             ),
-            WordMyGroup(
-                "Птички", listOf("Попугай", "Аист", "Сокол", "Воробей", "Чайка"), ""
+            MyGroup(
+                "Птички", 5, ""
             ),
-            WordMyGroup(
-                "Рыбы", listOf("Осетр"), ""
+            MyGroup(
+                "Рыбы", 1, ""
             )
         ),
         standardGroups = listOf(
-            WordStandardGroup("Путешествия", listOf("Отель")),
-            WordStandardGroup("Дом", listOf("Кровать", "Стол")),
-            WordStandardGroup(
-                "Работа", listOf("Зарплата", "График", "Коллега", "Отпуск", "Премия")
+            StandardGroup("Путешествия", 1, ""),
+            StandardGroup("Дом", 2, ""),
+            StandardGroup(
+                "Работа", 5, ""
             ),
-            WordStandardGroup("Птицы", listOf("Голубь"))
+            StandardGroup("Птицы", 1, "")
         ),
         bufferWords = listOf("apple", "dog", "cat")
     )
