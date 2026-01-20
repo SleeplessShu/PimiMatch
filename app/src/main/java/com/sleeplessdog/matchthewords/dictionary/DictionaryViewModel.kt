@@ -2,7 +2,6 @@ package com.sleeplessdog.matchthewords.dictionary
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.sleeplessdog.matchthewords.game.domain.repositories.CategoriesGrouped
 import com.sleeplessdog.matchthewords.game.domain.repositories.WordCategoriesRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -14,19 +13,36 @@ class DictionaryViewModel(
 ) : ViewModel() {
 
     private val _categoriesGrouped = MutableStateFlow(
-        CategoriesGrouped(user = emptyList(), defaults = emptyList())
+        DictionaryScreenState(userGroups = emptyList(), defaultGroups = emptyList())
     )
-    val categoriesGrouped: StateFlow<CategoriesGrouped> = _categoriesGrouped
+    val categoriesGrouped: StateFlow<DictionaryScreenState> = _categoriesGrouped
 
-    fun setGroup() {
+    init {
+        loadGroups()
+    }
+
+    private fun loadGroups() {
         viewModelScope.launch {
-            // Получаем все категории из репозитория (Flow -> first)
             val allCategories = repository.observeAll().first()
+            val userGroups = allCategories.filter { it.isUser }.map { category ->
+                MyGroup(
+                    myGroupName = category.titleKey,
+                    countWords = 1,
+                    iconItem = category.iconKey
+                )
+            }
 
-            // Обновляем состояние разделённых категорий
-            _categoriesGrouped.value = CategoriesGrouped(
-                user = allCategories.filter { it.isUser },
-                defaults = allCategories.filter { !it.isUser }
+            val defaultGroups = allCategories.filter { !it.isUser }.map { category ->
+                StandardGroup(
+                    standardGroupName = category.titleKey,
+                    countWords = 1,
+                    iconItem = category.iconKey
+                )
+            }
+
+            _categoriesGrouped.value = DictionaryScreenState(
+                userGroups = userGroups,
+                defaultGroups = defaultGroups
             )
         }
     }
