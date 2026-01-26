@@ -2,9 +2,9 @@ package com.sleeplessdog.matchthewords.di
 
 import android.os.Handler
 import android.os.Looper
+import com.sleeplessdog.matchthewords.backend.data.repository.AppPrefs
+import com.sleeplessdog.matchthewords.backend.data.repository.AppPrefsImpl
 import com.sleeplessdog.matchthewords.dictionary.DictionaryViewModel
-import com.sleeplessdog.matchthewords.game.data.repositories.AppPrefs
-import com.sleeplessdog.matchthewords.game.data.repositories.AppPrefsImpl
 import com.sleeplessdog.matchthewords.game.presentation.GameViewModel
 import com.sleeplessdog.matchthewords.game.presentation.controller.LandingPagesController
 import com.sleeplessdog.matchthewords.game.presentation.fragments.EndGameViewModel
@@ -16,7 +16,6 @@ import com.sleeplessdog.matchthewords.game.presentation.ingameFragments.WordsMat
 import com.sleeplessdog.matchthewords.game.presentation.ingameFragments.WriteTheWordViewModel
 import com.sleeplessdog.matchthewords.game.presentation.parentControllers.ProgressController
 import com.sleeplessdog.matchthewords.score.presentation.ScoreViewModel
-import com.sleeplessdog.matchthewords.settings.presentation.DatabaseViewModel
 import com.sleeplessdog.matchthewords.utils.ShuffleFunctions
 import org.koin.android.ext.koin.androidApplication
 import org.koin.androidx.viewmodel.dsl.viewModel
@@ -32,31 +31,39 @@ val presentationModule = module {
         GameSelectViewModel(
             appPrefs = get(),
             landingManager = get(),
-            userDbController = get(),
             authRepository = get(),
         )
     }
 
     viewModel {
         GameViewModel(
+
             wordsController = get(),
             progressController = get(),
-            scoreInteractor = get(),
-            appPrefs = get(),
-            getSelectedCategoriesUC = get(),
             landingManager = get(),
+            updateWordProgress = get(),
+            updateScoreProgress = get(),
+            getSelectedGroupsUC = get(),
+            appPrefs = get()
         )
     }
 
 
     viewModel { ScoreViewModel() }
 
-    viewModel { DictionaryViewModel(get()) }
-
-
-    viewModel() {
-        DatabaseViewModel(get(), get())
+    viewModel {
+        DictionaryViewModel(
+            observeAllGroups = get(),
+            getWordsCountForGroup = get(),
+            appPrefs = get(),
+            app = get()
+        )
     }
+
+
+    /*    viewModel() {
+            DatabaseViewModel(get(), get())
+        }*/
 
     viewModel() {
         OneOfFourViewModel(get())
@@ -84,7 +91,9 @@ val presentationModule = module {
             observeAllGroupedUC = get(),
             toggleUC = get(),
             saveSelectionUC = get(),
-            createUserUC = get(),
+            createUserGroupUC = get(),
+            saveLevelsUC = get(),
+            observeLevelsUC = get(),
             app = androidApplication(),
             appPrefs = get()
         )
@@ -105,4 +114,5 @@ val presentationModule = module {
     single { ShuffleFunctions() }
 
     single { ProgressController() }
+
 }
