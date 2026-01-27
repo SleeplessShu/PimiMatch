@@ -1,4 +1,4 @@
-package com.sleeplessdog.matchthewords.dictionary
+package com.sleeplessdog.matchthewords.dictionary.adding_new_group
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -6,19 +6,24 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
-import com.sleeplessdog.matchthewords.score.presentation.ScoreViewModel
+import androidx.navigation.findNavController
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
-class DictionaryComposeFragment : Fragment() {
-    private val viewModel: DictionaryViewModel by viewModel()
+class MyGroupComposeFragment : Fragment() {
+    private val viewModel: MyGroupViewModel by viewModel()
+
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         return ComposeView(requireContext()).apply {
             setContent {
-                DictionaryUi(viewModel = viewModel)
+                MyGroupUi(
+                    viewModel = viewModel,
+                    onBackClick = { findNavController().navigateUp() })
             }
         }
     }
+
 }
