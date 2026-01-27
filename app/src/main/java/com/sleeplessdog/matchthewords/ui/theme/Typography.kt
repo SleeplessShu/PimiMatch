@@ -18,7 +18,8 @@ val openSansFamily = FontFamily(
     Font(R.font.open_sans_bold, FontWeight.Bold)
 )
 val mursGothicFamily = FontFamily(
-    Font(R.font.murs_gothic_wide_dark, FontWeight.ExtraBold))
+    Font(R.font.murs_gothic_wide_dark, FontWeight.ExtraBold)
+)
 
 val textSize24Medium = TextStyle(
     fontStyle = FontStyle.Normal,
@@ -61,6 +62,16 @@ val textSize14SemiBold = TextStyle(
     lineHeight = 18.sp,
     fontSize = 14.sp,
 )
+
+val textSize24Bold = TextStyle(
+    fontStyle = FontStyle.Normal,
+    fontWeight = FontWeight.Bold,
+    fontFamily = myFontFamily,
+    letterSpacing = 0.sp,
+    lineHeight = 30.sp,
+    fontSize = 24.sp,
+)
+
 val h1Header = TextStyle(
     fontFamily = mursGothicFamily,
     fontSize = 30.sp,
