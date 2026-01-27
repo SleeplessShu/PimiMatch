@@ -1,10 +1,11 @@
-package com.sleeplessdog.matchthewords.dictionary
+package com.sleeplessdog.matchthewords.dictionary.general_dictionary_screen
 
 import android.widget.Toast
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -20,8 +21,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Divider
+import com.sleeplessdog.matchthewords.dictionary.GroupUiDictionary
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -31,36 +37,55 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.sleeplessdog.matchthewords.R
+import com.sleeplessdog.matchthewords.dictionary.DictionaryWordGroups
 import com.sleeplessdog.matchthewords.ui.theme.BlackPrimary
 import com.sleeplessdog.matchthewords.ui.theme.DarkTextDefault
+import com.sleeplessdog.matchthewords.ui.theme.DarkTextUsed
 import com.sleeplessdog.matchthewords.ui.theme.Gray03
 import com.sleeplessdog.matchthewords.ui.theme.Gray05
+import com.sleeplessdog.matchthewords.ui.theme.Gray07
 import com.sleeplessdog.matchthewords.ui.theme.textSize14SemiBold
 import com.sleeplessdog.matchthewords.ui.theme.textSize16Bold
 import com.sleeplessdog.matchthewords.ui.theme.textSize16SemiBold
 import com.sleeplessdog.matchthewords.ui.theme.textSize20Medium
+import com.sleeplessdog.matchthewords.ui.theme.textSize24Bold
 import com.sleeplessdog.matchthewords.ui.theme.textSize24Medium
 
 @Composable
-fun DictionaryUi(viewModel: DictionaryViewModel) {
+fun DictionaryUi(
+    viewModel: DictionaryViewModel,
+    onNavigateToNewGroup: () -> Unit,
+) {
     val state by viewModel.categoriesGrouped.collectAsState()
-    DictionaryScreen(state.userGroups, state.defaultGroups, bufferWords = listOf())
+
+    DictionaryScreen(
+        state.userGroups,
+        state.defaultGroups,
+        onNavigateToNewGroup = onNavigateToNewGroup,
+        addNewUserGroup = viewModel::addNewUserGroup
+    )
 }
 
 @Composable
 fun DictionaryScreen(
     userGroups: List<GroupUiDictionary>,
     standardGroups: List<GroupUiDictionary>,
-    bufferWords: List<String>,
+    onNavigateToNewGroup: () -> Unit,
+    addNewUserGroup: (String) -> Unit
 ) {
     var groupState by remember { mutableStateOf(DictionaryWordGroups.BOTH_PARTIALLY) }
     val scrollState = rememberScrollState()
+    var showDialog by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -89,9 +114,19 @@ fun DictionaryScreen(
             UserGroupsTable(
                 userGroups,
                 expanded = groupState == DictionaryWordGroups.MY_ONLY,
-                bufferWords = bufferWords,
+                onNavigateToNewGroup = onNavigateToNewGroup,
+                onShowDialog = { showDialog = true },
             )
             Spacer(modifier = Modifier.height(24.dp))
+        }
+        if (showDialog) {
+            NewCategoryDialog(
+                onDismiss = { showDialog = false },
+                onSave = {
+                    addNewUserGroup(it)
+                    showDialog = false
+                }
+            )
         }
 
         StandardGroupsHeader(
@@ -213,7 +248,8 @@ fun MyGroupsHeader(
 fun UserGroupsTable(
     groups: List<GroupUiDictionary>,
     expanded: Boolean,
-    bufferWords: List<String>,
+    onNavigateToNewGroup: () -> Unit,
+    onShowDialog: (Boolean) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -222,18 +258,13 @@ fun UserGroupsTable(
             .padding(horizontal = 20.dp)
             .clip(RoundedCornerShape(12.dp))
     ) {
-        UserGroupTableRow(
-            titleKey = stringResource(R.string.added_words),
-            rowIndex = -1,
-            wordsCount = bufferWords.size
-        )
-        Divider(color = BlackPrimary, thickness = 1.dp)
         val groupsToShow = if (expanded) groups else groups.take(2)
         groupsToShow.forEachIndexed { index, group ->
             UserGroupTableRow(
                 titleKey = group.titleKey,
                 wordsCount = group.wordsInGroup,
-                rowIndex = index
+                rowIndex = index,
+                onClick = onNavigateToNewGroup
             )
             if (index != groups.lastIndex) {
                 Divider(color = BlackPrimary, thickness = 1.dp)
@@ -243,6 +274,8 @@ fun UserGroupsTable(
         UserGroupTableRow(
             titleKey = stringResource(R.string.create_group),
             rowIndex = -2,
+            onClick = { onShowDialog(true) }
+
         )
     }
 }
@@ -252,6 +285,8 @@ fun UserGroupTableRow(
     rowIndex: Int,
     titleKey: String,
     wordsCount: Int? = null,
+
+    onClick: () -> Unit,
 ) {
     val context = LocalContext.current
     val resId = remember(titleKey) {
@@ -263,7 +298,6 @@ fun UserGroupTableRow(
     val clickableIconPainter =
         painterResource(id = R.drawable.icon_dots_three_outline_vertical)
     val leftIconPainter = when (rowIndex) {
-        -1 -> painterResource(R.drawable.icon_favorite)
         -2 -> painterResource(R.drawable.icon_add)
         else -> painterResource(R.drawable.icon_book)
     }
@@ -271,7 +305,8 @@ fun UserGroupTableRow(
         modifier = Modifier
             .fillMaxWidth()
             .height(68.dp)
-            .background(Gray05),
+            .background(Gray05)
+            .clickable { onClick() },
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
@@ -302,7 +337,7 @@ fun UserGroupTableRow(
         }
         Spacer(modifier = Modifier.weight(1f))
 
-        if (rowIndex != -1 && rowIndex != -2) {
+        if (rowIndex != -2) {
             Icon(
                 painter = clickableIconPainter,
                 tint = DarkTextDefault,
@@ -445,7 +480,7 @@ fun StandardGroupTableRow(
                 text = titleText,
                 modifier = Modifier.fillMaxWidth()
             )
-            Spacer(modifier = Modifier.height(4.dp)) // Отступ между двумя текстами
+            Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = "$wordsCount ${pluralizeWord(wordsCount)}",
                 style = textSize14SemiBold,
@@ -465,6 +500,118 @@ fun StandardGroupTableRow(
                 }
         )
         Spacer(modifier = Modifier.padding(end = 12.dp))
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun NewCategoryDialog(
+    onDismiss: () -> Unit,
+    onSave: (String) -> Unit
+) {
+    var text by remember { mutableStateOf("") }
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(
+            usePlatformDefaultWidth = false,
+            decorFitsSystemWindows = false,
+        )
+    ) {
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Gray05)
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.Top
+            ) {
+                Text(
+                    text = "Новая группа",
+                    style = textSize24Bold,
+                    color = DarkTextDefault,
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                OutlinedTextField(
+                    value = text,
+                    onValueChange = { text = it },
+                    placeholder = {
+                        Text(
+                            "Напишите название",
+                            style = textSize20Medium,
+                            color = Gray07,
+                        )
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    textStyle = textSize16SemiBold.copy(color = DarkTextDefault),
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        focusedBorderColor = Color.Transparent,
+                        unfocusedBorderColor = Color.Transparent,
+                        cursorColor = DarkTextDefault
+                    )
+                )
+                Divider(
+                    thickness = 1.dp,
+                    color = DarkTextDefault
+                )
+                Spacer(modifier = Modifier.height(36.dp))
+                ButtonsCancelAndSave(onDismiss = onDismiss, onSave = {
+                    if (text.isNotBlank()) {
+                        onSave(text)
+                        onDismiss()
+                    }
+                })
+            }
+        }
+    }
+}
+
+@Composable
+fun ButtonsCancelAndSave(
+    onDismiss: () -> Unit,
+    onSave: () -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Box(modifier = Modifier.padding(start = 10.dp)) {
+            TextButton(
+                modifier = Modifier
+                    .padding(start = 0.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(DarkTextUsed)
+                    .height(41.dp),
+                onClick = onDismiss,
+            ) {
+                Text(
+                    "Отменить",
+                    color = DarkTextDefault
+                )
+            }
+        }
+        Box(modifier = Modifier.padding(end = 10.dp)) {
+            TextButton(
+                modifier = Modifier
+                    .padding(end = 0.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(DarkTextUsed)
+                    .height(41.dp),
+                onClick = onSave,
+            ) {
+                Text(
+                    "Сохранить",
+                    color = DarkTextDefault
+                )
+            }
+        }
     }
 }
 
@@ -518,6 +665,43 @@ fun DictionaryScreenPreview() {
                 wordsInGroup = 1
             )
         ),
-        bufferWords = listOf("apple", "dog", "cat")
+        onNavigateToNewGroup = {},
+        addNewUserGroup = {}
     )
+}
+
+@Preview(showBackground = true)
+@Composable
+fun PreviewScreenWithDialog() {
+    var showDialog by remember { mutableStateOf(true) }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        DictionaryScreen(userGroups = listOf(
+            GroupUiDictionary(
+                "Приветствия", wordsInGroup =  3, titleKey = "", iconKey = 0,
+            ),
+            GroupUiDictionary(
+                "Птички", wordsInGroup =  5, titleKey = "", iconKey = 0
+            ),
+            GroupUiDictionary(
+                "Рыбы", wordsInGroup =  1, titleKey = "", iconKey = 0
+            )
+        ),
+            standardGroups = listOf(
+                GroupUiDictionary("Путешествия",wordsInGroup =  1, titleKey = "", iconKey = 0),
+                GroupUiDictionary("Дом", wordsInGroup =  1, titleKey = "", iconKey = 0),
+               GroupUiDictionary(
+                   "Работа", wordsInGroup =  1, titleKey = "", iconKey = 0
+                ),
+                GroupUiDictionary("Птицы", wordsInGroup =  1, titleKey = "", iconKey = 0)
+            ),
+            onNavigateToNewGroup = {},
+            addNewUserGroup = {})
+        if (showDialog) {
+            NewCategoryDialog(
+                onDismiss = { showDialog = false }, onSave = {},
+            )
+            ButtonsCancelAndSave(onDismiss = {}, onSave = {})
+        }
+    }
 }

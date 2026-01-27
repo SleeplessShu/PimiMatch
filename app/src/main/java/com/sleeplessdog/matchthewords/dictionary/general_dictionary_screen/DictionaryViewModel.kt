@@ -1,14 +1,17 @@
-package com.sleeplessdog.matchthewords.dictionary
+package com.sleeplessdog.matchthewords.dictionary.general_dictionary_screen
 
 import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sleeplessdog.matchthewords.dictionary.GroupUiDictionary
 import com.sleeplessdog.matchthewords.backend.data.repository.AppPrefs
 import com.sleeplessdog.matchthewords.backend.domain.models.WordGroup
+import com.sleeplessdog.matchthewords.backend.domain.usecases.groups.CreateUserGroupUC
 import com.sleeplessdog.matchthewords.backend.domain.usecases.groups.GetWordsCountForGroupUC
 import com.sleeplessdog.matchthewords.backend.domain.usecases.groups.ObserveAllGroupsGroupedUC
 import com.sleeplessdog.matchthewords.utils.SupportFunctions.drawableIdByName
 import com.sleeplessdog.matchthewords.utils.SupportFunctions.stringByName
+import com.sleeplessdog.matchthewords.dictionary.DictionaryScreenState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -16,6 +19,7 @@ import kotlinx.coroutines.launch
 class DictionaryViewModel(
     private val observeAllGroups: ObserveAllGroupsGroupedUC,
     private val getWordsCountForGroup: GetWordsCountForGroupUC,
+    private val createUserGroup: CreateUserGroupUC,
     private val appPrefs: AppPrefs,
     private val app: Application,
 ) : ViewModel() {
@@ -52,6 +56,31 @@ class DictionaryViewModel(
                     defaultGroups = defaultDomain
                 )
             }
+        }
+    }
+
+    fun addNewUserGroup(name: String) {
+        val currentState = _categoriesGrouped.value
+        val currentUserGroups = currentState.userGroups.toMutableList()
+
+        val indexSavedWords =
+            currentUserGroups.indexOfFirst { it.titleKey == "cat_saved" }
+
+        val newGroup = GroupUiDictionary(key = "", titleKey = name, wordsInGroup = 0, iconKey = 0)
+
+        if (indexSavedWords != -1) {
+            currentUserGroups.add(indexSavedWords + 1, newGroup)
+        } else {
+            currentUserGroups.add(0, newGroup)
+        }
+
+        _categoriesGrouped.value = currentState.copy(userGroups = currentUserGroups)
+        viewModelScope.launch {
+            createUserGroup(
+                key = name,
+                titleKey = name,
+                iconKey = "",
+            )
         }
     }
 }
