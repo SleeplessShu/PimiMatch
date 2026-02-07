@@ -27,7 +27,7 @@ class AddWordToUserDictionaryUC(
                 userDao.insertWord(
                     UserWordEntity(
                         globalId = globalId,
-                        groupId = savedGroup.id,
+                        groupId = savedGroup.groupKey,
                         english = null,
                         spanish = null,
                         russian = null,
@@ -40,7 +40,4 @@ class AddWordToUserDictionaryUC(
             }
     }
 
-    private companion object {
-
-    }
 }

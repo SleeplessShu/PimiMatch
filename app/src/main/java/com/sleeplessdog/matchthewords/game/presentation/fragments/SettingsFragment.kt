@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.flexbox.FlexboxLayout
 import com.google.android.material.chip.Chip
 import com.sleeplessdog.matchthewords.R
+import com.sleeplessdog.matchthewords.backend.domain.models.GroupUiSettings
 import com.sleeplessdog.matchthewords.backend.domain.models.LanguageLevel
 import com.sleeplessdog.matchthewords.databinding.ItemDifficultyCardBinding
 import com.sleeplessdog.matchthewords.databinding.SettingsFragmentBinding
@@ -20,7 +21,6 @@ import com.sleeplessdog.matchthewords.game.presentation.controller.PimiScrollbar
 import com.sleeplessdog.matchthewords.game.presentation.controller.toFlagLargeRes
 import com.sleeplessdog.matchthewords.game.presentation.holders.LanguageAdapterState
 import com.sleeplessdog.matchthewords.game.presentation.models.DifficultLevel
-import com.sleeplessdog.matchthewords.game.presentation.models.GroupUiSettings
 import com.sleeplessdog.matchthewords.game.presentation.view.LanguageMenuManager
 import com.sleeplessdog.matchthewords.main.MainActivity
 import com.sleeplessdog.matchthewords.utils.SupportFunctions
@@ -133,8 +133,8 @@ class SettingsFragment : Fragment(R.layout.settings_fragment) {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 vm.state.collect { state ->
                     renderFeatured(state.featured)
-                    renderGroup(binding.cgUserCategories, state.user)
-                    renderGroup(binding.cgDefaultCategories, state.defaults)
+                    renderGroup(binding.cgUserCategories, state.userGroups)
+                    renderGroup(binding.cgDefaultCategories, state.globalGroups)
                 }
             }
         }
@@ -188,7 +188,7 @@ class SettingsFragment : Fragment(R.layout.settings_fragment) {
         }
 
         binding.btnShowAllCategories.setOnClickListener {
-            preselected = vm.state.value.user.plus(vm.state.value.defaults).filter { it.isSelected }
+            preselected = vm.state.value.featured.filter { it.isSelected }
                 .map { it.key }.toSet()
             showTopicsMenu()
         }

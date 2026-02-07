@@ -4,8 +4,8 @@ import android.os.Handler
 import android.os.Looper
 import com.sleeplessdog.matchthewords.backend.data.repository.AppPrefs
 import com.sleeplessdog.matchthewords.backend.data.repository.AppPrefsImpl
-import com.sleeplessdog.matchthewords.dictionary.adding_new_group.MyGroupViewModel
-import com.sleeplessdog.matchthewords.dictionary.general_dictionary_screen.DictionaryViewModel
+import com.sleeplessdog.matchthewords.dictionary.dictionary_screen.DictionaryViewModel
+import com.sleeplessdog.matchthewords.dictionary.group_screen.GroupViewModel
 import com.sleeplessdog.matchthewords.game.presentation.GameViewModel
 import com.sleeplessdog.matchthewords.game.presentation.controller.LandingPagesController
 import com.sleeplessdog.matchthewords.game.presentation.fragments.EndGameViewModel
@@ -54,15 +54,25 @@ val presentationModule = module {
 
     viewModel {
         DictionaryViewModel(
-            observeAllGroups = get(),
-            getWordsCountForGroup = get(),
+            getGlobalGroupsOnce = get(),
+            getWordsCountUserGroup = get(),
+            observeUserGroups = get(),
             createUserGroup = get(),
             appPrefs = get(),
             app = get()
         )
     }
 
-    viewModel { MyGroupViewModel() }
+    viewModel {
+        GroupViewModel(
+            observeWordsInUserGroup = get(),
+            getGlobalGroupWordsOnce = get(),
+            appPrefs = get(),
+            savedStateHandle = get(),
+        )
+    }
+
+    /*    viewModel { UserGroupViewModel() }*/
 
 
     /*    viewModel() {
@@ -91,8 +101,7 @@ val presentationModule = module {
 
     viewModel {
         SettingsViewModel(
-            observeFeaturedUC = get(),
-            observeAllGroupedUC = get(),
+            observeAllGroups = get(),
             toggleUC = get(),
             saveSelectionUC = get(),
             createUserGroupUC = get(),
@@ -116,7 +125,6 @@ val presentationModule = module {
     }
 
     single { ShuffleFunctions() }
-
     single { ProgressController() }
 
 }

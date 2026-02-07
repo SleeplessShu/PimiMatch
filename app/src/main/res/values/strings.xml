@@ -97,9 +97,9 @@
     <string name="difficulty_expert_words">32 слова</string>
 
     <!--группы слов боттомшит-->>
-    <string name="categories_all_title">Категории слов</string>
-    <string name="categories_user_section">Мои категории:</string>
-    <string name="categories_default_section">Стандартные:</string>
+    <string name="all_groups">Группы слов</string>
+    <string name="user_groups">Мои группы:</string>
+    <string name="global_groups">Стандартные группы</string>
     <string name="cancel">Отмена</string>
     <string name="save">Сохранить</string>
 
@@ -215,7 +215,20 @@
 
     <!--dictionary-->
     <string name="create_group">Создать группу</string>
+    <string name="new_group">Новая группа</string>
+    <string name="enter_group_name">Напишите название</string>
     <string name="added_words">Добавленные слова</string>
+    <string name="button_cancel">Отменить</string>
+    <string name="button_save">Сохранить</string>
+    <string name="add_word">Добаить слово</string>
+    <string name="words_count_title">ТЕСТОВАЯ ЗАПИСЬ</string>
+
+    <plurals name="words_count">
+        <item quantity="one">%d слово</item>
+        <item quantity="few">%d слова</item>
+        <item quantity="many">%d слов</item>
+        <item quantity="other">%d слов</item>
+    </plurals>
 
     <!--languages-->
     <string name="language_english">Английский</string>

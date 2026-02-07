@@ -40,7 +40,7 @@ abstract class UserDatabase : RoomDatabase() {
                         // дефолтная группа "saved words"
                         db.execSQL(
                             """
-                            INSERT INTO UserGroups (groupKey, title, iconKey)
+                            INSERT INTO UserGroups (groupKey, title, icon)
                             VALUES ('saved_words', 'saved words', 'ic_saved_words')
                             """.trimIndent()
                         )

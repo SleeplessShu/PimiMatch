@@ -15,14 +15,15 @@ interface UserDao {
 
     // ---------- Groups ----------
 
+
     @Query("SELECT * FROM UserGroups")
-    fun observeGroups(): Flow<List<UserGroupEntity>>
+    fun observeUserGroups(): Flow<List<UserGroupEntity>>
 
     @Query("SELECT * FROM UserGroups WHERE groupKey = :key LIMIT 1")
     suspend fun getGroupByKey(key: String): UserGroupEntity?
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
-    suspend fun insertGroup(group: UserGroupEntity): Long
+    suspend fun insertGroup(group: UserGroupEntity)
 
     @Delete
     suspend fun deleteGroup(group: UserGroupEntity)
@@ -33,16 +34,28 @@ interface UserDao {
     @Query("SELECT selectedGroups FROM UserSettings WHERE id = 1")
     suspend fun getSelectedGroups(): String?
 
+    @Query("SELECT selectedGroups FROM UserSettings WHERE id = 1")
+    fun observeSelectedGroups(): Flow<String?>
+
     @Query(
         """
     SELECT COUNT(*) 
     FROM UserWords uw
-    INNER JOIN UserGroups ug ON uw.groupId = ug.id
+    INNER JOIN UserGroups ug ON uw.groupId = ug.groupKey
     WHERE ug.groupKey = :groupKey
 """
     )
     suspend fun countWordsByGroupKey(groupKey: String): Int
 
+    @Query(
+        """
+        SELECT title 
+        FROM UserGroups
+        WHERE groupKey = :groupId
+        LIMIT 1
+    """
+    )
+    suspend fun getGroupTitleById(groupId: String): String?
 
     // ---------- Words ----------
 
@@ -51,6 +64,19 @@ interface UserDao {
 
     @Query("SELECT * FROM UserWords WHERE groupId IN (:groupIds)")
     suspend fun getWordsByGroups(groupIds: Set<Long>): List<UserWordEntity>
+
+    /**
+     * подписка на содержимое юзергруппы
+     */
+    @Query(
+        """
+        SELECT * 
+        FROM UserWords
+        WHERE groupId = :groupId
+        ORDER BY addedAt DESC
+    """
+    )
+    fun observeWordsInUserGroup(groupId: String): Flow<List<UserWordEntity>>
 
     @Query("SELECT * FROM UserWords WHERE globalId = :globalId LIMIT 1")
     suspend fun findByGlobalId(globalId: Long): UserWordEntity?

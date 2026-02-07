@@ -6,33 +6,30 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.sleeplessdog.matchthewords.R
 import com.sleeplessdog.matchthewords.backend.data.repository.AppPrefs
+import com.sleeplessdog.matchthewords.backend.domain.models.CombinedGroupsSettingsScreen
+import com.sleeplessdog.matchthewords.backend.domain.models.GroupUiSettings
 import com.sleeplessdog.matchthewords.backend.domain.models.LanguageLevel
-import com.sleeplessdog.matchthewords.backend.domain.models.WordGroup
-import com.sleeplessdog.matchthewords.backend.domain.usecases.groups.CreateUserGroupUC
-import com.sleeplessdog.matchthewords.backend.domain.usecases.groups.ObserveAllGroupsGroupedUC
-import com.sleeplessdog.matchthewords.backend.domain.usecases.groups.ObserveFeaturedGroupsUC
-import com.sleeplessdog.matchthewords.backend.domain.usecases.groups.SaveSelectionUC
-import com.sleeplessdog.matchthewords.backend.domain.usecases.groups.ToggleCategoryUC
+import com.sleeplessdog.matchthewords.backend.domain.usecases.CreateUserGroupUC
+import com.sleeplessdog.matchthewords.backend.domain.usecases.ObserveAllGroupsGroupedUC
+import com.sleeplessdog.matchthewords.backend.domain.usecases.SaveSelectionUC
+import com.sleeplessdog.matchthewords.backend.domain.usecases.ToggleCategoryUC
 import com.sleeplessdog.matchthewords.backend.domain.usecases.settings.SettingsObserveLevelsUC
 import com.sleeplessdog.matchthewords.backend.domain.usecases.settings.SettingsSaveLevelsUC
 import com.sleeplessdog.matchthewords.game.presentation.holders.LanguageAdapterState
 import com.sleeplessdog.matchthewords.game.presentation.models.DifficultLevel
-import com.sleeplessdog.matchthewords.game.presentation.models.GroupUiSettings
-import com.sleeplessdog.matchthewords.game.presentation.models.GroupsUiState
 import com.sleeplessdog.matchthewords.game.presentation.models.Language
-import com.sleeplessdog.matchthewords.utils.groupIconRes
-import com.sleeplessdog.matchthewords.utils.groupTitleRes
-import kotlinx.coroutines.flow.MutableStateFlow
+import com.sleeplessdog.matchthewords.utils.SupportFunctions.drawableIdByName
+import com.sleeplessdog.matchthewords.utils.SupportFunctions.stringByName
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class SettingsViewModel(
-    private val observeFeaturedUC: ObserveFeaturedGroupsUC,
-    private val observeAllGroupedUC: ObserveAllGroupsGroupedUC,
+    //private val observeFeaturedUC: ObserveFeaturedGroupsUC,
+    observeAllGroups: ObserveAllGroupsGroupedUC,
     private val toggleUC: ToggleCategoryUC,
     private val saveSelectionUC: SaveSelectionUC,
     private val createUserGroupUC: CreateUserGroupUC,
@@ -61,8 +58,20 @@ class SettingsViewModel(
     val difficulty: LiveData<DifficultLevel> = _difficulty
 
 
-    private val _state = MutableStateFlow(GroupsUiState())
-    val state: StateFlow<GroupsUiState> = _state
+    val state: StateFlow<CombinedGroupsSettingsScreen> =
+        observeAllGroups()
+            .map { domain ->
+                CombinedGroupsSettingsScreen(
+                    featured = domain.featured.map { it.toUi() },
+                    userGroups = domain.userGroups.map { it.toUi() },
+                    globalGroups = domain.globalGroups.map { it.toUi() }
+                )
+            }
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = CombinedGroupsSettingsScreen()
+            )
 
     init {
         viewModelScope.launch {
@@ -91,40 +100,6 @@ class SettingsViewModel(
         }
 
         loadDifficulty()
-
-        viewModelScope.launch {
-            combine(
-                observeFeaturedUC(limit = 8), observeAllGroupedUC()
-            ) { featured, grouped ->
-                val toUi: (WordGroup) -> GroupUiSettings = { m ->
-                    GroupUiSettings(
-                        key = m.key,
-                        titleRes = if (m.isUser && !m.key.equals("saved_words")) 0 else app.groupTitleRes(
-                            m.key
-                        ),
-                        iconRes = if (m.isUser) R.drawable.ic_group_default else app.groupIconRes(m.key),
-                        isSelected = m.isSelected,
-                        isUser = m.isUser
-                    )
-                }
-                val userDomain = grouped.user
-                val defaultDomain = grouped.defaults
-
-                val allDomain = userDomain + defaultDomain
-
-                val featuredDomain =
-                    allDomain.sortedWith(compareByDescending<WordGroup> { it.isSelected }.thenByDescending { it.isUser }
-                        .thenBy { it.orderInBlock }).take(FEATURED_LIMIT)
-
-                GroupsUiState(
-                    featured = featuredDomain.map(toUi),
-                    user = userDomain.map(toUi),
-                    defaults = defaultDomain.map(toUi),
-                    loading = false
-                )
-            }.catch { _state.value = _state.value.copy(loading = false, error = it) }
-                .collect { _state.value = it }
-        }
     }
 
     fun onToggle(key: String) = viewModelScope.launch {
@@ -134,11 +109,6 @@ class SettingsViewModel(
     fun onSave(selectedKeys: Set<String>) = viewModelScope.launch {
         saveSelectionUC(selectedKeys)
     }
-
-    fun onCreateUserGroup(key: String, titleKey: String, iconKey: String) =
-        viewModelScope.launch {
-            createUserGroupUC(key, titleKey, iconKey)
-        }
 
     fun onLanguagePicked(newLang: Language, currentLangMode: LanguageAdapterState) {
         when (currentLangMode) {
@@ -189,6 +159,19 @@ class SettingsViewModel(
     private fun rebuild(ui: Language, study: Language) {
         _uiLanguageList.value = Language.entries.filter { it != study }
         _studyLanguageList.value = Language.entries.filter { it != ui }
+    }
+
+    private fun GroupUiSettings.toUi(): GroupUiSettings {
+        val uiLang = appPrefs.getUiLanguage()
+
+        return GroupUiSettings(
+            key = key,
+            titleRes = app.stringByName(key, uiLang),
+            iconRes = app.drawableIdByName(key),
+            isSelected = isSelected,
+            isUser = isUser,
+            orderInBlock = orderInBlock
+        )
     }
 
     private companion object {
