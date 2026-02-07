@@ -301,7 +301,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="@string/categories_all_title"
+            android:text="@string/all_groups"
             android:textColor="@color/white"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -331,7 +331,7 @@
                     style="@style/Text.H3.HeadlineSmall"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/categories_user_section"
+                    android:text="@string/user_groups"
                     android:textColor="@color/green_primary" />
 
                 <com.google.android.flexbox.FlexboxLayout
@@ -351,7 +351,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/space_l"
-                    android:text="@string/categories_default_section"
+                    android:text="@string/global_groups"
                     android:textColor="@color/green_primary" />
 
                 <com.google.android.flexbox.FlexboxLayout

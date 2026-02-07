@@ -1,47 +1,78 @@
 package com.sleeplessdog.matchthewords.backend.data.repository
 
 import com.sleeplessdog.matchthewords.backend.data.db.global.GlobalDao
+import com.sleeplessdog.matchthewords.backend.data.db.global.toUi
 import com.sleeplessdog.matchthewords.backend.data.db.user.UserDao
 import com.sleeplessdog.matchthewords.backend.data.db.user.UserGroupEntity
+import com.sleeplessdog.matchthewords.backend.data.db.user.toUi
+import com.sleeplessdog.matchthewords.backend.domain.models.CombinedGroupsSettingsScreen
+import com.sleeplessdog.matchthewords.backend.domain.models.GlobalGroupDBEntity
+import com.sleeplessdog.matchthewords.backend.domain.models.GroupPresentationSettingsEntity
+import com.sleeplessdog.matchthewords.backend.domain.models.GroupUiSettings
 import com.sleeplessdog.matchthewords.backend.domain.models.UserSettingsEntity
-import com.sleeplessdog.matchthewords.backend.domain.models.WordGroup
+import com.sleeplessdog.matchthewords.dictionary.group_screen.GroupType
+import com.sleeplessdog.matchthewords.dictionary.group_screen.WordUi
+import com.sleeplessdog.matchthewords.game.presentation.models.Language
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.map
 
 class GroupsRepository(
     private val globalDao: GlobalDao,
     private val userDao: UserDao,
 ) {
-    suspend fun getAllCategories(): List<WordGroup> {
+    fun observeAllGroups(): Flow<CombinedGroupsSettingsScreen> {
 
-        val selected = userDao.getSelectedGroups()
-            ?.split(",")
-            ?.filter { it.isNotBlank() }
-            ?.toSet()
-            ?: emptySet()
+        return combine(
+            userDao.observeUserGroups(),
+            globalDao.observeAllGroupKeys(),
+            userDao.observeSelectedGroups()
+        ) { userGroups, globalKeys, selectedRaw ->
 
-        val globalKeys = globalDao.getAllGroupKeys()
+            val selected = selectedRaw
+                ?.split(",")
+                ?.filter { it.isNotBlank() }
+                ?.toSet()
+                ?: emptySet()
 
-        val globalCategories = globalKeys.map { key ->
-            WordGroup(
-                key = key,
-                isSelected = key in selected,
-                isUser = false,
-                orderInBlock = 0
+            val globalCategories = globalKeys.map { key ->
+                GroupUiSettings(
+                    key = key,
+                    isSelected = key in selected,
+                    isUser = false,
+                    orderInBlock = 1,
+                    titleRes = key,
+                    iconRes = 0
+                )
+            }
+
+            val userCategories = userGroups.map { g ->
+                GroupUiSettings(
+                    key = g.groupKey,
+                    titleRes = g.title,
+                    iconRes = 0,
+                    isSelected = g.groupKey in selected,
+                    isUser = true,
+                    orderInBlock = 0
+                )
+            }
+
+            val featured = (userCategories + globalCategories)
+                .sortedWith(
+                    compareByDescending<GroupUiSettings> { it.isSelected }
+                        .thenByDescending { it.isUser }
+                        .thenBy { it.orderInBlock }
+                        .thenBy { it.key }
+                )
+
+
+            CombinedGroupsSettingsScreen(
+                featured = featured,
+                userGroups = userCategories,
+                globalGroups = globalCategories
             )
         }
-
-        val userGroups = userDao.getAllGroupsOnce()
-
-        val userCategories = userGroups.map { g ->
-            WordGroup(
-                key = g.groupKey,
-                isSelected = g.groupKey in selected,
-                isUser = true,
-                orderInBlock = 1
-            )
-        }
-
-        return userCategories + globalCategories
     }
 
     /**
@@ -59,6 +90,22 @@ class GroupsRepository(
         )
     }
 
+    fun observeUserGroups(): Flow<List<UserGroupEntity>> {
+        return userDao.observeUserGroups()
+    }
+
+    suspend fun getGlobalGroupsOnce(): List<GlobalGroupDBEntity> {
+        val globalKeys = globalDao.getAllGroupKeys()
+
+        val globalCategories = globalKeys.map { key ->
+            GlobalGroupDBEntity(
+                groupKey = key,
+                wordsCount = getWordsCountGlobalGroup(key)
+            )
+        }
+        return globalCategories
+    }
+
     suspend fun toggle(key: String) {
         val selected = userDao.getSelectedGroups()
             ?.split(",")
@@ -72,25 +119,54 @@ class GroupsRepository(
         saveSelection(selected)
     }
 
-    suspend fun createUserCategory(
+    suspend fun createUserGroup(
         key: String,
-        title: String,
-        iconKey: String,
+        groupName: String,
     ) {
         userDao.insertGroup(
             UserGroupEntity(
                 groupKey = key,
-                title = title,
-                iconKey = iconKey
+                title = groupName
             )
         )
     }
 
-    suspend fun getWordsCount(group: WordGroup): Int {
+    suspend fun getWordsCount(group: GroupPresentationSettingsEntity): Int {
         return if (group.isUser) {
             userDao.countWordsByGroupKey(group.key)
         } else {
             globalDao.countWordsByGroup(group.key)
+        }
+    }
+
+    suspend fun getWordsCountUserGroup(groupKey: String): Int {
+        return userDao.countWordsByGroupKey(groupKey)
+    }
+
+    private suspend fun getWordsCountGlobalGroup(groupKey: String): Int {
+        return globalDao.countWordsByGroup(groupKey)
+    }
+
+    fun observeWordsInUserGroup(
+        groupId: String, ui: Language, study: Language,
+    ): Flow<List<WordUi>> {
+        return userDao.observeWordsInUserGroup(groupId)
+            .map { list -> list.map { it.toUi(ui, study) } }
+    }
+
+    suspend fun getGlobalGroupWordsOnceUC(
+        groupId: String, ui: Language, study: Language,
+    ): List<WordUi> {
+        return globalDao.getWordsByGroup(groupId)
+            .map { it.toUi(ui, study) }
+    }
+
+    suspend fun getGroupTitleById(
+        groupId: String, groupType: GroupType,
+    ): String {
+        return when (groupType) {
+            GroupType.USER -> userDao.getGroupTitleById(groupId) ?: groupId
+            GroupType.GLOBAL -> globalDao.getGroupTitleById(groupId) ?: groupId
         }
     }
 }

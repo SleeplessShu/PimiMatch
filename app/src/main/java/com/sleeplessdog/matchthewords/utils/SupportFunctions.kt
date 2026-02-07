@@ -1,16 +1,21 @@
 package com.sleeplessdog.matchthewords.utils
 
 
+import android.content.Context
+import android.content.res.Configuration
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.content.ContextCompat
 import com.google.android.material.chip.Chip
 import com.sleeplessdog.matchthewords.R
+import com.sleeplessdog.matchthewords.backend.domain.models.GroupUiSettings
 import com.sleeplessdog.matchthewords.game.presentation.models.DifficultLevel
 import com.sleeplessdog.matchthewords.game.presentation.models.GameType
-import com.sleeplessdog.matchthewords.game.presentation.models.GroupUiSettings
 import com.sleeplessdog.matchthewords.game.presentation.models.LandingKeys
+import com.sleeplessdog.matchthewords.game.presentation.models.Language
+import java.util.Locale
 
 object SupportFunctions {
 
@@ -62,7 +67,7 @@ object SupportFunctions {
         }
     }
 
-    /*fun Context.stringByName(name: String, uiLanguage: Language): String {
+    fun Context.stringByName(name: String, uiLanguage: Language): String {
         val localized = withLanguage(uiLanguage)
         val resId = localized.resources.getIdentifier(name, "string", packageName)
         return if (resId != 0) localized.getString(resId) else name
@@ -73,18 +78,14 @@ object SupportFunctions {
         val id = resources.getIdentifier(name, "drawable", packageName)
         Log.e("DRAWABLE_RES", "Drawable not found for name = $name")
         return if (id != 0) id else R.drawable.ic_group_miscellaneous
-    }*/
+    }
 
     fun createCategoryChip(parent: ViewGroup, item: GroupUiSettings): Chip {
         val ctx = parent.context
         val chip =
             LayoutInflater.from(ctx).inflate(R.layout.view_category_chip, parent, false) as Chip
 
-        chip.text = if (item.titleRes != 0) {
-            ctx.getString(item.titleRes)
-        } else {
-            item.key // fallback, НИКОГДА не падает
-        }
+        chip.text = item.titleRes
         chip.isCheckable = true
         chip.tag = item.key
         chip.chipBackgroundColor = ContextCompat.getColorStateList(
@@ -100,19 +101,19 @@ object SupportFunctions {
         return chip
     }
 
-    /*    fun Context.withLanguage(lang: Language): Context {
-            val locale = when (lang) {
-                Language.RUSSIAN -> Locale("ru")
-                Language.SPANISH -> Locale("es")
-                Language.ENGLISH -> Locale("en")
-                Language.FRENCH -> Locale("fr")
-                Language.GERMAN -> Locale("ge")
-                Language.ARMENIAN -> Locale("hy")
-                Language.SERBIAN -> Locale("sr")
-            }
+    fun Context.withLanguage(lang: Language): Context {
+        val locale = when (lang) {
+            Language.RUSSIAN -> Locale("ru")
+            Language.SPANISH -> Locale("es")
+            Language.ENGLISH -> Locale("en")
+            Language.FRENCH -> Locale("fr")
+            Language.GERMAN -> Locale("ge")
+            Language.ARMENIAN -> Locale("hy")
+            Language.SERBIAN -> Locale("sr")
+        }
 
-            val config = Configuration(resources.configuration)
-            config.setLocale(locale)
-            return createConfigurationContext(config)
-        }*/
+        val config = Configuration(resources.configuration)
+        config.setLocale(locale)
+        return createConfigurationContext(config)
+    }
 }

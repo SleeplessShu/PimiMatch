@@ -1,4 +1,4 @@
-package com.sleeplessdog.matchthewords.dictionary.adding_new_group
+package com.sleeplessdog.matchthewords.dictionary.group_screen
 
 import android.widget.Toast
 import androidx.compose.foundation.Image
@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -23,14 +22,15 @@ import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.sleeplessdog.matchthewords.R
 import com.sleeplessdog.matchthewords.ui.theme.BlackPrimary
@@ -38,16 +38,35 @@ import com.sleeplessdog.matchthewords.ui.theme.DarkTextDefault
 import com.sleeplessdog.matchthewords.ui.theme.Gray05
 import com.sleeplessdog.matchthewords.ui.theme.textSize14SemiBold
 import com.sleeplessdog.matchthewords.ui.theme.textSize16Bold
+import com.sleeplessdog.matchthewords.ui.theme.textSize16SemiBold
 import com.sleeplessdog.matchthewords.ui.theme.textSize20Medium
 import com.sleeplessdog.matchthewords.ui.theme.textSize24Medium
 
 @Composable
-fun MyGroupUi(viewModel: MyGroupViewModel, onBackClick: () -> Unit) {
-    MyGroupScreen(onClick = onBackClick)
+fun GroupUi(
+    viewModel: GroupViewModel,
+    groupId: String,
+    groupTitle: String,
+    groupType: GroupType,
+    onBackClick: () -> Unit,
+) {
+    val state by viewModel.state.collectAsState()
+
+    GroupScreen(
+        groupTitle = groupTitle,
+        state = state,
+        onBackClick = onBackClick,
+        onAddWordClick = viewModel::onAddWordClick
+    )
 }
 
 @Composable
-fun MyGroupScreen(onClick: () -> Unit) {
+fun GroupScreen(
+    groupTitle: String,
+    state: GroupScreenState,
+    onBackClick: () -> Unit,
+    onAddWordClick: () -> Unit,
+) {
     val scrollState = rememberScrollState()
 
     Column(
@@ -55,19 +74,35 @@ fun MyGroupScreen(onClick: () -> Unit) {
             .background(BlackPrimary)
             .verticalScroll(scrollState)
     ) {
-        HeaderMyGroup(onClick = onClick)
-        Spacer(modifier = Modifier.height(8.dp))
-        AddWord(onClick = onClick)
-        Spacer(modifier = Modifier.height(20.dp))
-        RowNumberWords()
-        Spacer(modifier = Modifier.height(12.dp))
-        //WordAndTranslationTable()
+        HeaderUserGroup(
+            title = groupTitle,
+            onClick = onBackClick
+        )
+
+        Spacer(Modifier.height(8.dp))
+
+        AddWord(onClick = onAddWordClick)
+
+        Spacer(Modifier.height(20.dp))
+
+        RowNumberWords(state.wordsCount)
+
+        Spacer(Modifier.height(12.dp))
+
+        WordAndTranslationTable(
+            words = state.words,
+            expanded = true
+        )
     }
 }
 
 @Composable
-fun HeaderMyGroup(onClick: () -> Unit) {
+fun HeaderUserGroup(
+    title: String,
+    onClick: () -> Unit,
+) {
     val context = LocalContext.current
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -77,30 +112,33 @@ fun HeaderMyGroup(onClick: () -> Unit) {
             modifier = Modifier.fillMaxSize(),
             verticalAlignment = Alignment.CenterVertically
         ) {
+
             Image(
                 painter = painterResource(id = R.drawable.icon_back),
-                contentDescription = "Левая иконка",
+                contentDescription = null,
                 modifier = Modifier
                     .padding(start = 16.dp)
                     .clickable { onClick() }
             )
+
             Spacer(modifier = Modifier.weight(1f))
+
             Text(
-                text = "Название группы",
+                text = title,
                 style = textSize24Medium,
-                color = DarkTextDefault,
-                modifier = Modifier.align(Alignment.CenterVertically)
+                color = DarkTextDefault
             )
+
             Spacer(modifier = Modifier.weight(1f))
+
             Icon(
                 painter = painterResource(id = R.drawable.icon_park_outline_search),
-                contentDescription = "Правая иконка",
+                contentDescription = null,
                 tint = DarkTextDefault,
                 modifier = Modifier
                     .padding(end = 16.dp)
                     .clickable {
-                        Toast.makeText(context, "Лупа нажата", Toast.LENGTH_SHORT)
-                            .show()
+                        Toast.makeText(context, "Search clicked", Toast.LENGTH_SHORT).show()
                     }
             )
         }
@@ -122,25 +160,24 @@ fun AddWord(onClick: () -> Unit) {
         Icon(
             painter = painterResource(R.drawable.icon_add),
             tint = DarkTextDefault,
-            contentDescription = "Иконка добавить",
+            contentDescription = null,
             modifier = Modifier
                 .size(36.dp)
-                .padding(start = 12.dp),
+                .padding(start = 12.dp)
+        )
 
-            )
         Spacer(modifier = Modifier.width(8.dp))
-        Column {
-            Text(
-                "Добавить слово",
-                style = textSize16Bold,
-                color = DarkTextDefault
-            )
-        }
+
+        Text(
+            text = stringResource(R.string.add_word),
+            style = textSize16Bold,
+            color = DarkTextDefault
+        )
     }
 }
 
 @Composable
-fun RowNumberWords() {
+fun RowNumberWords(count: Int) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -149,58 +186,56 @@ fun RowNumberWords() {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
+
         Text(
-            text = "Количество слов",
+            text = stringResource(R.string.words_count_title),
             style = textSize20Medium,
             color = DarkTextDefault
         )
-        Icon(
-            painter = painterResource(id = R.drawable.icon_dots_three_outline_vertical),
-            tint = DarkTextDefault,
-            contentDescription = "Close",
-            modifier = Modifier
-                .clickable { }
-                .padding(end = 16.dp)
-                .size(24.dp)
+
+        Text(
+            text = pluralStringResource(
+                R.plurals.words_count,
+                count,
+                count
+            ),
+            style = textSize16SemiBold,
+            color = DarkTextDefault
         )
     }
 }
 
 @Composable
 fun WordAndTranslationTable(
-    groups: List<Pair<String, String>>, // (слово, перевод)
-    expanded: Boolean
+    words: List<WordUi>,
+    expanded: Boolean,
 ) {
+    val wordsToShow = if (expanded) words else words.take(3)
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 20.dp)
-            .offset(y = (-6).dp)
             .clip(RoundedCornerShape(12.dp))
     ) {
-        val groupsToShow = if (expanded) groups else groups.take(3)
-        groupsToShow.forEachIndexed { index, pair ->
+
+        wordsToShow.forEachIndexed { index, word ->
             WordAndTranslationTableRow(
-                titleKey = pair.first,
-                translation = pair.second
+                title = word.word,
+                translation = word.translation
             )
-            if (index != groups.lastIndex) {
+
+            if (index != words.lastIndex) {
                 Divider(color = BlackPrimary, thickness = 1.dp)
             }
         }
     }
 }
 
+
 @Composable
-fun WordAndTranslationTableRow(
-    translation: String,         // сюда перевод передаем
-    titleKey: String,
-) {
+fun WordAndTranslationTableRow(title: String, translation: String) {
     val context = LocalContext.current
-    val resId = remember(titleKey) {
-        context.resources.getIdentifier(titleKey, "string", context.packageName)
-    }
-    val titleText = if (resId != 0) stringResource(id = resId) else titleKey
 
     Row(
         modifier = Modifier
@@ -209,43 +244,37 @@ fun WordAndTranslationTableRow(
             .height(68.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Spacer(modifier = Modifier.width(12.dp)) // вместо иконки сделать отступ
+
+        Spacer(modifier = Modifier.width(12.dp))
 
         Column(modifier = Modifier.weight(1f)) {
+
             Text(
+                text = title,
                 style = textSize16Bold,
-                color = DarkTextDefault,
-                text = titleText,
-                modifier = Modifier.fillMaxWidth()
+                color = DarkTextDefault
             )
+
             Spacer(modifier = Modifier.height(4.dp))
+
             Text(
-                text = translation,               // показываем перевод вместо количества слов
+                text = translation,
                 style = textSize14SemiBold,
-                color = DarkTextDefault.copy(alpha = 0.6f),
+                color = DarkTextDefault.copy(alpha = 0.6f)
             )
         }
-
-        Spacer(modifier = Modifier.weight(1f))
 
         Icon(
             painter = painterResource(id = R.drawable.icon_play_circle),
             tint = DarkTextDefault,
-            contentDescription = "Кнопка действия",
+            contentDescription = null,
             modifier = Modifier
                 .size(24.dp)
                 .clickable {
-                    Toast.makeText(context, "Плей нажат", Toast.LENGTH_SHORT)
-                        .show()
+                    Toast.makeText(context, "Play clicked", Toast.LENGTH_SHORT).show()
                 }
         )
-        Spacer(modifier = Modifier.padding(end = 12.dp))
+
+        Spacer(modifier = Modifier.width(12.dp))
     }
-}
-
-
-@Preview(showBackground = true)
-@Composable
-fun MyGroupScreenPreview() {
-    MyGroupScreen(onClick = {})
 }

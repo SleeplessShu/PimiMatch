@@ -51,18 +51,11 @@
 
     <fragment
         android:id="@+id/wordsFragment"
-        android:name="com.sleeplessdog.matchthewords.dictionary.general_dictionary_screen.DictionaryComposeFragment"
+        android:name="com.sleeplessdog.matchthewords.dictionary.dictionary_screen.DictionaryComposeFragment"
         android:label="WordsFragment">
         <action android:id="@+id/action_wordsFragment_to_settingsFragment" />
-        <action
-            android:id="@+id/action_wordsFragment_to_newGroupFragment"
-            app:destination="@id/newGroupFragment" />
     </fragment>
 
-    <fragment
-        android:id="@+id/newGroupFragment"
-        android:name="com.sleeplessdog.matchthewords.dictionary.adding_new_group.MyGroupComposeFragment"
-        android:label="NewGroupFragment"></fragment>
 
     <fragment
         android:id="@+id/scoreFragment"

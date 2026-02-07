@@ -21,9 +21,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Divider
-import com.sleeplessdog.matchthewords.dictionary.GroupUiDictionary
-import androidx.compose.material3.Icon
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -40,14 +39,17 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.sleeplessdog.matchthewords.R
-import com.sleeplessdog.matchthewords.dictionary.DictionaryWordGroups
+import com.sleeplessdog.matchthewords.backend.domain.models.GlobalGroupUiEntity
+import com.sleeplessdog.matchthewords.backend.domain.models.UserGroupUiEntity
+import com.sleeplessdog.matchthewords.dictionary.dictionary_screen.DictionaryViewModel
+import com.sleeplessdog.matchthewords.dictionary.group_screen.DictionaryWordGroups
 import com.sleeplessdog.matchthewords.ui.theme.BlackPrimary
 import com.sleeplessdog.matchthewords.ui.theme.DarkTextDefault
 import com.sleeplessdog.matchthewords.ui.theme.DarkTextUsed
@@ -64,26 +66,29 @@ import com.sleeplessdog.matchthewords.ui.theme.textSize24Medium
 @Composable
 fun DictionaryUi(
     viewModel: DictionaryViewModel,
-    onNavigateToNewGroup: () -> Unit,
+    onNavigateToUserGroup: (String, String) -> Unit,
+    onNavigateToGlobalGroup: (String, String) -> Unit,
 ) {
     val state by viewModel.categoriesGrouped.collectAsState()
 
     DictionaryScreen(
-        state.userGroups,
-        state.defaultGroups,
-        onNavigateToNewGroup = onNavigateToNewGroup,
+        userGroups = state.userGroups,
+        standardGroups = state.globalGroups,
+        onNavigateToUserGroup = onNavigateToUserGroup,
+        onNavigateToGlobalGroup = onNavigateToGlobalGroup,
         addNewUserGroup = viewModel::addNewUserGroup
     )
 }
 
 @Composable
 fun DictionaryScreen(
-    userGroups: List<GroupUiDictionary>,
-    standardGroups: List<GroupUiDictionary>,
-    onNavigateToNewGroup: () -> Unit,
-    addNewUserGroup: (String) -> Unit
+    userGroups: List<UserGroupUiEntity>,
+    standardGroups: List<GlobalGroupUiEntity>,
+    onNavigateToUserGroup: (String, String) -> Unit,
+    onNavigateToGlobalGroup: (String, String) -> Unit,
+    addNewUserGroup: (String) -> Unit,
 ) {
-    var groupState by remember { mutableStateOf(DictionaryWordGroups.BOTH_PARTIALLY) }
+    var groupState by remember { mutableStateOf(DictionaryWordGroups.MIXED) }
     val scrollState = rememberScrollState()
     var showDialog by remember { mutableStateOf(false) }
 
@@ -97,45 +102,42 @@ fun DictionaryScreen(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        MyGroupsHeader(
-            showAll = groupState == DictionaryWordGroups.BOTH_PARTIALLY || groupState == DictionaryWordGroups.MY_ONLY,
+        UserGroupsHeader(
+            showAll = groupState == DictionaryWordGroups.MIXED || groupState == DictionaryWordGroups.USERS,
             onClick = {
-                groupState = if (groupState == DictionaryWordGroups.MY_ONLY) {
-                    DictionaryWordGroups.BOTH_PARTIALLY
+                groupState = if (groupState == DictionaryWordGroups.USERS) {
+                    DictionaryWordGroups.MIXED
                 } else {
-                    DictionaryWordGroups.MY_ONLY
+                    DictionaryWordGroups.USERS
                 }
-            }, groupState = groupState
+            },
+            groupState = groupState
         )
         Spacer(modifier = Modifier.height(10.dp))
 
-        if (groupState == DictionaryWordGroups.BOTH_PARTIALLY || groupState == DictionaryWordGroups.MY_ONLY
-        ) {
+        if (groupState == DictionaryWordGroups.MIXED || groupState == DictionaryWordGroups.USERS) {
             UserGroupsTable(
                 userGroups,
-                expanded = groupState == DictionaryWordGroups.MY_ONLY,
-                onNavigateToNewGroup = onNavigateToNewGroup,
+                expanded = groupState == DictionaryWordGroups.USERS,
+                onNavigateToUserGroup = onNavigateToUserGroup,
                 onShowDialog = { showDialog = true },
             )
             Spacer(modifier = Modifier.height(24.dp))
         }
         if (showDialog) {
-            NewCategoryDialog(
-                onDismiss = { showDialog = false },
-                onSave = {
-                    addNewUserGroup(it)
-                    showDialog = false
-                }
-            )
+            NewCategoryDialog(onDismiss = { showDialog = false }, onSave = {
+                addNewUserGroup(it)
+                showDialog = false
+            })
         }
 
         StandardGroupsHeader(
-            showAll = groupState == DictionaryWordGroups.BOTH_PARTIALLY || groupState == DictionaryWordGroups.STANDARD_ONLY,
+            showAll = groupState == DictionaryWordGroups.MIXED || groupState == DictionaryWordGroups.GLOBAL,
             onClick = {
-                groupState = if (groupState == DictionaryWordGroups.STANDARD_ONLY) {
-                    DictionaryWordGroups.BOTH_PARTIALLY
+                groupState = if (groupState == DictionaryWordGroups.GLOBAL) {
+                    DictionaryWordGroups.MIXED
                 } else {
-                    DictionaryWordGroups.STANDARD_ONLY
+                    DictionaryWordGroups.GLOBAL
                 }
             },
             groupState = groupState
@@ -143,13 +145,13 @@ fun DictionaryScreen(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        if (groupState == DictionaryWordGroups.BOTH_PARTIALLY || groupState == DictionaryWordGroups.STANDARD_ONLY
-        ) {
+        if (groupState == DictionaryWordGroups.MIXED || groupState == DictionaryWordGroups.GLOBAL) {
             Spacer(modifier = Modifier.height(10.dp))
 
             StandardGroupsTable(
                 standardGroups,
-                expanded = groupState == DictionaryWordGroups.STANDARD_ONLY,
+                expanded = groupState == DictionaryWordGroups.GLOBAL,
+                onNavigateToGlobalGroup = onNavigateToGlobalGroup
             )
 
             Spacer(modifier = Modifier.height(60.dp))
@@ -166,14 +168,12 @@ fun HeaderDictionary() {
             .height(48.dp)
     ) {
         Row(
-            modifier = Modifier.fillMaxSize(),
-            verticalAlignment = Alignment.CenterVertically
+            modifier = Modifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically
         ) {
             Image(
                 painter = painterResource(id = R.drawable.pimiss),
                 contentDescription = "Левая иконка",
-                modifier = Modifier
-                    .padding(start = 16.dp)
+                modifier = Modifier.padding(start = 16.dp)
             )
             Spacer(modifier = Modifier.weight(1f))
             Text(
@@ -190,22 +190,19 @@ fun HeaderDictionary() {
                 modifier = Modifier
                     .padding(end = 16.dp)
                     .clickable {
-                        Toast.makeText(context, "Лупа нажата", Toast.LENGTH_SHORT)
-                            .show()
-                    }
-            )
+                        Toast.makeText(context, "Лупа нажата", Toast.LENGTH_SHORT).show()
+                    })
         }
     }
 }
 
 @Composable
-fun MyGroupsHeader(
+fun UserGroupsHeader(
     onClick: () -> Unit,
     showAll: Boolean,
     groupState: DictionaryWordGroups,
 ) {
-    val textColor =
-        if (groupState == DictionaryWordGroups.MY_ONLY) DarkTextDefault else Gray03
+    val textColor = if (groupState == DictionaryWordGroups.USERS) DarkTextDefault else Gray03
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -213,7 +210,7 @@ fun MyGroupsHeader(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = "Мои группы",
+            text = stringResource(R.string.user_groups),
             style = textSize20Medium,
             color = DarkTextDefault
         )
@@ -237,20 +234,17 @@ fun MyGroupsHeader(
                 style = textSize16SemiBold,
                 color = textColor,
                 text = "Все",
-                modifier = Modifier
-                    .clickable { onClick() }
-            )
+                modifier = Modifier.clickable { onClick() })
         }
     }
 }
 
 @Composable
 fun UserGroupsTable(
-    groups: List<GroupUiDictionary>,
+    groups: List<UserGroupUiEntity>,
     expanded: Boolean,
-    bufferWords: List<String>,
-    onNavigateToNewGroup: () -> Unit,
-    onShowDialog: (Boolean) -> Unit
+    onNavigateToUserGroup: (String, String) -> Unit,
+    onShowDialog: (Boolean) -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -259,20 +253,16 @@ fun UserGroupsTable(
             .padding(horizontal = 20.dp)
             .clip(RoundedCornerShape(12.dp))
     ) {
-        UserGroupTableRow(
-            titleKey = R.string.added_words,
-            wordsCount = bufferWords.size,
-            rowIndex = -1,
-            onClick = onNavigateToNewGroup
-        )
+
         Divider(color = BlackPrimary, thickness = 1.dp)
         val groupsToShow = if (expanded) groups else groups.take(2)
         groupsToShow.forEachIndexed { index, group ->
             UserGroupTableRow(
-                titleKey = group.titleKey,
-                wordsCount = group.wordsInGroup,
+                title = group.title,
+                iconKey = group.icon,
+                wordsCount = group.wordsCount,
                 rowIndex = index,
-                onClick = onNavigateToNewGroup
+                onClick = { onNavigateToUserGroup(group.groupKey, group.title) }
             )
             if (index != groups.lastIndex) {
                 Divider(color = BlackPrimary, thickness = 1.dp)
@@ -280,8 +270,9 @@ fun UserGroupsTable(
         }
         Divider(color = BlackPrimary, thickness = 1.dp)
         UserGroupTableRow(
-            titleKey = R.string.create_group,
+            title = stringResource(R.string.create_group),
             rowIndex = -2,
+            iconKey = R.drawable.icon_add,
             onClick = { onShowDialog(true) }
 
         )
@@ -291,21 +282,15 @@ fun UserGroupsTable(
 @Composable
 fun UserGroupTableRow(
     rowIndex: Int,
-    titleKey: Int,
+    title: String,
+    iconKey: Int,
     wordsCount: Int? = null,
-
     onClick: () -> Unit,
 ) {
     val context = LocalContext.current
-    val titleText = if (titleKey != 0) stringResource(id = titleKey) else titleKey
 
-    val clickableIconPainter =
-        painterResource(id = R.drawable.icon_dots_three_outline_vertical)
-    val leftIconPainter = when (rowIndex) {
-        -1 -> painterResource(R.drawable.icon_favorite)
-        -2 -> painterResource(R.drawable.icon_add)
-        else -> painterResource(R.drawable.icon_book)
-    }
+    val clickableIconPainter = painterResource(id = R.drawable.icon_dots_three_outline_vertical)
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -315,7 +300,7 @@ fun UserGroupTableRow(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
-            painter = leftIconPainter,
+            painter = painterResource(iconKey),
             tint = DarkTextDefault,
             contentDescription = "Icon for row $rowIndex",
             modifier = Modifier
@@ -326,14 +311,14 @@ fun UserGroupTableRow(
         Spacer(modifier = Modifier.width(8.dp))
         Column {
             Text(
-                text = stringResource(id = titleKey),
-                style = textSize16Bold,
-                color = DarkTextDefault
+                text = title, style = textSize16Bold, color = DarkTextDefault
             )
 
             wordsCount?.let {
                 Text(
-                    "$wordsCount ${pluralizeWord(wordsCount)}",
+                    text = pluralStringResource(
+                        R.plurals.words_count, wordsCount, wordsCount
+                    ),
                     style = textSize14SemiBold,
                     color = DarkTextDefault.copy(alpha = 0.6f),
                     modifier = Modifier.padding(top = 4.dp)
@@ -351,26 +336,12 @@ fun UserGroupTableRow(
                     .padding(end = 10.dp)
                     .size(24.dp)
                     .clickable {
-                        Toast.makeText(context, "Три точки нажаты", Toast.LENGTH_SHORT)
-                            .show()
-                    }
-            )
+                        Toast.makeText(context, "Три точки нажаты", Toast.LENGTH_SHORT).show()
+                    })
         }
     }
 }
 
-fun pluralizeWord(count: Int): String {
-    val n = count % 100
-    return if (n in 11..14) {
-        "слов"
-    } else {
-        when (n % 10) {
-            1 -> "слово"
-            2, 3, 4 -> "слова"
-            else -> "слов"
-        }
-    }
-}
 
 @Composable
 fun StandardGroupsHeader(
@@ -378,8 +349,7 @@ fun StandardGroupsHeader(
     onClick: () -> Unit,
     groupState: DictionaryWordGroups,
 ) {
-    val textColor =
-        if (groupState == DictionaryWordGroups.STANDARD_ONLY) DarkTextDefault else Gray03
+    val textColor = if (groupState == DictionaryWordGroups.GLOBAL) DarkTextDefault else Gray03
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -387,7 +357,7 @@ fun StandardGroupsHeader(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = "Стандартные группы",
+            text = stringResource(R.string.global_groups),
             style = textSize20Medium,
             color = DarkTextDefault
         )
@@ -410,17 +380,16 @@ fun StandardGroupsHeader(
                 text = "Все",
                 style = textSize16SemiBold,
                 color = textColor,
-                modifier = Modifier
-                    .clickable { onClick() }
-            )
+                modifier = Modifier.clickable { onClick() })
         }
     }
 }
 
 @Composable
 fun StandardGroupsTable(
-    groups: List<GroupUiDictionary>,
+    groups: List<GlobalGroupUiEntity>,
     expanded: Boolean,
+    onNavigateToGlobalGroup: (String, String) -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -433,9 +402,10 @@ fun StandardGroupsTable(
         groupsToShow.forEachIndexed { index, group ->
             StandardGroupTableRow(
 
-                titleKey = group.titleKey,
-                wordsCount = group.wordsInGroup,
-                iconKey = group.iconKey
+                wordsCount = group.wordsCount,
+                iconKey = group.iconRes,
+                titleKey = group.title,
+                onClick = { onNavigateToGlobalGroup(group.groupId, group.title) },
             )
 
             if (index != groups.lastIndex) {
@@ -448,12 +418,12 @@ fun StandardGroupsTable(
 @Composable
 fun StandardGroupTableRow(
     wordsCount: Int,
-    iconKey: Int,
-    titleKey: Int,
+    iconKey: Int?,
+    titleKey: String,
+    onClick: () -> Unit,
 ) {
     val context = LocalContext.current
-    val titleText = stringResource(titleKey)
-    val iconPainter = if (iconKey != 0) {
+    val iconPainter = if (iconKey != null) {
         painterResource(id = iconKey)
     } else {
         painterResource(id = R.drawable.icon_add_standard_group)
@@ -463,7 +433,8 @@ fun StandardGroupTableRow(
         modifier = Modifier
             .fillMaxWidth()
             .background(Gray05)
-            .height(68.dp),
+            .height(68.dp)
+            .clickable { onClick() },
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(
@@ -479,12 +450,14 @@ fun StandardGroupTableRow(
             Text(
                 style = textSize16Bold,
                 color = DarkTextDefault,
-                text = titleText,
+                text = titleKey,
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "$wordsCount ${pluralizeWord(wordsCount)}",
+                text = pluralStringResource(
+                    R.plurals.words_count, wordsCount, wordsCount
+                ),
                 style = textSize14SemiBold,
                 color = DarkTextDefault.copy(alpha = 0.6f),
             )
@@ -497,10 +470,8 @@ fun StandardGroupTableRow(
             modifier = Modifier
                 .size(24.dp)
                 .clickable {
-                    Toast.makeText(context, "Плей нажат", Toast.LENGTH_SHORT)
-                        .show()
-                }
-        )
+                    Toast.makeText(context, "Плей нажат", Toast.LENGTH_SHORT).show()
+                })
         Spacer(modifier = Modifier.padding(end = 12.dp))
     }
 }
@@ -509,12 +480,11 @@ fun StandardGroupTableRow(
 @Composable
 fun NewCategoryDialog(
     onDismiss: () -> Unit,
-    onSave: (String) -> Unit
+    onSave: (String) -> Unit,
 ) {
     var text by remember { mutableStateOf("") }
     Dialog(
-        onDismissRequest = onDismiss,
-        properties = DialogProperties(
+        onDismissRequest = onDismiss, properties = DialogProperties(
             usePlatformDefaultWidth = false,
             decorFitsSystemWindows = false,
         )
@@ -529,11 +499,10 @@ fun NewCategoryDialog(
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(12.dp))
                     .background(Gray05)
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.Top
+                    .padding(16.dp), verticalArrangement = Arrangement.Top
             ) {
                 Text(
-                    text = "Новая группа",
+                    text = stringResource(R.string.new_group),
                     style = textSize24Bold,
                     color = DarkTextDefault,
                     modifier = Modifier.fillMaxWidth(),
@@ -545,7 +514,7 @@ fun NewCategoryDialog(
                     onValueChange = { text = it },
                     placeholder = {
                         Text(
-                            "Напишите название",
+                            text = stringResource(R.string.enter_group_name),
                             style = textSize20Medium,
                             color = Gray07,
                         )
@@ -560,8 +529,7 @@ fun NewCategoryDialog(
                     )
                 )
                 Divider(
-                    thickness = 1.dp,
-                    color = DarkTextDefault
+                    thickness = 1.dp, color = DarkTextDefault
                 )
                 Spacer(modifier = Modifier.height(36.dp))
                 ButtonsCancelAndSave(onDismiss = onDismiss, onSave = {
@@ -578,7 +546,7 @@ fun NewCategoryDialog(
 @Composable
 fun ButtonsCancelAndSave(
     onDismiss: () -> Unit,
-    onSave: () -> Unit
+    onSave: () -> Unit,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -594,8 +562,7 @@ fun ButtonsCancelAndSave(
                 onClick = onDismiss,
             ) {
                 Text(
-                    "Отменить",
-                    color = DarkTextDefault
+                    text = stringResource(R.string.button_cancel), color = DarkTextDefault
                 )
             }
         }
@@ -609,101 +576,9 @@ fun ButtonsCancelAndSave(
                 onClick = onSave,
             ) {
                 Text(
-                    "Сохранить",
-                    color = DarkTextDefault
+                    text = stringResource(R.string.button_save), color = DarkTextDefault
                 )
             }
-        }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun DictionaryScreenPreview() {
-    DictionaryScreen(
-        userGroups = listOf(
-            GroupUiDictionary(
-                key = "saved_words",
-                titleKey = "added_words",
-                iconKey = R.drawable.icon_favorite,
-                wordsInGroup = 3
-            ),
-            GroupUiDictionary(
-                key = "birds",
-                titleKey = "birds",
-                iconKey = R.drawable.icon_book,
-                wordsInGroup = 5
-            ),
-            GroupUiDictionary(
-                key = "fish",
-                titleKey = "fish",
-                iconKey = R.drawable.icon_book,
-                wordsInGroup = 1
-            )
-        ),
-        standardGroups = listOf(
-            GroupUiDictionary(
-                key = "travel",
-                titleKey = "travel",
-                iconKey = R.drawable.icon_book,
-                wordsInGroup = 1
-            ),
-            GroupUiDictionary(
-                key = "house",
-                titleKey = "house",
-                iconKey = R.drawable.icon_book,
-                wordsInGroup = 2
-            ),
-            GroupUiDictionary(
-                key = "work",
-                titleKey = "work",
-                iconKey = R.drawable.icon_book,
-                wordsInGroup = 5
-            ),
-            GroupUiDictionary(
-                key = "birds_std",
-                titleKey = "birds",
-                iconKey = R.drawable.icon_book,
-                wordsInGroup = 1
-            )
-        ),
-        onNavigateToNewGroup = {},
-        addNewUserGroup = {}
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun PreviewScreenWithDialog() {
-    var showDialog by remember { mutableStateOf(true) }
-
-    Box(modifier = Modifier.fillMaxSize()) {
-        DictionaryScreen(userGroups = listOf(
-            GroupUiDictionary(
-                "Приветствия", wordsInGroup =  3, titleKey = "", iconKey = 0,
-            ),
-            GroupUiDictionary(
-                "Птички", wordsInGroup =  5, titleKey = "", iconKey = 0
-            ),
-            GroupUiDictionary(
-                "Рыбы", wordsInGroup =  1, titleKey = "", iconKey = 0
-            )
-        ),
-            standardGroups = listOf(
-                GroupUiDictionary("Путешествия",wordsInGroup =  1, titleKey = "", iconKey = 0),
-                GroupUiDictionary("Дом", wordsInGroup =  1, titleKey = "", iconKey = 0),
-               GroupUiDictionary(
-                   "Работа", wordsInGroup =  1, titleKey = "", iconKey = 0
-                ),
-                GroupUiDictionary("Птицы", wordsInGroup =  1, titleKey = "", iconKey = 0)
-            ),
-            onNavigateToNewGroup = {},
-            addNewUserGroup = {})
-        if (showDialog) {
-            NewCategoryDialog(
-                onDismiss = { showDialog = false }, onSave = {},
-            )
-            ButtonsCancelAndSave(onDismiss = {}, onSave = {})
         }
     }
 }
