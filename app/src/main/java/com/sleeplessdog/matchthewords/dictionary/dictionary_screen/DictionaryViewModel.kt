@@ -1,45 +1,54 @@
 package com.sleeplessdog.matchthewords.dictionary.dictionary_screen
 
-import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.sleeplessdog.matchthewords.R
-import com.sleeplessdog.matchthewords.backend.data.repository.AppPrefs
-import com.sleeplessdog.matchthewords.backend.domain.models.CombinedGroupsDictionaryScreen
-import com.sleeplessdog.matchthewords.backend.domain.models.GlobalGroupUiEntity
-import com.sleeplessdog.matchthewords.backend.domain.models.UserGroupUiEntity
+import com.sleeplessdog.matchthewords.backend.domain.models.CombinedGroupsDictionaryUi
 import com.sleeplessdog.matchthewords.backend.domain.usecases.CreateUserGroupUC
-import com.sleeplessdog.matchthewords.backend.domain.usecases.GetGlobalGroupsOnceUC
-import com.sleeplessdog.matchthewords.backend.domain.usecases.GetWordsCountUserGroupUC
-import com.sleeplessdog.matchthewords.backend.domain.usecases.ObserveUserGroupsUC
-import com.sleeplessdog.matchthewords.utils.SupportFunctions.getGroupUiName
-import com.sleeplessdog.matchthewords.utils.groupIconRes
-import com.sleeplessdog.matchthewords.utils.groupTitleRes
-import kotlinx.coroutines.flow.MutableStateFlow
+import com.sleeplessdog.matchthewords.backend.domain.usecases.ObserveAllGroupsForDictionaryUC
+import com.sleeplessdog.matchthewords.dictionary.GroupDictionaryUiMapper
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class DictionaryViewModel(
-    private val getGlobalGroupsOnce: GetGlobalGroupsOnceUC,
+    observeAllGroups: ObserveAllGroupsForDictionaryUC,
+    private val createUserGroup: CreateUserGroupUC,
+    private val groupDictionaryUiMapper: GroupDictionaryUiMapper,
+
+    /*private val getGlobalGroupsOnce: GetGlobalGroupsOnceUC,
     private val getWordsCountUserGroup: GetWordsCountUserGroupUC,
     private val observeUserGroups: ObserveUserGroupsUC,
-    private val createUserGroup: CreateUserGroupUC,
     private val appPrefs: AppPrefs,
-    private val app: Application,
+    private val app: Application,*/
 ) : ViewModel() {
 
-    private val _categoriesGrouped = MutableStateFlow(
+    /*private val _categoriesGrouped = MutableStateFlow(
         CombinedGroupsDictionaryScreen(userGroups = emptyList(), globalGroups = emptyList())
     )
     val categoriesGrouped: StateFlow<CombinedGroupsDictionaryScreen> = _categoriesGrouped
+*/
+    val state: StateFlow<CombinedGroupsDictionaryUi> =
+        observeAllGroups()
+            .map { domain ->
+                CombinedGroupsDictionaryUi(
+                    userGroups = domain.userGroups.map(groupDictionaryUiMapper::map),
+                    globalGroups = domain.globalGroups.map(groupDictionaryUiMapper::map)
+                )
+            }
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = CombinedGroupsDictionaryUi()
+            )
 
     init {
-        observeUserGroups()
-        fetchGlobalGroups()
+        /*observeUserGroups()
+        fetchGlobalGroups()*/
     }
 
-    private fun observeUserGroups() {
+    /*private fun observeUserGroups() {
         viewModelScope.launch {
             observeUserGroups.invoke().collect { userGroups ->
                 val userUiGroups = userGroups.map { group ->
@@ -82,7 +91,7 @@ class DictionaryViewModel(
                 currentState.copy(globalGroups = globalUiGroups)
             }
         }
-    }
+    }*/
 
     fun addNewUserGroup(name: String) {
         viewModelScope.launch {

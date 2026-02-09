@@ -7,7 +7,7 @@ import com.sleeplessdog.matchthewords.backend.domain.models.WordGroup
 import com.sleeplessdog.matchthewords.utils.groupIconRes
 import com.sleeplessdog.matchthewords.utils.groupTitleRes
 
-class GroupUiMapper(
+class GroupSettingsUiMapper(
     private val app: Application,
 ) {
 
