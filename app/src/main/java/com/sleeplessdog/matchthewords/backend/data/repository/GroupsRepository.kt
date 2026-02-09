@@ -5,8 +5,10 @@ import com.sleeplessdog.matchthewords.backend.data.db.global.toUi
 import com.sleeplessdog.matchthewords.backend.data.db.user.UserDao
 import com.sleeplessdog.matchthewords.backend.data.db.user.UserGroupEntity
 import com.sleeplessdog.matchthewords.backend.data.db.user.toUi
+import com.sleeplessdog.matchthewords.backend.domain.models.CombinedGroupsDictionaryDomain
 import com.sleeplessdog.matchthewords.backend.domain.models.CombinedGroupsSettingsDomain
 import com.sleeplessdog.matchthewords.backend.domain.models.GlobalGroupDBEntity
+import com.sleeplessdog.matchthewords.backend.domain.models.GroupDictionaryDomain
 import com.sleeplessdog.matchthewords.backend.domain.models.GroupPresentationSettingsEntity
 import com.sleeplessdog.matchthewords.backend.domain.models.UserSettingsEntity
 import com.sleeplessdog.matchthewords.backend.domain.models.WordGroup
@@ -22,7 +24,7 @@ class GroupsRepository(
     private val globalDao: GlobalDao,
     private val userDao: UserDao,
 ) {
-    fun observeAllGroups(): Flow<CombinedGroupsSettingsDomain> {
+    fun observeAllGroupsForSettings(): Flow<CombinedGroupsSettingsDomain> {
 
         return combine(
             userDao.observeUserGroups(),
@@ -66,6 +68,39 @@ class GroupsRepository(
 
             CombinedGroupsSettingsDomain(
                 featured = featured,
+                userGroups = userCategories,
+                globalGroups = globalCategories
+            )
+        }
+    }
+
+    fun observeAllGroupsForDictionary(): Flow<CombinedGroupsDictionaryDomain> {
+
+        return combine(
+            userDao.observeUserGroups(),
+            globalDao.observeAllGroupKeys()
+        ) { userGroups, globalKeys ->
+
+
+            val globalCategories = globalKeys.map { key ->
+                GroupDictionaryDomain(
+                    key = key,
+                    title = key,
+                    wordsInGroup = getWordsCountGlobalGroup(key),
+                    isUser = false
+                )
+            }
+
+            val userCategories = userGroups.map { g ->
+                GroupDictionaryDomain(
+                    key = g.groupKey,
+                    title = g.title,
+                    wordsInGroup = getWordsCountUserGroup(g.groupKey),
+                    isUser = true
+                )
+            }
+
+            CombinedGroupsDictionaryDomain(
                 userGroups = userCategories,
                 globalGroups = globalCategories
             )

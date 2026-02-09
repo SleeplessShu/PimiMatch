@@ -10,12 +10,12 @@ import com.sleeplessdog.matchthewords.backend.data.repository.AppPrefs
 import com.sleeplessdog.matchthewords.backend.domain.models.CombinedGroupsSettingsUi
 import com.sleeplessdog.matchthewords.backend.domain.models.LanguageLevel
 import com.sleeplessdog.matchthewords.backend.domain.usecases.CreateUserGroupUC
-import com.sleeplessdog.matchthewords.backend.domain.usecases.ObserveAllGroupsGroupedUC
+import com.sleeplessdog.matchthewords.backend.domain.usecases.ObserveAllGroupsForSettingsUC
 import com.sleeplessdog.matchthewords.backend.domain.usecases.SaveSelectionUC
 import com.sleeplessdog.matchthewords.backend.domain.usecases.ToggleCategoryUC
 import com.sleeplessdog.matchthewords.backend.domain.usecases.settings.SettingsObserveLevelsUC
 import com.sleeplessdog.matchthewords.backend.domain.usecases.settings.SettingsSaveLevelsUC
-import com.sleeplessdog.matchthewords.dictionary.models.GroupUiMapper
+import com.sleeplessdog.matchthewords.dictionary.models.GroupSettingsUiMapper
 import com.sleeplessdog.matchthewords.game.presentation.holders.LanguageAdapterState
 import com.sleeplessdog.matchthewords.game.presentation.models.DifficultLevel
 import com.sleeplessdog.matchthewords.game.presentation.models.Language
@@ -27,13 +27,13 @@ import kotlinx.coroutines.launch
 
 class SettingsViewModel(
     //private val observeFeaturedUC: ObserveFeaturedGroupsUC,
-    observeAllGroups: ObserveAllGroupsGroupedUC,
+    observeAllGroups: ObserveAllGroupsForSettingsUC,
     private val toggleUC: ToggleCategoryUC,
     private val saveSelectionUC: SaveSelectionUC,
     private val createUserGroupUC: CreateUserGroupUC,
     private val saveLevelsUC: SettingsSaveLevelsUC,
     private val observeLevelsUC: SettingsObserveLevelsUC,
-    private val groupUiMapper: GroupUiMapper,
+    private val groupSettingsUiMapper: GroupSettingsUiMapper,
     private val app: Application,
     private val appPrefs: AppPrefs,
 ) : ViewModel() {
@@ -61,9 +61,9 @@ class SettingsViewModel(
         observeAllGroups()
             .map { domain ->
                 CombinedGroupsSettingsUi(
-                    featured = domain.featured.map(groupUiMapper::map),
-                    userGroups = domain.userGroups.map(groupUiMapper::map),
-                    globalGroups = domain.globalGroups.map(groupUiMapper::map)
+                    featured = domain.featured.map(groupSettingsUiMapper::map),
+                    userGroups = domain.userGroups.map(groupSettingsUiMapper::map),
+                    globalGroups = domain.globalGroups.map(groupSettingsUiMapper::map)
                 )
             }
             .stateIn(

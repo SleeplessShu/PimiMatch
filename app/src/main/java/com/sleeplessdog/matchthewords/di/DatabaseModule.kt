@@ -11,7 +11,8 @@ import com.sleeplessdog.matchthewords.backend.domain.usecases.GetGlobalGroupsOnc
 import com.sleeplessdog.matchthewords.backend.domain.usecases.GetSelectedGroupsUC
 import com.sleeplessdog.matchthewords.backend.domain.usecases.GetWordsCountForGroupUC
 import com.sleeplessdog.matchthewords.backend.domain.usecases.GetWordsCountUserGroupUC
-import com.sleeplessdog.matchthewords.backend.domain.usecases.ObserveAllGroupsGroupedUC
+import com.sleeplessdog.matchthewords.backend.domain.usecases.ObserveAllGroupsForDictionaryUC
+import com.sleeplessdog.matchthewords.backend.domain.usecases.ObserveAllGroupsForSettingsUC
 import com.sleeplessdog.matchthewords.backend.domain.usecases.ObserveUserGroupsUC
 import com.sleeplessdog.matchthewords.backend.domain.usecases.SaveSelectionUC
 import com.sleeplessdog.matchthewords.backend.domain.usecases.ToggleCategoryUC
@@ -85,5 +86,6 @@ val databaseModule = module {
     single { GetGlobalGroupsOnceUC(get()) }
     single { GetWordsCountUserGroupUC(get()) }
     single { ObserveUserGroupsUC(get()) }
-    single { ObserveAllGroupsGroupedUC(get()) }
+    single { ObserveAllGroupsForSettingsUC(get()) }
+    single { ObserveAllGroupsForDictionaryUC(get()) }
 }

@@ -46,8 +46,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.sleeplessdog.matchthewords.R
-import com.sleeplessdog.matchthewords.backend.domain.models.GlobalGroupUiEntity
-import com.sleeplessdog.matchthewords.backend.domain.models.UserGroupUiEntity
+import com.sleeplessdog.matchthewords.backend.domain.models.GroupUiDictionary
 import com.sleeplessdog.matchthewords.dictionary.dictionary_screen.DictionaryViewModel
 import com.sleeplessdog.matchthewords.dictionary.group_screen.DictionaryWordGroups
 import com.sleeplessdog.matchthewords.ui.theme.BlackPrimary
@@ -69,7 +68,7 @@ fun DictionaryUi(
     onNavigateToUserGroup: (String, String) -> Unit,
     onNavigateToGlobalGroup: (String, String) -> Unit,
 ) {
-    val state by viewModel.categoriesGrouped.collectAsState()
+    val state by viewModel.state.collectAsState()
 
     DictionaryScreen(
         userGroups = state.userGroups,
@@ -82,8 +81,8 @@ fun DictionaryUi(
 
 @Composable
 fun DictionaryScreen(
-    userGroups: List<UserGroupUiEntity>,
-    standardGroups: List<GlobalGroupUiEntity>,
+    userGroups: List<GroupUiDictionary>,
+    standardGroups: List<GroupUiDictionary>,
     onNavigateToUserGroup: (String, String) -> Unit,
     onNavigateToGlobalGroup: (String, String) -> Unit,
     addNewUserGroup: (String) -> Unit,
@@ -241,7 +240,7 @@ fun UserGroupsHeader(
 
 @Composable
 fun UserGroupsTable(
-    groups: List<UserGroupUiEntity>,
+    groups: List<GroupUiDictionary>,
     expanded: Boolean,
     onNavigateToUserGroup: (String, String) -> Unit,
     onShowDialog: (Boolean) -> Unit,
@@ -259,10 +258,10 @@ fun UserGroupsTable(
         groupsToShow.forEachIndexed { index, group ->
             UserGroupTableRow(
                 title = group.title,
-                iconKey = group.icon,
-                wordsCount = group.wordsCount,
+                iconKey = group.iconRes,
+                wordsCount = group.wordsInGroup,
                 rowIndex = index,
-                onClick = { onNavigateToUserGroup(group.groupKey, group.title) }
+                onClick = { onNavigateToUserGroup(group.key, group.title) }
             )
             if (index != groups.lastIndex) {
                 Divider(color = BlackPrimary, thickness = 1.dp)
@@ -387,7 +386,7 @@ fun StandardGroupsHeader(
 
 @Composable
 fun StandardGroupsTable(
-    groups: List<GlobalGroupUiEntity>,
+    groups: List<GroupUiDictionary>,
     expanded: Boolean,
     onNavigateToGlobalGroup: (String, String) -> Unit,
 ) {
@@ -400,12 +399,12 @@ fun StandardGroupsTable(
     ) {
         val groupsToShow = if (expanded) groups else groups.take(3)
         groupsToShow.forEachIndexed { index, group ->
-            StandardGroupTableRow(
 
-                wordsCount = group.wordsCount,
+            StandardGroupTableRow(
+                wordsCount = group.wordsInGroup,
                 iconKey = group.iconRes,
-                titleKey = group.title,
-                onClick = { onNavigateToGlobalGroup(group.groupId, group.title) },
+                title = group.title,
+                onClick = { onNavigateToGlobalGroup(group.key, group.title) },
             )
 
             if (index != groups.lastIndex) {
@@ -418,16 +417,12 @@ fun StandardGroupsTable(
 @Composable
 fun StandardGroupTableRow(
     wordsCount: Int,
-    iconKey: Int?,
-    titleKey: String,
+    iconKey: Int,
+    title: String,
     onClick: () -> Unit,
 ) {
     val context = LocalContext.current
-    val iconPainter = if (iconKey != null) {
-        painterResource(id = iconKey)
-    } else {
-        painterResource(id = R.drawable.icon_add_standard_group)
-    }
+    val iconPainter = painterResource(id = iconKey)
 
     Row(
         modifier = Modifier
@@ -450,7 +445,7 @@ fun StandardGroupTableRow(
             Text(
                 style = textSize16Bold,
                 color = DarkTextDefault,
-                text = titleKey,
+                text = title,
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(4.dp))
