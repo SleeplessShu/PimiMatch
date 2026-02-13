@@ -32,11 +32,8 @@ class GroupsRepository(
             userDao.observeSelectedGroups()
         ) { userGroups, globalKeys, selectedRaw ->
 
-            val selected = selectedRaw
-                ?.split(",")
-                ?.filter { it.isNotBlank() }
-                ?.toSet()
-                ?: emptySet()
+            val selected =
+                selectedRaw?.split(",")?.filter { it.isNotBlank() }?.toSet() ?: emptySet()
 
             val globalCategories = globalKeys.map { key ->
                 WordGroup(
@@ -57,19 +54,13 @@ class GroupsRepository(
                 )
             }
 
-            val featured = (userCategories + globalCategories)
-                .sortedWith(
-                    compareByDescending<WordGroup> { it.isSelected }
-                        .thenByDescending { it.isUser }
-                        .thenBy { it.orderInBlock }
-                        .thenBy { it.key }
-                )
+            val featured =
+                (userCategories + globalCategories).sortedWith(compareByDescending<WordGroup> { it.isSelected }.thenByDescending { it.isUser }
+                    .thenBy { it.orderInBlock }.thenBy { it.key })
 
 
             CombinedGroupsSettingsDomain(
-                featured = featured,
-                userGroups = userCategories,
-                globalGroups = globalCategories
+                featured = featured, userGroups = userCategories, globalGroups = globalCategories
             )
         }
     }
@@ -77,8 +68,7 @@ class GroupsRepository(
     fun observeAllGroupsForDictionary(): Flow<CombinedGroupsDictionaryDomain> {
 
         return combine(
-            userDao.observeUserGroups(),
-            globalDao.observeAllGroupKeys()
+            userDao.observeUserGroups(), globalDao.observeAllGroupKeys()
         ) { userGroups, globalKeys ->
 
 
@@ -101,8 +91,7 @@ class GroupsRepository(
             }
 
             CombinedGroupsDictionaryDomain(
-                userGroups = userCategories,
-                globalGroups = globalCategories
+                userGroups = userCategories, globalGroups = globalCategories
             )
         }
     }
@@ -131,19 +120,16 @@ class GroupsRepository(
 
         val globalCategories = globalKeys.map { key ->
             GlobalGroupDBEntity(
-                groupKey = key,
-                wordsCount = getWordsCountGlobalGroup(key)
+                groupKey = key, wordsCount = getWordsCountGlobalGroup(key)
             )
         }
         return globalCategories
     }
 
     suspend fun toggle(key: String) {
-        val selected = userDao.getSelectedGroups()
-            ?.split(",")
-            ?.filter { it.isNotBlank() }
-            ?.toMutableSet()
-            ?: mutableSetOf()
+        val selected =
+            userDao.getSelectedGroups()?.split(",")?.filter { it.isNotBlank() }?.toMutableSet()
+                ?: mutableSetOf()
 
         if (key in selected) selected.remove(key)
         else selected.add(key)
@@ -157,9 +143,25 @@ class GroupsRepository(
     ) {
         userDao.insertGroup(
             UserGroupEntity(
-                groupKey = key,
-                title = groupName
+                groupKey = key, title = groupName
             )
+        )
+    }
+
+    suspend fun renameUserGroup(
+        groupKey: String,
+        newName: String,
+    ) {
+        userDao.updateGroupTitle(
+            groupKey = groupKey, newTitle = newName
+        )
+    }
+
+    suspend fun deleteUserGroup(
+        groupKey: String,
+    ) {
+        userDao.deleteGroupByKey(
+            groupKey = groupKey,
         )
     }
 
@@ -189,8 +191,7 @@ class GroupsRepository(
     suspend fun getGlobalGroupWordsOnceUC(
         groupId: String, ui: Language, study: Language,
     ): List<WordUi> {
-        return globalDao.getWordsByGroup(groupId)
-            .map { it.toUi(ui, study) }
+        return globalDao.getWordsByGroup(groupId).map { it.toUi(ui, study) }
     }
 
     suspend fun getGroupTitleById(

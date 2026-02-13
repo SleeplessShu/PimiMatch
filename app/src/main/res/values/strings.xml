@@ -219,7 +219,19 @@
     <string name="enter_group_name">Напишите название</string>
     <string name="added_words">Добавленные слова</string>
     <string name="button_cancel">Отменить</string>
+    <string name="button_cancel_v2">Отмена</string>
+    <string name="button_yes_v2">Да</string>
     <string name="button_save">Сохранить</string>
+    <string name="button_rename">Переименовать</string>
+    <string name="button_rename_v2">Новое имя</string>
+    <string name="rename_group_confirm">
+    Введите новое имя для группы "%1$s".
+</string>
+    <string name="button_delete">Удалить</string>
+    <string name="dialog_delete">Удаление</string>
+    <string name="delete_group_confirm">
+    Вы точно хотите удалить "%1$s" и всё её содержимое?
+</string>
     <string name="add_word">Добаить слово</string>
     <string name="words_count_title">ТЕСТОВАЯ ЗАПИСЬ</string>
 
@@ -227,7 +239,7 @@
         <item quantity="one">%d слово</item>
         <item quantity="few">%d слова</item>
         <item quantity="many">%d слов</item>
-        <item quantity="other">%d слов</item>
+        <item quantity="other">%d слова</item>
     </plurals>
 
     <!--languages-->

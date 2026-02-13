@@ -19,19 +19,24 @@ import com.sleeplessdog.matchthewords.dictionary.DictionaryUi
 import com.sleeplessdog.matchthewords.dictionary.group_screen.GroupType
 import com.sleeplessdog.matchthewords.dictionary.group_screen.GroupUi
 import com.sleeplessdog.matchthewords.dictionary.group_screen.GroupViewModel
+import com.sleeplessdog.matchthewords.main.MainActivity
+import org.koin.androidx.compose.koinViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class DictionaryComposeFragment : Fragment() {
 
     private val viewModelDictionary: DictionaryViewModel by viewModel()
-    private val viewModelGroup: GroupViewModel by viewModel()
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View {
+
         return ComposeView(requireContext()).apply {
+
+            val bottomPadding =
+                (requireActivity() as MainActivity).getBottomNavHeight()
 
             setViewCompositionStrategy(
                 ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed
@@ -97,7 +102,8 @@ class DictionaryComposeFragment : Fragment() {
                                         GroupType.GLOBAL
                                     )
                                 )
-                            }
+                            },
+                            bottomPadding = bottomPadding
                         )
                     }
 
@@ -111,27 +117,27 @@ class DictionaryComposeFragment : Fragment() {
                                 "{${DictionaryDestinations.ARG_GROUP_TYPE}}"
                     ) { backStackEntry ->
 
-                        val groupId =
-                            backStackEntry.arguments?.getString(
-                                DictionaryDestinations.ARG_GROUP_ID
-                            ) ?: return@composable
+                        /* val groupId =
+                             backStackEntry.arguments?.getString(
+                                 DictionaryDestinations.ARG_GROUP_ID
+                             ) ?: return@composable
 
-                        val groupTitle =
-                            backStackEntry.arguments?.getString(
-                                DictionaryDestinations.ARG_GROUP_NAME
-                            ) ?: ""
+                         val groupTitle =
+                             backStackEntry.arguments?.getString(
+                                 DictionaryDestinations.ARG_GROUP_NAME
+                             ) ?: ""
 
-                        val groupType = backStackEntry.arguments
-                            ?.getString(DictionaryDestinations.ARG_GROUP_TYPE)
-                            ?.let { GroupType.valueOf(it) }
-                            ?: return@composable
+                         val groupType = backStackEntry.arguments
+                             ?.getString(DictionaryDestinations.ARG_GROUP_TYPE)
+                             ?.let { GroupType.valueOf(it) }
+                             ?: return@composable*/
+
+                        val groupViewModel: GroupViewModel =
+                            koinViewModel(viewModelStoreOwner = backStackEntry)
 
                         GroupUi(
-                            groupId = groupId,
-                            groupTitle = groupTitle,
-                            groupType = groupType,
                             onBackClick = { composeNavController.popBackStack() },
-                            viewModel = viewModelGroup
+                            viewModel = groupViewModel
                         )
                     }
                 }

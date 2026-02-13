@@ -8,7 +8,7 @@ import com.sleeplessdog.matchthewords.backend.domain.usecases.GetGlobalGroupWord
 import com.sleeplessdog.matchthewords.backend.domain.usecases.ObserveWordsInUserGroupUC
 import com.sleeplessdog.matchthewords.dictionary.dictionary_screen.DictionaryDestinations.ARG_GROUP_ID
 import com.sleeplessdog.matchthewords.dictionary.dictionary_screen.DictionaryDestinations.ARG_GROUP_NAME
-import com.sleeplessdog.matchthewords.dictionary.dictionary_screen.DictionaryDestinations.ARG_GROUP_USER
+import com.sleeplessdog.matchthewords.dictionary.dictionary_screen.DictionaryDestinations.ARG_GROUP_TYPE
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -21,39 +21,37 @@ class GroupViewModel(
 ) : ViewModel() {
     val ui = appPrefs.getUiLanguage()
     val study = appPrefs.getStudyLanguage()
-    private val groupId: String =
-        checkNotNull(savedStateHandle[ARG_GROUP_ID])
+    private val groupId: String = savedStateHandle.get<String>(ARG_GROUP_ID) ?: ""
 
-    private val groupTitle: String =
-        checkNotNull(savedStateHandle[ARG_GROUP_NAME])
+    private val groupTitle: String = savedStateHandle.get<String>(ARG_GROUP_NAME) ?: ""
 
-    private val isUserGroup: Boolean =
-        savedStateHandle[ARG_GROUP_USER] ?: true
+    private val groupType: GroupType =
+        savedStateHandle.get<String>(ARG_GROUP_TYPE)
+            ?.let { GroupType.valueOf(it) }
+            ?: GroupType.GLOBAL
 
     private val _state = MutableStateFlow(GroupScreenState())
     val state: StateFlow<GroupScreenState> = _state
 
     init {
-        if (isUserGroup) {
-            observeUserGroup()
-        } else {
-            loadGlobalGroupOnce()
+        when (groupType) {
+            GroupType.USER -> observeUserGroup()
+            GroupType.GLOBAL -> loadGlobalGroupOnce()
         }
     }
 
     private fun observeUserGroup() {
         viewModelScope.launch {
-            observeWordsInUserGroup(groupId, ui = ui, study = study)
-                .collect { words ->
+            observeWordsInUserGroup(groupId, ui = ui, study = study).collect { words ->
 
-                    _state.value = GroupScreenState(
-                        groupId = groupId,
-                        groupTitle = groupTitle,
-                        words = words,
-                        wordsCount = words.size,
-                        loading = false
-                    )
-                }
+                _state.value = GroupScreenState(
+                    groupId = groupId,
+                    groupTitle = groupTitle,
+                    words = words,
+                    wordsCount = words.size,
+                    loading = false
+                )
+            }
         }
     }
 
@@ -71,6 +69,16 @@ class GroupViewModel(
         }
     }
 
-    fun onAddWordClick() {}
+    fun onAddWordClick() {
+        TODO()
+    }
+
+    fun onEditWordClick() {
+        TODO()
+    }
+
+    fun onDeleteWordClick() {
+        TODO()
+    }
 }
 

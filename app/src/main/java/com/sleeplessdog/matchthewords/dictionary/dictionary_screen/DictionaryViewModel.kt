@@ -4,7 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sleeplessdog.matchthewords.backend.domain.models.CombinedGroupsDictionaryUi
 import com.sleeplessdog.matchthewords.backend.domain.usecases.CreateUserGroupUC
+import com.sleeplessdog.matchthewords.backend.domain.usecases.DeleteUserGroupUC
 import com.sleeplessdog.matchthewords.backend.domain.usecases.ObserveAllGroupsForDictionaryUC
+import com.sleeplessdog.matchthewords.backend.domain.usecases.RenameUserGroupUC
 import com.sleeplessdog.matchthewords.dictionary.GroupDictionaryUiMapper
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -15,6 +17,8 @@ import kotlinx.coroutines.launch
 class DictionaryViewModel(
     observeAllGroups: ObserveAllGroupsForDictionaryUC,
     private val createUserGroup: CreateUserGroupUC,
+    private val renameUserGroup: RenameUserGroupUC,
+    private val deleteUserGroup: DeleteUserGroupUC,
     private val groupDictionaryUiMapper: GroupDictionaryUiMapper,
 
     /*private val getGlobalGroupsOnce: GetGlobalGroupsOnceUC,
@@ -98,6 +102,18 @@ class DictionaryViewModel(
             createUserGroup(
                 groupName = name,
             )
+        }
+    }
+
+    fun renameGroup(groupKey: String, newName: String) {
+        viewModelScope.launch {
+            renameUserGroup(groupKey, newName)
+        }
+    }
+
+    fun deleteGroup(groupKey: String) {
+        viewModelScope.launch {
+            deleteUserGroup(groupKey)
         }
     }
 }

@@ -7,6 +7,8 @@ import com.sleeplessdog.matchthewords.backend.data.repository.GroupsRepository
 import com.sleeplessdog.matchthewords.backend.data.repository.WordsRepository
 import com.sleeplessdog.matchthewords.backend.domain.models.WordsController
 import com.sleeplessdog.matchthewords.backend.domain.usecases.CreateUserGroupUC
+import com.sleeplessdog.matchthewords.backend.domain.usecases.DeleteUserGroupUC
+import com.sleeplessdog.matchthewords.backend.domain.usecases.GetGlobalGroupWordsOnceUC
 import com.sleeplessdog.matchthewords.backend.domain.usecases.GetGlobalGroupsOnceUC
 import com.sleeplessdog.matchthewords.backend.domain.usecases.GetSelectedGroupsUC
 import com.sleeplessdog.matchthewords.backend.domain.usecases.GetWordsCountForGroupUC
@@ -14,6 +16,8 @@ import com.sleeplessdog.matchthewords.backend.domain.usecases.GetWordsCountUserG
 import com.sleeplessdog.matchthewords.backend.domain.usecases.ObserveAllGroupsForDictionaryUC
 import com.sleeplessdog.matchthewords.backend.domain.usecases.ObserveAllGroupsForSettingsUC
 import com.sleeplessdog.matchthewords.backend.domain.usecases.ObserveUserGroupsUC
+import com.sleeplessdog.matchthewords.backend.domain.usecases.ObserveWordsInUserGroupUC
+import com.sleeplessdog.matchthewords.backend.domain.usecases.RenameUserGroupUC
 import com.sleeplessdog.matchthewords.backend.domain.usecases.SaveSelectionUC
 import com.sleeplessdog.matchthewords.backend.domain.usecases.ToggleCategoryUC
 import com.sleeplessdog.matchthewords.backend.domain.usecases.score.UpdateScoreProgressUseCase
@@ -88,4 +92,8 @@ val databaseModule = module {
     single { ObserveUserGroupsUC(get()) }
     single { ObserveAllGroupsForSettingsUC(get()) }
     single { ObserveAllGroupsForDictionaryUC(get()) }
+    single { ObserveWordsInUserGroupUC(get()) }
+    single { GetGlobalGroupWordsOnceUC(get()) }
+    single { RenameUserGroupUC(get()) }
+    single { DeleteUserGroupUC(get()) }
 }

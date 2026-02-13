@@ -53,29 +53,33 @@ val presentationModule = module {
 
 
     viewModel { ScoreViewModel() }
-
+    viewModel {
+        GroupViewModel(
+            observeWordsInUserGroup = get(),
+            getGlobalGroupWordsOnce = get(),
+            appPrefs = get(),
+            savedStateHandle = get()
+        )
+    }
     viewModel {
         DictionaryViewModel(
             observeAllGroups = get(),
             createUserGroup = get(),
             groupDictionaryUiMapper = get(),
-
-            /*getGlobalGroupsOnce = get(),
-            getWordsCountUserGroup = get(),
-            observeUserGroups = get(),
-            appPrefs = get(),
-            app = get()*/
+            renameUserGroup = get(),
+            deleteUserGroup = get(),
         )
     }
 
-    viewModel {
+
+    /*viewModel {
         GroupViewModel(
             observeWordsInUserGroup = get(),
             getGlobalGroupWordsOnce = get(),
             appPrefs = get(),
             savedStateHandle = get(),
         )
-    }
+    }*/
 
     /*    viewModel { UserGroupViewModel() }*/
 

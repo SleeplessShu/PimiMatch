@@ -14,7 +14,25 @@ import kotlinx.coroutines.flow.Flow
 interface UserDao {
 
     // ---------- Groups ----------
+    @Query(
+        """
+    DELETE FROM UserGroups
+    WHERE groupKey = :groupKey
+"""
+    )
+    suspend fun deleteGroupByKey(groupKey: String)
 
+    @Query(
+        """
+    UPDATE UserGroups
+    SET title = :newTitle
+    WHERE groupKey = :groupKey
+"""
+    )
+    suspend fun updateGroupTitle(
+        groupKey: String,
+        newTitle: String,
+    )
 
     @Query("SELECT * FROM UserGroups")
     fun observeUserGroups(): Flow<List<UserGroupEntity>>
