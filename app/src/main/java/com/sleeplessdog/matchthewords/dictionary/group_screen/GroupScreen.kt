@@ -45,27 +45,26 @@ import com.sleeplessdog.matchthewords.ui.theme.textSize24Medium
 @Composable
 fun GroupUi(
     viewModel: GroupViewModel,
-    groupId: String,
-    groupTitle: String,
-    groupType: GroupType,
     onBackClick: () -> Unit,
 ) {
     val state by viewModel.state.collectAsState()
 
     GroupScreen(
-        groupTitle = groupTitle,
         state = state,
         onBackClick = onBackClick,
-        onAddWordClick = viewModel::onAddWordClick
+        onAddWordClick = viewModel::onAddWordClick,
+        onEditWordClick = viewModel::onEditWordClick,
+        onDeleteWordClick = viewModel::onDeleteWordClick
     )
 }
 
 @Composable
 fun GroupScreen(
-    groupTitle: String,
     state: GroupScreenState,
     onBackClick: () -> Unit,
     onAddWordClick: () -> Unit,
+    onEditWordClick: () -> Unit,
+    onDeleteWordClick: () -> Unit,
 ) {
     val scrollState = rememberScrollState()
 
@@ -75,7 +74,7 @@ fun GroupScreen(
             .verticalScroll(scrollState)
     ) {
         HeaderUserGroup(
-            title = groupTitle,
+            title = state.groupTitle,
             onClick = onBackClick
         )
 

@@ -24,6 +24,27 @@ class CreateUserGroupUC(
     }
 }
 
+class RenameUserGroupUC(
+    private val repo: GroupsRepository,
+) {
+    suspend operator fun invoke(
+        groupKey: String,
+        newName: String,
+    ) {
+        repo.renameUserGroup(groupKey, newName)
+    }
+}
+
+class DeleteUserGroupUC(
+    private val repo: GroupsRepository,
+) {
+    suspend operator fun invoke(
+        groupKey: String,
+    ) {
+        repo.deleteUserGroup(groupKey)
+    }
+}
+
 class GetWordsCountForGroupUC(
     private val repository: GroupsRepository,
 ) {
