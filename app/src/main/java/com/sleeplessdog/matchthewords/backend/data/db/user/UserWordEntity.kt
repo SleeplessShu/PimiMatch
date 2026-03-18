@@ -4,6 +4,8 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.sleeplessdog.matchthewords.dictionary.group_screen.WordUi
+import com.sleeplessdog.matchthewords.game.presentation.models.Language
 
 @Entity(
     tableName = "UserWords",
@@ -14,7 +16,7 @@ import androidx.room.PrimaryKey
     foreignKeys = [
         ForeignKey(
             entity = UserGroupEntity::class,
-            parentColumns = ["id"],
+            parentColumns = ["groupKey"],
             childColumns = ["groupId"],
             onDelete = ForeignKey.CASCADE
         )
@@ -26,7 +28,7 @@ data class UserWordEntity(
 
     val globalId: Long?, // null = user-only слово
 
-    val groupId: Long,
+    val groupId: String,
 
     val english: String?,
     val spanish: String?,
@@ -38,3 +40,26 @@ data class UserWordEntity(
 
     val addedAt: Long = System.currentTimeMillis(),
 )
+
+fun UserWordEntity.toUi(
+    ui: Language,
+    study: Language,
+): WordUi {
+
+    fun valueByLanguage(lang: Language): String =
+        when (lang) {
+            Language.ENGLISH -> english
+            Language.SPANISH -> spanish
+            Language.RUSSIAN -> russian
+            Language.FRENCH -> french
+            Language.GERMAN -> german
+            Language.ARMENIAN -> armenian
+            Language.SERBIAN -> serbian
+        } ?: ""
+
+    return WordUi(
+        id = id,
+        word = valueByLanguage(study),
+        translation = valueByLanguage(ui)
+    )
+}

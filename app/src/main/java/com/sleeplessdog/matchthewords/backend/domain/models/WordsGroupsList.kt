@@ -30,5 +30,5 @@ enum class WordsGroupsList(val key: String) {
     PROGRAMMING("programming"),
     DESIGN("design"),
     RANDOM("random"),
-    USERS_DICTIONARY("users_dictionary");
+    //USERS_DICTIONARY("users_dictionary");
 }

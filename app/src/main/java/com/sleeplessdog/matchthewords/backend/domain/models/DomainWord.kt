@@ -1,7 +1,5 @@
 package com.sleeplessdog.matchthewords.backend.domain.models
 
-import com.sleeplessdog.matchthewords.backend.domain.models.LanguageLevel
-
 data class DomainWord(
     val globalId: Long?,
     val english: String,

@@ -51,11 +51,11 @@
 
     <fragment
         android:id="@+id/wordsFragment"
-        android:name="com.sleeplessdog.matchthewords.dictionary.DictionaryComposeFragment"
+        android:name="com.sleeplessdog.matchthewords.dictionary.dictionary_screen.DictionaryComposeFragment"
         android:label="WordsFragment">
         <action android:id="@+id/action_wordsFragment_to_settingsFragment" />
-
     </fragment>
+
 
     <fragment
         android:id="@+id/scoreFragment"

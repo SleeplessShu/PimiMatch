@@ -3,6 +3,8 @@ package com.sleeplessdog.matchthewords.backend.data.db.global
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.sleeplessdog.matchthewords.backend.domain.models.LanguageLevel
+import com.sleeplessdog.matchthewords.dictionary.group_screen.WordUi
+import com.sleeplessdog.matchthewords.game.presentation.models.Language
 
 @Entity(tableName = "GlobalDictionary")
 data class GlobalDictionaryEntity(
@@ -21,3 +23,25 @@ data class GlobalDictionaryEntity(
     val serbian: String?,
 )
 
+fun GlobalDictionaryEntity.toUi(
+    ui: Language,
+    study: Language,
+): WordUi {
+
+    fun valueByLanguage(lang: Language): String =
+        when (lang) {
+            Language.ENGLISH -> english
+            Language.SPANISH -> spanish
+            Language.RUSSIAN -> russian
+            Language.FRENCH -> french
+            Language.GERMAN -> german
+            Language.ARMENIAN -> armenian
+            Language.SERBIAN -> serbian
+        } ?: ""
+
+    return WordUi(
+        id = id,
+        word = valueByLanguage(study),
+        translation = valueByLanguage(ui)
+    )
+}

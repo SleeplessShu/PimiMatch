@@ -25,6 +25,7 @@ val Gray03 = Color(0xFF6D6B65)
 val Gray04 = Color(0xFF2E2E2E)
 val Gray05 = Color(0xFF2B2B2B)
 val Gray06 = Color(0xFF282828)
+val Gray07 = Color(0x6D6B6569)
 
 val BlackPrimary = Color(0xFF212121)
 val GreenPrimary = Color(0xFF00AE6A)

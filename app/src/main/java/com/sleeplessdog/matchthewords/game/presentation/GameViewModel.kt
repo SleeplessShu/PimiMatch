@@ -6,12 +6,12 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sleeplessdog.matchthewords.R
+import com.sleeplessdog.matchthewords.backend.data.repository.AppPrefs
 import com.sleeplessdog.matchthewords.backend.domain.models.WordsController
-import com.sleeplessdog.matchthewords.backend.domain.usecases.groups.GetSelectedGroupsUC
+import com.sleeplessdog.matchthewords.backend.domain.models.WordsGroupsList
+import com.sleeplessdog.matchthewords.backend.domain.usecases.GetSelectedGroupsUC
 import com.sleeplessdog.matchthewords.backend.domain.usecases.score.UpdateScoreProgressUseCase
 import com.sleeplessdog.matchthewords.backend.domain.usecases.score.UpdateWordProgressUseCase
-import com.sleeplessdog.matchthewords.backend.data.repository.AppPrefs
-import com.sleeplessdog.matchthewords.backend.domain.models.WordsGroupsList
 import com.sleeplessdog.matchthewords.game.presentation.controller.LandingPagesController
 import com.sleeplessdog.matchthewords.game.presentation.interfaces.GameEvent
 import com.sleeplessdog.matchthewords.game.presentation.models.DifficultLevel
