@@ -26,7 +26,6 @@ class MainActivity : AppCompatActivity() {
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
         binding.bottomNavigationView.isVisible = false
 
         lifecycleScope.launch {
@@ -95,5 +94,9 @@ class MainActivity : AppCompatActivity() {
      */
     fun setBottomNavVisibility(isVisible: Boolean) {
         binding.bottomNavigationView.isVisible = isVisible
+    }
+    
+    fun getBottomNavHeight(): Int {
+        return binding.bottomNavigationView.height
     }
 }

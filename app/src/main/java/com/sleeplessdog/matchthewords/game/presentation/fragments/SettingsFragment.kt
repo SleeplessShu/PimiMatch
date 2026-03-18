@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.flexbox.FlexboxLayout
 import com.google.android.material.chip.Chip
 import com.sleeplessdog.matchthewords.R
+import com.sleeplessdog.matchthewords.backend.domain.models.GroupUiSettings
 import com.sleeplessdog.matchthewords.backend.domain.models.LanguageLevel
 import com.sleeplessdog.matchthewords.databinding.ItemDifficultyCardBinding
 import com.sleeplessdog.matchthewords.databinding.SettingsFragmentBinding
@@ -20,7 +21,6 @@ import com.sleeplessdog.matchthewords.game.presentation.controller.PimiScrollbar
 import com.sleeplessdog.matchthewords.game.presentation.controller.toFlagLargeRes
 import com.sleeplessdog.matchthewords.game.presentation.holders.LanguageAdapterState
 import com.sleeplessdog.matchthewords.game.presentation.models.DifficultLevel
-import com.sleeplessdog.matchthewords.game.presentation.models.GroupUiSettings
 import com.sleeplessdog.matchthewords.game.presentation.view.LanguageMenuManager
 import com.sleeplessdog.matchthewords.main.MainActivity
 import com.sleeplessdog.matchthewords.utils.SupportFunctions
@@ -52,6 +52,8 @@ class SettingsFragment : Fragment(R.layout.settings_fragment) {
     private var pimiController: PimiScrollbarController? = null
 
     private var preselected: Set<String> = emptySet()
+    private var showAllTopics = false
+    private var groupsLimit = FEATURED_LIMIT
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         _binding = SettingsFragmentBinding.bind(view)
@@ -133,8 +135,8 @@ class SettingsFragment : Fragment(R.layout.settings_fragment) {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 vm.state.collect { state ->
                     renderFeatured(state.featured)
-                    renderGroup(binding.cgUserCategories, state.user)
-                    renderGroup(binding.cgDefaultCategories, state.defaults)
+                    renderGroup(binding.cgUserCategories, state.userGroups)
+                    renderGroup(binding.cgDefaultCategories, state.globalGroups)
                 }
             }
         }
@@ -188,8 +190,12 @@ class SettingsFragment : Fragment(R.layout.settings_fragment) {
         }
 
         binding.btnShowAllCategories.setOnClickListener {
-            preselected = vm.state.value.user.plus(vm.state.value.defaults).filter { it.isSelected }
-                .map { it.key }.toSet()
+            showAllTopics = true
+
+            preselected = vm.state.value.featured
+                .filter { it.isSelected }
+                .map { it.key }
+                .toSet()
             showTopicsMenu()
         }
 
@@ -244,7 +250,13 @@ class SettingsFragment : Fragment(R.layout.settings_fragment) {
         val group = binding.cgFeaturedCategories
         group.removeAllViews()
 
-        list.forEach { item ->
+        val itemsToShow =
+            if (showAllTopics) list
+            else list.take(FEATURED_LIMIT)
+        if (!showAllTopics) groupsLimit -= list.size
+
+
+        itemsToShow.forEach { item ->
             val chip = SupportFunctions.createCategoryChip(group, item)
 
             chip.isChecked = item.isSelected
@@ -256,6 +268,7 @@ class SettingsFragment : Fragment(R.layout.settings_fragment) {
 
     private fun renderGroup(group: FlexboxLayout, items: List<GroupUiSettings>) {
         group.removeAllViews()
+
         items.forEach { item ->
             group.addView(SupportFunctions.createCategoryChip(group, item).apply {
                 isChecked = item.key in preselected || item.isSelected
@@ -301,6 +314,7 @@ class SettingsFragment : Fragment(R.layout.settings_fragment) {
     }
 
     private fun hideTopicsMenu() {
+        showAllTopics = false
         val root = binding.rootTopics
         if (root.visibility != View.VISIBLE) return
 
@@ -334,5 +348,9 @@ class SettingsFragment : Fragment(R.layout.settings_fragment) {
         _binding = null
         pimiController = null
         super.onDestroyView()
+    }
+
+    private companion object {
+        val FEATURED_LIMIT = 6
     }
 }

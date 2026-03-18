@@ -6,18 +6,31 @@ import com.sleeplessdog.matchthewords.backend.data.db.user.UserDatabase
 import com.sleeplessdog.matchthewords.backend.data.repository.GroupsRepository
 import com.sleeplessdog.matchthewords.backend.data.repository.WordsRepository
 import com.sleeplessdog.matchthewords.backend.domain.models.WordsController
-import com.sleeplessdog.matchthewords.backend.domain.usecases.groups.CreateUserGroupUC
-import com.sleeplessdog.matchthewords.backend.domain.usecases.groups.GetSelectedGroupsUC
-import com.sleeplessdog.matchthewords.backend.domain.usecases.groups.GetWordsCountForGroupUC
-import com.sleeplessdog.matchthewords.backend.domain.usecases.groups.ObserveAllGroupsGroupedUC
-import com.sleeplessdog.matchthewords.backend.domain.usecases.groups.ObserveFeaturedGroupsUC
-import com.sleeplessdog.matchthewords.backend.domain.usecases.groups.SaveSelectionUC
-import com.sleeplessdog.matchthewords.backend.domain.usecases.groups.ToggleCategoryUC
+import com.sleeplessdog.matchthewords.backend.domain.usecases.AddSingleWordToSavedWordsUC
+import com.sleeplessdog.matchthewords.backend.domain.usecases.AddWordToUserDictionaryUC
+import com.sleeplessdog.matchthewords.backend.domain.usecases.AddWordToUserGroupUC
+import com.sleeplessdog.matchthewords.backend.domain.usecases.CreateUserGroupUC
+import com.sleeplessdog.matchthewords.backend.domain.usecases.DeleteUserGroupUC
+import com.sleeplessdog.matchthewords.backend.domain.usecases.DeleteWordFromUserGroupUC
+import com.sleeplessdog.matchthewords.backend.domain.usecases.EditWordInUserGroupUC
+import com.sleeplessdog.matchthewords.backend.domain.usecases.GetGlobalGroupWordsOnceUC
+import com.sleeplessdog.matchthewords.backend.domain.usecases.GetGlobalGroupsOnceUC
+import com.sleeplessdog.matchthewords.backend.domain.usecases.GetSelectedGroupsUC
+import com.sleeplessdog.matchthewords.backend.domain.usecases.GetWordsCountForGroupUC
+import com.sleeplessdog.matchthewords.backend.domain.usecases.GetWordsCountUserGroupUC
+import com.sleeplessdog.matchthewords.backend.domain.usecases.MoveWordToUserGroupUC
+import com.sleeplessdog.matchthewords.backend.domain.usecases.ObserveAllGroupsForDictionaryUC
+import com.sleeplessdog.matchthewords.backend.domain.usecases.ObserveAllGroupsForSettingsUC
+import com.sleeplessdog.matchthewords.backend.domain.usecases.ObserveUserGroupsForGroupsUC
+import com.sleeplessdog.matchthewords.backend.domain.usecases.ObserveUserGroupsUC
+import com.sleeplessdog.matchthewords.backend.domain.usecases.ObserveWordsInUserGroupUC
+import com.sleeplessdog.matchthewords.backend.domain.usecases.RenameUserGroupUC
+import com.sleeplessdog.matchthewords.backend.domain.usecases.SaveSelectionUC
+import com.sleeplessdog.matchthewords.backend.domain.usecases.ToggleCategoryUC
 import com.sleeplessdog.matchthewords.backend.domain.usecases.score.UpdateScoreProgressUseCase
 import com.sleeplessdog.matchthewords.backend.domain.usecases.score.UpdateWordProgressUseCase
 import com.sleeplessdog.matchthewords.backend.domain.usecases.settings.SettingsObserveLevelsUC
 import com.sleeplessdog.matchthewords.backend.domain.usecases.settings.SettingsSaveLevelsUC
-import com.sleeplessdog.matchthewords.backend.domain.usecases.words.AddWordToUserDictionaryUC
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
 
@@ -44,8 +57,7 @@ val databaseModule = module {
     // -------- Repository --------
     single {
         WordsRepository(
-            globalDao = get(),
-            userDao = get()
+            globalDao = get(), userDao = get()
         )
     }
 
@@ -62,22 +74,42 @@ val databaseModule = module {
         )
     }
 
-    single {
-        AddWordToUserDictionaryUC(
-            userDao = get()
-        )
-    }
+
 
     single { GroupsRepository(get(), get()) }
 
-    single { ObserveAllGroupsGroupedUC(get()) }
-    single { ObserveFeaturedGroupsUC(get()) }
-    single { GetSelectedGroupsUC(get()) }
+
+
     single { ToggleCategoryUC(get()) }
     single { SaveSelectionUC(get()) }
-    single { CreateUserGroupUC(get()) }
     single { SettingsSaveLevelsUC(get()) }
     single { SettingsObserveLevelsUC(get()) }
     single { UpdateScoreProgressUseCase(get()) }
+    /**
+     * group uc
+     */
+    single { CreateUserGroupUC(get()) }
+
+
+    single { GetSelectedGroupsUC(get()) }
     single { GetWordsCountForGroupUC(get()) }
+    single { GetGlobalGroupsOnceUC(get()) }
+    single { GetWordsCountUserGroupUC(get()) }
+    single { ObserveUserGroupsUC(get()) }
+    single { ObserveAllGroupsForSettingsUC(get()) }
+    single { ObserveAllGroupsForDictionaryUC(get()) }
+    single { GetGlobalGroupWordsOnceUC(get()) }
+    single { RenameUserGroupUC(get()) }
+    single { DeleteUserGroupUC(get()) }
+    /**
+     * word uc
+     */
+    single { AddWordToUserDictionaryUC(get()) }
+    single { EditWordInUserGroupUC(get()) }
+    single { DeleteWordFromUserGroupUC(get()) }
+    single { MoveWordToUserGroupUC(get()) }
+    single { ObserveWordsInUserGroupUC(get()) }
+    single { ObserveUserGroupsForGroupsUC(get()) }
+    single { AddWordToUserGroupUC(get()) }
+    single { AddSingleWordToSavedWordsUC(get()) }
 }

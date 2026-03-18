@@ -4,7 +4,10 @@ import android.os.Handler
 import android.os.Looper
 import com.sleeplessdog.matchthewords.backend.data.repository.AppPrefs
 import com.sleeplessdog.matchthewords.backend.data.repository.AppPrefsImpl
-import com.sleeplessdog.matchthewords.dictionary.DictionaryViewModel
+import com.sleeplessdog.matchthewords.dictionary.GroupDictionaryUiMapper
+import com.sleeplessdog.matchthewords.dictionary.dictionary_screen.DictionaryViewModel
+import com.sleeplessdog.matchthewords.dictionary.group_screen.GroupViewModel
+import com.sleeplessdog.matchthewords.dictionary.models.GroupSettingsUiMapper
 import com.sleeplessdog.matchthewords.game.presentation.GameViewModel
 import com.sleeplessdog.matchthewords.game.presentation.controller.LandingPagesController
 import com.sleeplessdog.matchthewords.game.presentation.fragments.EndGameViewModel
@@ -50,15 +53,41 @@ val presentationModule = module {
 
 
     viewModel { ScoreViewModel() }
-
+    viewModel {
+        GroupViewModel(
+            observeUserGroupsForGroups = get(),
+            observeWordsInUserGroup = get(),
+            getGlobalGroupWordsOnce = get(),
+            savedStateHandle = get(),
+            addWordToUserGroup = get(),
+            editWordInUserGroup = get(),
+            deleteWordFromUserGroup = get(),
+            moveWordToUserGroup = get(),
+            appPrefs = get(),
+            addSingleWordToSavedWords = get(),
+        )
+    }
     viewModel {
         DictionaryViewModel(
             observeAllGroups = get(),
-            getWordsCountForGroup = get(),
-            appPrefs = get(),
-            app = get()
+            createUserGroup = get(),
+            groupDictionaryUiMapper = get(),
+            renameUserGroup = get(),
+            deleteUserGroup = get(),
         )
     }
+
+
+    /*viewModel {
+        GroupViewModel(
+            observeWordsInUserGroup = get(),
+            getGlobalGroupWordsOnce = get(),
+            appPrefs = get(),
+            savedStateHandle = get(),
+        )
+    }*/
+
+    /*    viewModel { UserGroupViewModel() }*/
 
 
     /*    viewModel() {
@@ -86,17 +115,18 @@ val presentationModule = module {
     }
 
     viewModel {
-        SettingsViewModel(
-            observeFeaturedUC = get(),
-            observeAllGroupedUC = get(),
+        val settingsViewModel = SettingsViewModel(
+            observeAllGroups = get(),
             toggleUC = get(),
             saveSelectionUC = get(),
             createUserGroupUC = get(),
             saveLevelsUC = get(),
             observeLevelsUC = get(),
             app = androidApplication(),
-            appPrefs = get()
+            appPrefs = get(),
+            groupSettingsUiMapper = get()
         )
+        settingsViewModel
     }
 
     single<AppPrefs> {
@@ -112,7 +142,8 @@ val presentationModule = module {
     }
 
     single { ShuffleFunctions() }
-
     single { ProgressController() }
+    single { GroupSettingsUiMapper(get()) }
+    single { GroupDictionaryUiMapper(get()) }
 
 }
