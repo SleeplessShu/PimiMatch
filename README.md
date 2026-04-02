@@ -54,18 +54,18 @@ Pimi is for you if you:
 Start with five minutes. Or just one word.
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/e4d6a597-5625-4b18-9b73-9c4373e013e7" width="25%">
-  <img src="https://github.com/user-attachments/assets/515b4fb3-b4bc-470b-8716-e8a6fdb46c04" width="25%">
-  <img src="https://github.com/user-attachments/assets/0059b3c8-ebef-4b26-b83b-329ce934d8f" width="25%">
-  <img src="https://github.com/user-attachments/assets/0a312020-50fc-4c55-a260-5dcbbaf61263" width="25%">
+  <img src="https://github.com/user-attachments/assets/e4d6a597-5625-4b18-9b73-9c4373e013e7" width="24%">
+  <img src="https://github.com/user-attachments/assets/515b4fb3-b4bc-470b-8716-e8a6fdb46c04" width="24%">
+  <img src="https://github.com/user-attachments/assets/96741681-57e1-4953-a3b2-5653de78bfe4" width="24%">
+  <img src="https://github.com/user-attachments/assets/0a312020-50fc-4c55-a260-5dcbbaf61263" width="24%">
 </p>
 
 ---
 
 ### ⚙️ Settings & personalization
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/15873ae4-857f-4d4c-92c8-afd23a52c58d" width="25%">
-  <img src="https://github.com/user-attachments/assets/9d91b130-7cfe-4bd0-983a-5915e95e910c" width="25%">
-  <img src="https://github.com/user-attachments/assets/107f08d1-6cfb-4080-825f-1647f834f18b" width="25%">
-  <img src="https://github.com/user-attachments/assets/b33dceaf-f783-40e7-b297-06a6974d6e0a" width="25%">
+  <img src="https://github.com/user-attachments/assets/15873ae4-857f-4d4c-92c8-afd23a52c58d" width="24%">
+  <img src="https://github.com/user-attachments/assets/9d91b130-7cfe-4bd0-983a-5915e95e910c" width="24%">
+  <img src="https://github.com/user-attachments/assets/107f08d1-6cfb-4080-825f-1647f834f18b" width="24%">
+  <img src="https://github.com/user-attachments/assets/b33dceaf-f783-40e7-b297-06a6974d6e0a" width="24%">
 </p>
