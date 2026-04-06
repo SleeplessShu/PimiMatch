@@ -1,9 +1,16 @@
 package com.sleeplessdog.pimi.gameSelect
 
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.text.Spannable
+import android.text.SpannableStringBuilder
+import android.text.style.StyleSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
@@ -13,8 +20,8 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.sleeplessdog.pimi.R
-import com.sleeplessdog.pimi.databinding.GameSelectFragmentBinding
 import com.sleeplessdog.pimi.animation.LottieAnimationController
+import com.sleeplessdog.pimi.databinding.GameSelectFragmentBinding
 import com.sleeplessdog.pimi.games.presentation.controller.LanguageAdapter
 import com.sleeplessdog.pimi.games.presentation.controller.toFlagLargeRes
 import com.sleeplessdog.pimi.games.presentation.controller.toLanguageSelectAnimation
@@ -35,6 +42,10 @@ class GameSelectFragment : Fragment() {
     private val lottieController = LottieAnimationController()
     private var isLangShown = false
 
+    private var logoClickCount = 0
+    private val logoClickHandler = Handler(Looper.getMainLooper())
+    private val logoClickReset = Runnable { logoClickCount = 0 }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?,
     ): View {
@@ -54,12 +65,18 @@ class GameSelectFragment : Fragment() {
                 flashView(binding.tvGroupsList)
             }
         }
-
+        setupVersionControl()
         setupLanguageList()
         setupLanguageButton()
         setupLanguageManager()
         setupGameCards()
         setupObservers()
+    }
+
+    private fun setupVersionControl() {
+        val pInfo = requireContext().packageManager.getPackageInfo(requireContext().packageName, 0)
+        val versionName = pInfo.versionName
+        binding.versionControl.text = "$versionName"
     }
 
     private fun setupLanguageManager() {
@@ -148,6 +165,16 @@ class GameSelectFragment : Fragment() {
 
     private fun setupObservers() {
 
+        binding.logo.setOnClickListener {
+            logoClickHandler.removeCallbacks(logoClickReset)
+            logoClickCount++
+            if (logoClickCount >= 4) {
+                logoClickCount = 0
+                showAuthorsDialog()
+            }
+            logoClickHandler.postDelayed(logoClickReset, 1000)
+        }
+
         binding.btnClearForcedGroup.setOnClickListener {
             viewModel.clearForcedGroup()
             updateGroupsDisplay()
@@ -210,6 +237,7 @@ class GameSelectFragment : Fragment() {
             }
         }
     }
+
 
     private fun activateCurtains() {
         lottieController.switchBetweenTwo(
@@ -319,5 +347,44 @@ class GameSelectFragment : Fragment() {
                             }.start()
                     }.start()
             }.start()
+    }
+
+    private fun showAuthorsDialog() {
+        val authors = listOf(
+            "@SleeplessDog" to "lead developer · design · founder",
+            "@nenehaeva" to "UI/UX · lead design",
+            "@sardinaest" to "character design",
+            "@NatalyPlum" to "animation",
+            "@ShvetsovaTatyana98" to "junior developer"
+        )
+
+        val spannable = SpannableStringBuilder()
+        authors.forEachIndexed { index, (name, role) ->
+            val nameStart = spannable.length
+            spannable.append(name)
+            spannable.setSpan(
+                StyleSpan(android.graphics.Typeface.BOLD),
+                nameStart, spannable.length,
+                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+            spannable.append("  $role")
+            if (index < authors.size - 1) spannable.append("\n\n")
+        }
+
+        val tv = TextView(requireContext()).apply {
+            text = spannable
+            textSize = 14f
+            setPadding(64, 16, 64, 16)
+            setLineSpacing(4f, 1f)
+        }
+
+        val dialog = androidx.appcompat.app.AlertDialog.Builder(requireContext())
+            .setTitle("Made by")
+            .setView(tv)
+            .setPositiveButton("OK", null)
+            .show()
+
+        dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE)
+            .setTextColor(ContextCompat.getColor(requireContext(), R.color.green_primary))
     }
 }

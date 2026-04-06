@@ -2,7 +2,8 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -43,6 +44,19 @@
             app:layout_constraintStart_toStartOf="@id/leftBorder"
             app:layout_constraintTop_toTopOf="@id/languageSelect"
             app:srcCompat="@drawable/ic_app_name" />
+
+        <TextView
+            android:id="@+id/versionControl"
+            style="@style/Text.T3.TextLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textColor="@color/gray_06"
+            tools:text="0000000"
+            app:layout_constraintEnd_toEndOf="@id/rightBorder"
+            app:layout_constraintStart_toStartOf="@id/leftBorder"
+            app:layout_constraintTop_toTopOf="@+id/languageSelect"
+            app:layout_constraintBottom_toBottomOf="@+id/languageSelect" />
 
         <!-- заголовок -->
         <TextView
