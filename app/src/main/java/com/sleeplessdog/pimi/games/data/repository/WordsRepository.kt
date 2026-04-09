@@ -14,6 +14,7 @@ import com.sleeplessdog.pimi.games.presentation.models.Word
 import com.sleeplessdog.pimi.settings.Language
 import com.sleeplessdog.pimi.settings.LanguageLevel
 import com.sleeplessdog.pimi.utils.ConstantsPaths
+import com.sleeplessdog.pimi.utils.SupportFunctions
 
 class WordsRepository(
     private val databaseProvider: AppDatabaseProvider,
@@ -168,11 +169,12 @@ class WordsRepository(
         translateLanguage: Language,
     ) {
         val userDao = databaseProvider.getUserDatabase().userDao()
-
+        val sanitizedOrigin = SupportFunctions.sanitizeInput(origin)
+        val sanitizedTranslate = SupportFunctions.sanitizeInput(translate)
         val fields = MutableWordBuilder()
 
-        fields.set(originLanguage, origin)
-        fields.set(translateLanguage, translate)
+        fields.set(originLanguage, sanitizedOrigin)
+        fields.set(translateLanguage, sanitizedTranslate)
 
         userDao.insertWord(
             UserWordEntity(
@@ -200,10 +202,13 @@ class WordsRepository(
     ) {
         val userDao = databaseProvider.getUserDatabase().userDao()
 
+        val sanitizedOrigin = SupportFunctions.sanitizeInput(origin)
+        val sanitizedTranslate = SupportFunctions.sanitizeInput(translate)
+
         val fields = MutableWordBuilder()
 
-        fields.set(originLanguage, origin)
-        fields.set(translateLanguage, translate)
+        fields.set(originLanguage, sanitizedOrigin)
+        fields.set(translateLanguage, sanitizedTranslate)
 
         userDao.updateUserWordFields(
             wordId = wordId,

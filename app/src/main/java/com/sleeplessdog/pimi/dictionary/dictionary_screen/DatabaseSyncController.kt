@@ -278,7 +278,6 @@ class DatabaseSyncController(
             val supportDb = db.openHelper.writableDatabase
             val dbPath = supportDb.path
 
-            // сначала пробуем TRUNCATE checkpoint
             val cursor = supportDb.query(SimpleSQLiteQuery("PRAGMA wal_checkpoint(TRUNCATE)"))
             val row = if (cursor.moveToFirst()) {
                 Triple(cursor.getInt(0), cursor.getInt(1), cursor.getInt(2))

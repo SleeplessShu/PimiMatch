@@ -12,6 +12,7 @@ import com.sleeplessdog.pimi.games.domain.models.GlobalGroupDBEntity
 import com.sleeplessdog.pimi.games.domain.models.GroupDictionaryDomain
 import com.sleeplessdog.pimi.games.domain.models.GroupPresentationSettingsEntity
 import com.sleeplessdog.pimi.settings.Language
+import com.sleeplessdog.pimi.utils.SupportFunctions
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharedFlow
@@ -124,9 +125,10 @@ class GroupsRepository(
         groupName: String,
     ) {
         val userDao = databaseProvider.getUserDatabase().userDao()
+        val sanitizedName = SupportFunctions.sanitizeInput(groupName)
         userDao.insertGroup(
             UserGroupEntity(
-                groupKey = key, title = groupName
+                groupKey = key, title = sanitizedName
             )
         )
         appPrefs.markLocalDatabaseDirty()
@@ -137,8 +139,9 @@ class GroupsRepository(
         newName: String,
     ) {
         val userDao = databaseProvider.getUserDatabase().userDao()
+        val sanitizedName = SupportFunctions.sanitizeInput(newName)
         userDao.updateGroupTitle(
-            groupKey = groupKey, newTitle = newName
+            groupKey = groupKey, newTitle = sanitizedName
         )
         appPrefs.markLocalDatabaseDirty()
     }

@@ -103,4 +103,11 @@ object SupportFunctions {
         config.setLocale(locale)
         return createConfigurationContext(config)
     }
+
+    fun sanitizeInput(input: String): String {
+        return input
+            .trim()
+            .replace(Regex("[\\r\\n\\t]"), " ")
+            .take(80)
+    }
 }
