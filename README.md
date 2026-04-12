@@ -3,6 +3,10 @@
 A vocabulary trainer for people who need to remember words — without stress, 
 streaks, or guilt.
 
+## Download
+
+[![RuStore](https://img.shields.io/badge/RuStore-Pimi-blue)](https://console.rustore.ru/apps/2063706423)
+
 ## Features
 
 - **4 game modes** — match pairs, true/false, multiple choice, write the word
